@@ -1,6 +1,13 @@
+// vercel.json (Update this file)
 {
-  "buildCommand": "vite build",
-  "outputDirectory": "dist",
+  "build": {
+    "buildCommand": "vite build"
+  },
   "framework": "vite",
-  "installCommand": "pnpm install"
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }
