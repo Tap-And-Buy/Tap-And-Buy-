@@ -69,8 +69,15 @@ export default function Categories() {
                 onClick={() => handleCategoryClick(category.id, category.name)}
               >
                 <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    {category.image_url && (
+                      <img
+                        src={category.image_url}
+                        alt={category.name}
+                        className="h-12 w-12 rounded object-cover flex-shrink-0"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
                       <h3 className="text-lg font-semibold mb-1">{category.name}</h3>
                       {category.description && (
                         <p className="text-sm text-muted-foreground line-clamp-2">
@@ -78,7 +85,7 @@ export default function Categories() {
                         </p>
                       )}
                     </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground ml-2" />
+                    <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                   </div>
                 </CardContent>
               </Card>
