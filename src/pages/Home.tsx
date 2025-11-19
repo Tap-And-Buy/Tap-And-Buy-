@@ -21,6 +21,8 @@ export default function Home() {
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
+  const [searchSuggestions, setSearchSuggestions] = useState<Product[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(true);
   const [wishlistProductIds, setWishlistProductIds] = useState<string[]>([]);
   const [priceRangeProducts, setPriceRangeProducts] = useState<{
@@ -46,6 +48,14 @@ export default function Home() {
   useEffect(() => {
     loadData();
   }, [user]);
+
+  useEffect(() => {
+    const handleClickOutside = () => setShowSuggestions(false);
+    if (showSuggestions) {
+      document.addEventListener('click', handleClickOutside);
+    }
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [showSuggestions]);
 
   const loadData = async () => {
     try {
@@ -82,6 +92,28 @@ export default function Home() {
     }
   };
 
+  const handleSearchInput = (value: string) => {
+    setSearchTerm(value);
+    
+    if (value.trim().length >= 2) {
+      const suggestions = products.filter(product => 
+        product.name.toLowerCase().includes(value.toLowerCase()) ||
+        product.description?.toLowerCase().includes(value.toLowerCase())
+      ).slice(0, 5);
+      setSearchSuggestions(suggestions);
+      setShowSuggestions(true);
+    } else {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSuggestionClick = (productName: string) => {
+    setSearchTerm(productName);
+    setShowSuggestions(false);
+    navigate(`/category-products?search=${encodeURIComponent(productName)}`);
+  };
+
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
 
@@ -89,6 +121,7 @@ export default function Home() {
       await db.searchHistory.add(searchTerm);
     }
 
+    setShowSuggestions(false);
     navigate(`/category-products?search=${encodeURIComponent(searchTerm)}`);
   };
 
@@ -118,8 +151,9 @@ export default function Home() {
               type="text"
               placeholder="Search products..."
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={e => handleSearchInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
+              onFocus={() => searchTerm.length >= 2 && setShowSuggestions(true)}
               className="bg-white text-foreground pr-10"
             />
             <Button
@@ -130,6 +164,33 @@ export default function Home() {
             >
               <Search className="h-4 w-4" />
             </Button>
+
+            {showSuggestions && searchSuggestions.length > 0 && (
+              <Card className="absolute top-full left-0 right-0 mt-1 z-50 max-h-80 overflow-y-auto">
+                <CardContent className="p-2">
+                  {searchSuggestions.map(product => (
+                    <button
+                      key={product.id}
+                      type="button"
+                      className="w-full text-left px-3 py-2 hover:bg-muted rounded flex items-center gap-3"
+                      onClick={() => handleSuggestionClick(product.name)}
+                    >
+                      {product.image_urls && product.image_urls.length > 0 && (
+                        <img
+                          src={product.image_urls[0]}
+                          alt={product.name}
+                          className="h-10 w-10 object-cover rounded"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{product.name}</p>
+                        <p className="text-sm text-muted-foreground">₹{product.price}</p>
+                      </div>
+                    </button>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {searchHistory.length > 0 && (

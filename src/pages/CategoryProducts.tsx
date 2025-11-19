@@ -11,6 +11,44 @@ import { toast } from 'sonner';
 import { ProductCard } from '@/components/common/ProductCard';
 import { useAuth } from '@/contexts/AuthContext';
 
+// Fuzzy search helper - calculates similarity between two strings
+const calculateSimilarity = (str1: string, str2: string): number => {
+  const s1 = str1.toLowerCase();
+  const s2 = str2.toLowerCase();
+  
+  // Exact match
+  if (s1 === s2) return 1;
+  
+  // Contains match
+  if (s1.includes(s2) || s2.includes(s1)) return 0.8;
+  
+  // Calculate Levenshtein distance for fuzzy matching
+  const matrix: number[][] = [];
+  for (let i = 0; i <= s2.length; i++) {
+    matrix[i] = [i];
+  }
+  for (let j = 0; j <= s1.length; j++) {
+    matrix[0][j] = j;
+  }
+  for (let i = 1; i <= s2.length; i++) {
+    for (let j = 1; j <= s1.length; j++) {
+      if (s2.charAt(i - 1) === s1.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
+      }
+    }
+  }
+  
+  const distance = matrix[s2.length][s1.length];
+  const maxLength = Math.max(s1.length, s2.length);
+  return 1 - distance / maxLength;
+};
+
 export default function CategoryProducts() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -91,10 +129,35 @@ export default function CategoryProducts() {
     }
 
     if (searchQuery) {
-      filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.description?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      // Fuzzy search with similarity scoring
+      const searchResults = filtered.map(p => {
+        const nameWords = p.name.toLowerCase().split(' ');
+        const descWords = p.description?.toLowerCase().split(' ') || [];
+        const searchWords = searchQuery.toLowerCase().split(' ');
+        
+        let maxSimilarity = 0;
+        
+        // Check each search word against product name and description words
+        searchWords.forEach(searchWord => {
+          nameWords.forEach(nameWord => {
+            const similarity = calculateSimilarity(nameWord, searchWord);
+            maxSimilarity = Math.max(maxSimilarity, similarity);
+          });
+          
+          descWords.forEach(descWord => {
+            const similarity = calculateSimilarity(descWord, searchWord);
+            maxSimilarity = Math.max(maxSimilarity, similarity * 0.8); // Description matches weighted lower
+          });
+        });
+        
+        return { product: p, similarity: maxSimilarity };
+      });
+      
+      // Filter products with similarity > 0.5 (50% match)
+      filtered = searchResults
+        .filter(result => result.similarity > 0.5)
+        .sort((a, b) => b.similarity - a.similarity)
+        .map(result => result.product);
     }
 
     filtered.sort((a, b) => {
