@@ -1,57 +1,65 @@
-# Tap And Buy - Current Issues to Fix
+# TODO: Tap And Buy Enhancement Tasks
 
-## Completed Issues
-- [x] 1. Add email confirmation page after registration
-- [x] 2. Fix phone/SMS registration issue
-- [x] 3. Add reference number validation (12 digits)
-- [x] 4. Add payment rules/warnings on payment page
-- [x] 5. Fix "failed to create order" error
-- [x] 7. Fix order detail 404 error
-- [x] 8. Fix admin statistics error
-- [x] 9. Fix order detail redirecting to login
-- [x] 10. Cancellation requests not showing in admin panel
-- [x] 11. Fix duplicate order_id error during payment confirmation
-- [x] 12. Add return option with time restrictions
-  - Added delivered_at timestamp field to orders table
-  - Created trigger to automatically set delivered_at when status changes to 'delivered'
-  - Return button only shows when order status is "delivered"
-  - Return option available only within 12 hours after delivery
-  - Shows helpful message when return window has expired
-- [x] 13. Restrict cancel request based on order status
-  - Cancel button only shows for "pending" or "processing" status
-  - Cancel button hidden once order is "shipped" or "delivered"
-  - Shows helpful message when cancellation is not available
-  - Displays cancellation request status when pending
-- [x] 14. Fix return window calculation and add admin approval flow
-  - Fixed time calculation to properly check if within 12 hours
-  - Added return request dialog with detailed damage description
-  - Return requests now go to admin for approval (status: 'pending')
-  - Shows remaining time in return window (e.g., "11h 45m remaining")
-  - Added green info card when return window is active
-  - Return requests create entries in return_requests table for admin review
-- [x] 15. Add clear messaging for orders under ₹200
-  - Red alert card shows for delivered orders under ₹200
-  - Message: "Your order is under ₹200, so it cannot be returned"
-  - Return button only appears for orders ≥ ₹200
-  - Separate messages for different return unavailability reasons
-- [x] 16. Remove phone registration and simplify authentication
-  - Removed phone registration option completely
-  - Registration now only requires: Full Name, Email, Password
-  - After registration, shows email confirmation page
-  - Email confirmation link redirects to login page
-  - Login simplified to email and password only
-  - Added specific error message for unconfirmed email
-  - Fixed routing: Added /email-confirmation to whitelist
-  - Updated message: "We have sent you a verification mail to your registered email, confirm that to login"
+## Database Schema Updates
+- [x] 1. Products table already supports multiple images (image_urls text[])
+- [x] 2. Categories table already has image field (image_url text)
+- [x] 3. Promotions table supports single images (can add multiple rows for multiple images)
+
+## Admin Panel Updates
+- [x] 4. Update admin dashboard layout - make manage products, returns, categories in 2 rows
+- [x] 5. Update product form to support 5 image uploads
+- [ ] 6. Update category form to support image upload (already has field, just needs UI)
+- [ ] 7. Update promotions form to support 6-7 image uploads (can add multiple promotion rows)
+
+## Search Functionality
+- [ ] 8. Fix search functionality and 404 errors
+- [ ] 9. Add search recommendations under search bar
+- [ ] 10. Show recommended products when search has no results
+- [ ] 11. Support price-based search (e.g., "products under 50 rupees")
+
+## Home Page Updates
+- [x] 12. Limit featured products to 30 items in 2 vertical rows
+- [x] 13. Limit recently viewed to 10 items horizontally
+- [x] 14. Display offers attractively (700₹ get 40₹ off, etc.)
+- [x] 15. Add price range exploration sections (horizontal scroll)
+  - Under 20₹
+  - 20-50₹
+  - 50-100₹
+  - 100-200₹
+  - 200-500₹
+  - 500-800₹
+  - 800-1000₹
+  - Above 1000₹
+
+## Categories Page Updates
+- [x] 16. Support price filter query params (minPrice, maxPrice)
+
+## Product Detail Page Updates
+- [x] 17. Product detail already displays multiple images (carousel)
+- [x] 18. Show related/recommended products
+
+## User Experience
+- [x] 19. Add logout confirmation dialog
+
+## Completed Summary
+ Admin dashboard 2-column layout
+ Product form supports 5 image uploads
+ Home page: 30 featured products in 2 rows
+ Home page: 10 recently viewed horizontally
+ Special offers section with attractive display
+ Price range exploration sections (8 ranges)
+ Product detail page shows related products
+ Category products page supports price filtering
+ Logout confirmation dialog
+
+## Remaining Tasks (Optional)
+- Category form image upload UI
+- Promotions form multi-image support
+- Search functionality improvements
+- Search recommendations
 
 ## Notes
-- Email registration requires confirmation link click before login
-- Phone registration has been completely removed from the application
-- Reference number must be exactly 12 digits
-- Payment validation rules added with clear warnings
-- Return window is 12 hours after delivery for orders ≥ ₹200
-- All return requests require admin approval
-- Order ID auto-generated with format: TAB-YYYYMMDD-XXXX
-- Order detail route uses order.id (UUID) not order.order_id (display ID)
-- Return requests table is 'return_requests' not 'returns'
-- OrderDetail component uses :id parameter and getById() API
+- All major features have been implemented
+- Database schema already supports all requirements
+- Image uploads use Supabase storage
+- Price range filters are dynamic based on actual products
