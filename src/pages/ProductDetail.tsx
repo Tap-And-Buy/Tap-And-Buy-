@@ -8,6 +8,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { ArrowLeft, ShoppingCart, Zap, Heart, Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProductCard } from '@/components/common/ProductCard';
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -18,11 +19,14 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [wishlistProductIds, setWishlistProductIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (id) {
       loadProduct(id);
       checkWishlistStatus(id);
+      loadRelatedProducts();
     }
   }, [id]);
 
@@ -40,6 +44,40 @@ export default function ProductDetail() {
       toast.error('Failed to load product');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadRelatedProducts = async () => {
+    try {
+      const allProducts = await db.products.getAll();
+      const currentProduct = allProducts.find(p => p.id === id);
+      
+      if (!currentProduct) return;
+
+      let related = allProducts.filter(p => 
+        p.id !== id && 
+        p.category_id === currentProduct.category_id
+      ).slice(0, 8);
+
+      if (related.length < 8) {
+        const priceRange = currentProduct.price * 0.3;
+        const additionalProducts = allProducts.filter(p => 
+          p.id !== id && 
+          !related.find(r => r.id === p.id) &&
+          Math.abs(p.price - currentProduct.price) <= priceRange
+        ).slice(0, 8 - related.length);
+        
+        related = [...related, ...additionalProducts];
+      }
+
+      setRelatedProducts(related);
+
+      if (user) {
+        const wishlistIds = await db.wishlist.getProductIds();
+        setWishlistProductIds(wishlistIds);
+      }
+    } catch (error) {
+      console.error('Error loading related products:', error);
     }
   };
 
@@ -298,6 +336,22 @@ export default function ProductDetail() {
             </Card>
           </div>
         </div>
+
+        {relatedProducts.length > 0 && (
+          <div className="max-w-screen-xl mx-auto px-4 py-8">
+            <h2 className="text-2xl font-bold mb-6">Related Products</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {relatedProducts.map(relatedProduct => (
+                <ProductCard
+                  key={relatedProduct.id}
+                  product={relatedProduct}
+                  isInWishlist={wishlistProductIds.includes(relatedProduct.id)}
+                  onWishlistChange={loadRelatedProducts}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

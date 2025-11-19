@@ -17,9 +17,12 @@ export default function CategoryProducts() {
   const [searchParams] = useSearchParams();
   const categoryId = searchParams.get('id');
   const categoryName = searchParams.get('name') || 'Category';
+  const searchParam = searchParams.get('search');
+  const minPriceParam = searchParams.get('minPrice');
+  const maxPriceParam = searchParams.get('maxPrice');
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParam || '');
   const [sortBy, setSortBy] = useState('name');
   const [loading, setLoading] = useState(true);
   const [wishlistProductIds, setWishlistProductIds] = useState<string[]>([]);
@@ -27,18 +30,33 @@ export default function CategoryProducts() {
   useEffect(() => {
     if (categoryId) {
       loadProducts(categoryId);
+    } else if (minPriceParam || maxPriceParam) {
+      loadAllProducts();
     }
     loadWishlist();
-  }, [categoryId, user]);
+  }, [categoryId, minPriceParam, maxPriceParam, user]);
 
   useEffect(() => {
     filterAndSortProducts();
-  }, [products, searchQuery, sortBy]);
+  }, [products, searchQuery, sortBy, minPriceParam, maxPriceParam]);
 
   const loadProducts = async (catId: string) => {
     try {
       setLoading(true);
       const data = await db.products.getAll(catId);
+      setProducts(data);
+    } catch (error) {
+      console.error('Error loading products:', error);
+      toast.error('Failed to load products');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAllProducts = async () => {
+    try {
+      setLoading(true);
+      const data = await db.products.getAll();
       setProducts(data);
     } catch (error) {
       console.error('Error loading products:', error);
@@ -60,6 +78,16 @@ export default function CategoryProducts() {
 
   const filterAndSortProducts = () => {
     let filtered = [...products];
+
+    if (minPriceParam) {
+      const minPrice = parseFloat(minPriceParam);
+      filtered = filtered.filter(p => p.price >= minPrice);
+    }
+
+    if (maxPriceParam) {
+      const maxPrice = parseFloat(maxPriceParam);
+      filtered = filtered.filter(p => p.price <= maxPrice);
+    }
 
     if (searchQuery) {
       filtered = filtered.filter(p =>
@@ -91,17 +119,28 @@ export default function CategoryProducts() {
     );
   }
 
+  const getPageTitle = () => {
+    if (minPriceParam && maxPriceParam) {
+      return `Products ₹${minPriceParam} - ₹${maxPriceParam}`;
+    } else if (minPriceParam) {
+      return `Products Above ₹${minPriceParam}`;
+    } else if (maxPriceParam) {
+      return `Products Under ₹${maxPriceParam}`;
+    }
+    return categoryName;
+  };
+
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="bg-primary text-primary-foreground p-4">
         <div className="max-w-screen-xl mx-auto">
-          <Link to="/categories">
+          <Link to={categoryId ? "/categories" : "/"}>
             <Button variant="ghost" size="sm" className="mb-2 text-primary-foreground hover:bg-primary-foreground/10">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Categories
+              {categoryId ? 'Back to Categories' : 'Back to Home'}
             </Button>
           </Link>
-          <h1 className="text-xl font-bold">{categoryName}</h1>
+          <h1 className="text-xl font-bold">{getPageTitle()}</h1>
         </div>
       </div>
 
