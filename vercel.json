@@ -1,9 +1,6 @@
-
 {
-  "build": {
-    "buildCommand": "vite build"
-  },
-  "framework": "vite",
+  "buildCommand": "vite build",
+  "outputDirectory": "dist",
   "rewrites": [
     {
       "source": "/(.*)",
