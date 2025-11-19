@@ -36,8 +36,8 @@ export default function AdminProducts() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -89,30 +89,46 @@ export default function AdminProducts() {
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
+    const totalImages = previewUrls.length + files.length;
+    if (totalImages > 5) {
+      toast.error('Maximum 5 images allowed');
       return;
     }
 
-    if (file.size > 1024 * 1024) {
-      toast.error('Image must be smaller than 1MB');
-      return;
+    const validFiles: File[] = [];
+    const newPreviews: string[] = [];
+
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) {
+        toast.error(`${file.name} is not an image file`);
+        continue;
+      }
+
+      if (file.size > 1024 * 1024) {
+        toast.error(`${file.name} must be smaller than 1MB`);
+        continue;
+      }
+
+      validFiles.push(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        newPreviews.push(reader.result as string);
+        if (newPreviews.length === validFiles.length) {
+          setPreviewUrls(prev => [...prev, ...newPreviews]);
+        }
+      };
+      reader.readAsDataURL(file);
     }
 
-    setSelectedFile(file);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviewUrl(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    setSelectedFiles(prev => [...prev, ...validFiles]);
   };
 
-  const handleRemoveImage = () => {
-    setSelectedFile(null);
-    setPreviewUrl('');
+  const handleRemoveImage = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviewUrls(prev => prev.filter((_, i) => i !== index));
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -121,12 +137,15 @@ export default function AdminProducts() {
   const handleSubmit = async (data: ProductFormData) => {
     try {
       setUploading(true);
-      let imageUrl: string | null = null;
+      const imageUrls: string[] = [];
 
-      if (selectedFile) {
-        imageUrl = await db.storage.uploadProductImage(selectedFile);
-      } else if (editingProduct) {
-        imageUrl = editingProduct.image_urls?.[0] || null;
+      if (selectedFiles.length > 0) {
+        for (const file of selectedFiles) {
+          const url = await db.storage.uploadProductImage(file);
+          imageUrls.push(url);
+        }
+      } else if (editingProduct && editingProduct.image_urls) {
+        imageUrls.push(...editingProduct.image_urls);
       }
 
       const productData = {
@@ -134,17 +153,19 @@ export default function AdminProducts() {
         description: data.description || null,
         price: parseFloat(data.price),
         category_id: data.category_id || null,
-        image_urls: imageUrl ? [imageUrl] : null,
+        image_urls: imageUrls.length > 0 ? imageUrls : null,
         stock_quantity: parseInt(data.stock_quantity),
         is_active: true,
       };
 
       if (editingProduct) {
-        if (selectedFile && editingProduct.image_urls?.[0]) {
-          try {
-            await db.storage.deleteProductImage(editingProduct.image_urls[0]);
-          } catch (error) {
-            console.error('Error deleting old image:', error);
+        if (selectedFiles.length > 0 && editingProduct.image_urls) {
+          for (const oldUrl of editingProduct.image_urls) {
+            try {
+              await db.storage.deleteProductImage(oldUrl);
+            } catch (error) {
+              console.error('Error deleting old image:', error);
+            }
           }
         }
         await db.products.update(editingProduct.id, productData);
@@ -156,7 +177,8 @@ export default function AdminProducts() {
       setDialogOpen(false);
       form.reset();
       setEditingProduct(null);
-      handleRemoveImage();
+      setSelectedFiles([]);
+      setPreviewUrls([]);
       loadData();
     } catch (error) {
       console.error('Error saving product:', error);
@@ -175,8 +197,8 @@ export default function AdminProducts() {
       category_id: product.category_id || '',
       stock_quantity: product.stock_quantity.toString(),
     });
-    if (product.image_urls?.[0]) {
-      setPreviewUrl(product.image_urls[0]);
+    if (product.image_urls && product.image_urls.length > 0) {
+      setPreviewUrls(product.image_urls);
     }
     setDialogOpen(true);
   };
@@ -304,39 +326,49 @@ export default function AdminProducts() {
                     )}
                   />
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Product Image</label>
+                    <label className="text-sm font-medium">Product Images (Max 5)</label>
                     <div className="flex flex-col gap-3">
-                      {previewUrl ? (
-                        <div className="relative w-full h-48 border rounded-lg overflow-hidden bg-muted">
-                          <img
-                            src={previewUrl}
-                            alt="Preview"
-                            className="w-full h-full object-contain"
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            className="absolute top-2 right-2"
-                            onClick={handleRemoveImage}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
+                      {previewUrls.length > 0 && (
+                        <div className="grid grid-cols-2 gap-3">
+                          {previewUrls.map((url, index) => (
+                            <div key={index} className="relative w-full h-32 border rounded-lg overflow-hidden bg-muted">
+                              <img
+                                src={url}
+                                alt={`Preview ${index + 1}`}
+                                className="w-full h-full object-contain"
+                              />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="absolute top-1 right-1 h-6 w-6"
+                                onClick={() => handleRemoveImage(index)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
                         </div>
-                      ) : (
+                      )}
+                      {previewUrls.length < 5 && (
                         <div
-                          className="w-full h-48 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/50 transition-colors"
+                          className="w-full h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/50 transition-colors"
                           onClick={() => fileInputRef.current?.click()}
                         >
-                          <ImageIcon className="h-12 w-12 text-muted-foreground" />
-                          <p className="text-sm text-muted-foreground">Click to upload image</p>
-                          <p className="text-xs text-muted-foreground">Max size: 1MB</p>
+                          <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                          <p className="text-sm text-muted-foreground">
+                            Click to upload {previewUrls.length > 0 ? 'more' : ''} images
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {previewUrls.length}/5 images • Max 1MB each
+                          </p>
                         </div>
                       )}
                       <input
                         ref={fileInputRef}
                         type="file"
                         accept="image/*"
+                        multiple
                         onChange={handleFileSelect}
                         className="hidden"
                       />
@@ -353,7 +385,8 @@ export default function AdminProducts() {
                         setDialogOpen(false);
                         form.reset();
                         setEditingProduct(null);
-                        handleRemoveImage();
+                        setSelectedFiles([]);
+                        setPreviewUrls([]);
                       }}
                       disabled={uploading}
                     >

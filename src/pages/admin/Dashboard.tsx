@@ -158,54 +158,54 @@ export default function AdminDashboard() {
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid sm:grid-cols-2 gap-3">
               <Button
                 variant="outline"
-                className="h-20 flex flex-col gap-2"
+                className="h-24 flex flex-col gap-2"
                 onClick={() => navigate('/admin/products')}
               >
-                <Package className="h-6 w-6" />
-                <span>Manage Products</span>
+                <Package className="h-8 w-8" />
+                <span className="text-base font-semibold">Manage Products</span>
               </Button>
               <Button
                 variant="outline"
-                className="h-20 flex flex-col gap-2"
+                className="h-24 flex flex-col gap-2"
                 onClick={() => navigate('/admin/categories')}
               >
-                <Grid3x3 className="h-6 w-6" />
-                <span>Manage Categories</span>
+                <Grid3x3 className="h-8 w-8" />
+                <span className="text-base font-semibold">Manage Categories</span>
               </Button>
               <Button
                 variant="outline"
-                className="h-20 flex flex-col gap-2"
+                className="h-24 flex flex-col gap-2"
                 onClick={() => navigate('/admin/orders')}
               >
-                <ShoppingCart className="h-6 w-6" />
-                <span>Manage Orders</span>
+                <ShoppingCart className="h-8 w-8" />
+                <span className="text-base font-semibold">Manage Orders</span>
               </Button>
               <Button
                 variant="outline"
-                className="h-20 flex flex-col gap-2"
+                className="h-24 flex flex-col gap-2"
                 onClick={() => navigate('/admin/returns')}
               >
-                <RotateCcw className="h-6 w-6" />
-                <span>Manage Returns</span>
+                <RotateCcw className="h-8 w-8" />
+                <span className="text-base font-semibold">Manage Returns</span>
               </Button>
               <Button
                 variant="outline"
-                className="h-20 flex flex-col gap-2"
+                className="h-24 flex flex-col gap-2"
                 onClick={() => navigate('/admin/promotions')}
               >
-                <TrendingUp className="h-6 w-6" />
-                <span>Manage Promotions</span>
+                <TrendingUp className="h-8 w-8" />
+                <span className="text-base font-semibold">Manage Promotions</span>
               </Button>
               <Button
                 variant="outline"
-                className="h-20 flex flex-col gap-2"
+                className="h-24 flex flex-col gap-2"
                 onClick={() => navigate('/account')}
               >
-                <Users className="h-6 w-6" />
-                <span>My Account</span>
+                <Users className="h-8 w-8" />
+                <span className="text-base font-semibold">My Account</span>
               </Button>
             </div>
           </CardContent>
