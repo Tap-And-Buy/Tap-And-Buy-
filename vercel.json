@@ -1,4 +1,4 @@
-// vercel.json (Update this file)
+
 {
   "build": {
     "buildCommand": "vite build"
