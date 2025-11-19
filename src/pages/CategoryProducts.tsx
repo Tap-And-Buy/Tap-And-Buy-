@@ -22,6 +22,7 @@ export default function CategoryProducts() {
   const maxPriceParam = searchParams.get('maxPrice');
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [recommendedProducts, setRecommendedProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState(searchParam || '');
   const [sortBy, setSortBy] = useState('name');
   const [loading, setLoading] = useState(true);
@@ -109,6 +110,19 @@ export default function CategoryProducts() {
     });
 
     setFilteredProducts(filtered);
+
+    if (filtered.length === 0 && searchQuery) {
+      const recommended = products
+        .filter(p => !searchQuery || (
+          !p.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+          !p.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        ))
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 8);
+      setRecommendedProducts(recommended);
+    } else {
+      setRecommendedProducts([]);
+    }
   };
 
   if (loading) {
@@ -172,15 +186,33 @@ export default function CategoryProducts() {
         </Card>
 
         {filteredProducts.length === 0 ? (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <Grid3x3 className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <h2 className="text-xl font-semibold mb-2">No products found</h2>
-              <p className="text-muted-foreground">
-                {searchQuery ? 'Try a different search term' : 'No products available in this category'}
-              </p>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <Card>
+              <CardContent className="p-12 text-center">
+                <Grid3x3 className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                <h2 className="text-xl font-semibold mb-2">No products found</h2>
+                <p className="text-muted-foreground">
+                  {searchQuery ? 'Try a different search term' : 'No products available in this category'}
+                </p>
+              </CardContent>
+            </Card>
+
+            {recommendedProducts.length > 0 && (
+              <div>
+                <h2 className="text-xl font-bold mb-4">Recommended Products</h2>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {recommendedProducts.map(product => (
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      isInWishlist={wishlistProductIds.includes(product.id)}
+                      onWishlistChange={loadWishlist}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredProducts.map(product => (
