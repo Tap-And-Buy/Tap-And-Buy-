@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { db } from '@/db/api';
 import type { Product, PromotionalImage } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,6 +15,7 @@ import logoImg from '/logo.png';
 
 export default function Home() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [promotions, setPromotions] = useState<PromotionalImage[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
@@ -88,7 +89,7 @@ export default function Home() {
       await db.searchHistory.add(searchTerm);
     }
 
-    window.location.href = `/categories?search=${encodeURIComponent(searchTerm)}`;
+    navigate(`/category-products?search=${encodeURIComponent(searchTerm)}`);
   };
 
   if (loading) {
@@ -215,7 +216,7 @@ export default function Home() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold">Under ₹20</h2>
-              <Link to="/categories?maxPrice=20">
+              <Link to="/category-products?maxPrice=20">
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
@@ -237,7 +238,7 @@ export default function Home() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold">₹20 - ₹50</h2>
-              <Link to="/categories?minPrice=20&maxPrice=50">
+              <Link to="/category-products?minPrice=20&maxPrice=50">
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
@@ -259,7 +260,7 @@ export default function Home() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold">₹50 - ₹100</h2>
-              <Link to="/categories?minPrice=50&maxPrice=100">
+              <Link to="/category-products?minPrice=50&maxPrice=100">
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
@@ -281,7 +282,7 @@ export default function Home() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold">₹100 - ₹200</h2>
-              <Link to="/categories?minPrice=100&maxPrice=200">
+              <Link to="/category-products?minPrice=100&maxPrice=200">
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
@@ -303,7 +304,7 @@ export default function Home() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold">₹200 - ₹500</h2>
-              <Link to="/categories?minPrice=200&maxPrice=500">
+              <Link to="/category-products?minPrice=200&maxPrice=500">
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
@@ -325,7 +326,7 @@ export default function Home() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold">₹500 - ₹800</h2>
-              <Link to="/categories?minPrice=500&maxPrice=800">
+              <Link to="/category-products?minPrice=500&maxPrice=800">
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
@@ -347,7 +348,7 @@ export default function Home() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold">₹800 - ₹1000</h2>
-              <Link to="/categories?minPrice=800&maxPrice=1000">
+              <Link to="/category-products?minPrice=800&maxPrice=1000">
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
@@ -369,7 +370,7 @@ export default function Home() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold">Above ₹1000</h2>
-              <Link to="/categories?minPrice=1000">
+              <Link to="/category-products?minPrice=1000">
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
