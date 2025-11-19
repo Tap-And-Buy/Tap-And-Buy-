@@ -24,24 +24,28 @@ When opening the website, three options are displayed:
 **Login Credentials:** Embedded in code with bcrypt encryption (credentials to be provided separately)
 
 **Capabilities:**
-- Add, edit, and remove product categories and products
-- Add and manage homepage promotional images
+- Add, edit, and remove product categories with category image upload (one image per category for visual identification)
+- Add, edit, and remove products with up to 5 image uploads per product
+- Add and manage homepage promotional images (6-7 images upload capacity)
 - Change application logo
 - View all customer orders with filters (newest, oldest, high price, low price, order ID search)
 - Manage return/refund requests with filters (newest, oldest)\n- Handle customer feedback and support messages
 - Enter tracking details and order information manually
 - Approve or reject order cancellation requests
 - Access order management dashboard
+- Manage Products, Manage Returns, and Manage Categories sections displayed in two-row layout
 
 ### 2.3 Customer Role
 **Registration & Login:**
 - Register using email or phone number
 - OTP verification via email or phone (customer selects preferred method)
 - Login with registered credentials
+- Logout confirmation: When customer clicks logout button, a confirmation popup appears asking'Are you sure you want to logout?' with Yes/No options. Logout only proceeds if Yes is selected.
 
 **Capabilities:**
 - Browse and search products with search history display
-- View product details (images, description, price, offers)
+- Search recommendations: When searching for products (e.g., 'soap stand'), display recommended search titles related to the query under the search bar
+- Intelligent search results: Display products matching search queries (e.g., 'products under 50 rupees' shows items under₹50). If search is unrelated, analyze and display relevant products. Eliminate404 error pages for searches.\n- View product details (images, description, price, offers)
 - Share products via share button on product page
 - Add products to wishlist by clicking heart icon on product page
 - View and manage wishlist items from Account page
@@ -54,39 +58,58 @@ When opening the website, three options are displayed:
 - Submit order cancellation requests
 - Update password and account details with OTP verification
 - Use in-app chatbot for order inquiries
-
----
+\n---
 
 ## 3. Website Features
 
 ### 3.1 Bottom Navigation Menu
-- **Home:** Featured products, trending items, recently visited products
-- **Categories:** Browse products by category\n- **Cart:** View added items, quantities, and proceed to checkout
+- **Home:** Featured products (30 products displayed vertically in two rows), recently viewed products (10 products displayed horizontally with horizontal scrolling)\n- **Categories:** Browse products by category (displayed horizontally with horizontal scrolling)
+- **Cart:** View added items, quantities, and proceed to checkout
 - **Account:** Login, profile management, order history, saved addresses, wishlist access
 - **Customer Care:** Order inquiries and support\n\n### 3.2 Product Management
-- Admin can add product categories\n- Admin can add products with images, descriptions, and pricing
-- No pre-populated product list
-- Dummy products for initial testing (to be removed before publishing)
+- Admin can add product categories with one category image upload for visual identification
+- Admin can add products with up to 5 image uploads per product
+- Admin can add images, descriptions, and pricing\n- No pre-populated product list\n- Dummy products for initial testing (to be removed before publishing)
 
-### 3.3 Product Interaction Features
+### 3.3 Promotional Content Management
+- Admin can upload 6-7 promotional images for homepage display
+- Promotional images managed through'Manage Promotions' section
+\n### 3.4 Product Interaction Features
 - **Share Button:** Each product displays a share button allowing customers to share product details via social media, messaging apps, or copy link
 - **Wishlist Heart Icon:** Each product displays a heart icon that customers can click to add/remove products from their wishlist
 - Heart icon fills with color when product is added to wishlist
 - Wishlist items persist across sessions for logged-in users
-\n### 3.4 Wishlist Page
+\n### 3.5 Wishlist Page
 - Wishlist option is located within the Account page
 - When customer clicks on Wishlist option in Account page, a dedicated wishlist page displays all wishlisted products
 - Wishlist page shows product images, names, prices, and heart icons
 - Customers can remove items from wishlist by clicking the filled heart icon
 - Customers can add wishlisted products to cart directly from wishlist page
 
-### 3.5 Search & History
+### 3.6 Search & Recommendations
 - Search functionality with search history display
+- Search recommendations displayed under search bar when typing (e.g., searching'soap stand' shows related title suggestions)
 - Click on search history to repeat searches
-- Recently visited products displayed on homepage
-\n### 3.6 Shopping Cart & Checkout
-- Add multiple products to cart
-- View cart summary with quantities and prices
+- Intelligent search results: Display products matching search criteria (e.g., 'products under 50 rupees' shows items under ₹50). Analyze unrelated searches and display relevant products.\n- Recently visited products displayed on homepage (10 products horizontally)
+- Related product recommendations displayed under product details page
+
+### 3.7 Price Range Exploration
+- 'Explore Products by Price' section displayed on homepage under attractive offers section
+- Horizontal scrolling layout for price range options
+- Also displayed in Categories section horizontally
+- Price ranges:\n  - Under ₹20\n  - Under ₹50 (shows products₹20-₹50)
+  - Under ₹100 (shows products ₹50-₹100)\n  - Under ₹200 (shows products ₹100-₹200)
+  - Under ₹500 (shows products ₹200-₹500)
+  - Under ₹800 (shows products ₹500-₹800)
+  - Under ₹1000 (shows products ₹800-₹1000)
+  - Above ₹1000\n- Clicking each price range displays products within that specific range
+
+### 3.8 Offers Display
+- All available offers (₹40 off on₹700, ₹100 off on ₹1200, ₹150 off on ₹2500) displayed attractively on homepage
+- Offers section positioned prominently with impressive visual design
+- Offers displayed before'Explore Products by Price' section
+\n### 3.9 Shopping Cart & Checkout
+- Add multiple products to cart\n- View cart summary with quantities and prices
 - Direct'Buy Now' option for immediate purchase
 - Select delivery address from saved addresses
 - Apply available offers during checkout
@@ -96,9 +119,7 @@ When opening the website, three options are displayed:
 
 ### 4.1 Payment Methods
 - Prepaid payments only (no Cash on Delivery)
-- Supported methods: Paytm, GPay, UPI, Debit Card, Credit Card\n- Payment gateway integration required
-
-### 4.2 Payment Process
+- Supported methods: Paytm, GPay, UPI, Debit Card, Credit Card\n- Payment gateway integration required\n\n### 4.2 Payment Process
 - Use provided UPI QR code (1000074194.jpg) with UPI ID: gokul-rv@indianbank\n- Order amount automatically displayed in selected payment app
 - Customer completes payment in payment app
 - Customer copies reference number from payment app
@@ -171,30 +192,40 @@ When opening the website, three options are displayed:
 - OTP verification for registration and password updates
 - Bcrypt encryption for admin credentials
 - Secure admin login embedded in code
+- Logout confirmation popup to prevent accidental logout
 
 ### 8.2 Database Structure
 - Users (customers and admin)
-- Products and categories
+- Products and categories (with multiple image support)
+- Category images (one per category)
 - Orders and order tracking
 - Addresses\n- Wishlist items
 - Feedback and support tickets
 - Search history
 - Return/refund requests
-
+- Promotional images (6-7 images)\n
 ### 8.3 Admin Dashboard
-- Product and category management
-- Order management with filtering
-- Return request management
+- Product and category management (up to 5 images per product, 1 image per category)
+- Manage Products, Manage Returns, Manage Categories displayed in two-row layout
+- Order management with filtering\n- Return request management
 - Homepage content management
-- Customer support interface
+- Promotional images management (6-7 images upload)\n- Customer support interface
 
 ### 8.4 Payment Integration
 - UPI payment gateway\n- Paytm, GPay integration
 - Razorpay or similar payment processor
 - Reference number verification system
+\n### 8.5 Search & Recommendation System
+- Intelligent search with query analysis
+- Search recommendations under search bar
+- Related product recommendations on product detail pages
+- Price range filtering and display
+- Search history tracking
+- Elimination of 404 errors for product searches
 
-### 8.5 Responsive Design
-- Mobile-friendly interface\n- Responsive layout for all screen sizes
+### 8.6 Responsive Design
+- Mobile-friendly interface
+- Responsive layout for all screen sizes
 - Optimized navigation for mobile devices
 \n---
 
@@ -225,12 +256,18 @@ When opening the website, three options are displayed:
 - Subtle shadows for depth and element separation
 - Heart icon in green when product is wishlisted, outlined when not
 - Share icon positioned consistently on all product cards
+- Attractive and impressive offers display section on homepage
+- Horizontal scrolling layout for price range exploration and categories
 
 ### 10.3 Layout Style
 - Grid-based product layout for easy browsing
 - Bottom navigation bar for mobile-first experience
 - Clean white backgrounds with green interactive elements
 - Spacious layout with adequate padding for readability
+- Featured products:30 products vertically in two rows
+- Recently viewed products: 10 products horizontally with scrolling
+- Price range options: horizontal scrolling layout
+- Two-row layout for admin management sections (Manage Products, Manage Returns, Manage Categories)
 \n---
 
 ## 11. Reference Images
