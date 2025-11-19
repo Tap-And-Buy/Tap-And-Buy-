@@ -23,7 +23,9 @@ const productSchema = z.object({
   description: z.string().min(10, 'Description must be at least 10 characters'),
   price: z.string().min(1, 'Price is required'),
   category_id: z.string().min(1, 'Category is required'),
-  stock_quantity: z.string().min(1, 'Stock is required'),
+  stock_quantity: z.enum(['in_stock', 'out_of_stock'], {
+    required_error: 'Stock status is required',
+  }),
 });
 
 type ProductFormData = z.infer<typeof productSchema>;
@@ -32,6 +34,8 @@ export default function AdminProducts() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -48,13 +52,26 @@ export default function AdminProducts() {
       description: '',
       price: '',
       category_id: '',
-      stock_quantity: '',
+      stock_quantity: 'in_stock' as const,
     },
   });
 
   useEffect(() => {
     checkAdminAndLoadData();
   }, [user]);
+
+  useEffect(() => {
+    if (searchTerm.trim()) {
+      const filtered = products.filter(product =>
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        categories.find(c => c.id === product.category_id)?.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredProducts(filtered);
+    } else {
+      setFilteredProducts(products);
+    }
+  }, [searchTerm, products, categories]);
 
   const checkAdminAndLoadData = async () => {
     try {
@@ -154,7 +171,7 @@ export default function AdminProducts() {
         price: parseFloat(data.price),
         category_id: data.category_id || null,
         image_urls: imageUrls.length > 0 ? imageUrls : null,
-        stock_quantity: parseInt(data.stock_quantity),
+        stock_quantity: data.stock_quantity === 'in_stock' ? 100 : 0,
         is_active: true,
       };
 
@@ -195,7 +212,7 @@ export default function AdminProducts() {
       description: product.description || '',
       price: product.price.toString(),
       category_id: product.category_id || '',
-      stock_quantity: product.stock_quantity.toString(),
+      stock_quantity: product.stock_quantity > 0 ? 'in_stock' as const : 'out_of_stock' as const,
     });
     if (product.image_urls && product.image_urls.length > 0) {
       setPreviewUrls(product.image_urls);
@@ -227,7 +244,26 @@ export default function AdminProducts() {
       <AdminHeader title="Manage Products" />
 
       <div className="max-w-screen-xl mx-auto p-4">
-        <div className="flex justify-end mb-4">
+        <div className="flex flex-col sm:flex-row gap-4 mb-4">
+          <div className="flex-1 relative">
+            <Input
+              type="text"
+              placeholder="Search products by name, description, or category..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              className="pr-10"
+            />
+            {searchTerm && (
+              <Button
+                size="icon"
+                variant="ghost"
+                className="absolute right-0 top-0 h-full"
+                onClick={() => setSearchTerm('')}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
           <Dialog open={dialogOpen} onOpenChange={(open) => {
             setDialogOpen(open);
             if (!open) {
@@ -292,9 +328,26 @@ export default function AdminProducts() {
                       name="stock_quantity"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Stock *</FormLabel>
+                          <FormLabel>Stock Status *</FormLabel>
                           <FormControl>
-                            <Input type="number" placeholder="100" {...field} />
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                variant={field.value === 'in_stock' ? 'default' : 'outline'}
+                                className="flex-1"
+                                onClick={() => field.onChange('in_stock')}
+                              >
+                                In Stock
+                              </Button>
+                              <Button
+                                type="button"
+                                variant={field.value === 'out_of_stock' ? 'default' : 'outline'}
+                                className="flex-1"
+                                onClick={() => field.onChange('out_of_stock')}
+                              >
+                                Out of Stock
+                              </Button>
+                            </div>
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -399,17 +452,21 @@ export default function AdminProducts() {
           </Dialog>
         </div>
 
-        {products.length === 0 ? (
+        {filteredProducts.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
               <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <h2 className="text-xl font-semibold mb-2">No products yet</h2>
-              <p className="text-muted-foreground mb-4">Create your first product to start selling</p>
+              <h2 className="text-xl font-semibold mb-2">
+                {searchTerm ? 'No products found' : 'No products yet'}
+              </h2>
+              <p className="text-muted-foreground mb-4">
+                {searchTerm ? 'Try a different search term' : 'Create your first product to start selling'}
+              </p>
             </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <Card key={product.id}>
                 <CardHeader className="p-0">
                   {product.image_urls?.[0] ? (

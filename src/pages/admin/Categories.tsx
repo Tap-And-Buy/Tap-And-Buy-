@@ -9,13 +9,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Grid3x3, Plus, Edit, Trash2 } from 'lucide-react';
+import { Grid3x3, Plus, Edit, Trash2, Upload, X } from 'lucide-react';
 import { AdminHeader } from '@/components/common/AdminHeader';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { supabase } from '@/db/supabase';
 
 const categorySchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -32,6 +33,8 @@ export default function AdminCategories() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const form = useForm<CategoryFormData>({
     resolver: zodResolver(categorySchema),
@@ -92,6 +95,7 @@ export default function AdminCategories() {
       setDialogOpen(false);
       form.reset();
       setEditingCategory(null);
+      setImagePreview(null);
       loadCategories();
     } catch (error) {
       console.error('Error saving category:', error);
@@ -106,7 +110,54 @@ export default function AdminCategories() {
       description: category.description || '',
       image_url: category.image_url || '',
     });
+    setImagePreview(category.image_url);
     setDialogOpen(true);
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 1048576) {
+      toast.error('Image size must be less than 1MB');
+      return;
+    }
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast.error('Only JPEG, PNG, and WebP images are allowed');
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `category-${Date.now()}.${fileExt}`;
+      const filePath = `categories/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product_images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('product_images')
+        .getPublicUrl(filePath);
+
+      form.setValue('image_url', publicUrl);
+      setImagePreview(publicUrl);
+      toast.success('Image uploaded successfully');
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    form.setValue('image_url', '');
+    setImagePreview(null);
   };
 
   const handleDelete = async (id: string) => {
@@ -179,6 +230,54 @@ export default function AdminCategories() {
                       </FormItem>
                     )}
                   />
+
+                  <div className="space-y-2">
+                    <FormLabel>Category Image</FormLabel>
+                    {imagePreview ? (
+                      <div className="relative w-full h-40 border rounded-lg overflow-hidden">
+                        <img
+                          src={imagePreview}
+                          alt="Category preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2"
+                          onClick={handleRemoveImage}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="border-2 border-dashed rounded-lg p-6 text-center">
+                        <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground mb-2">
+                          Upload category image (Max 1MB)
+                        </p>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          onChange={handleImageUpload}
+                          disabled={uploadingImage}
+                          className="hidden"
+                          id="category-image-upload"
+                        />
+                        <label htmlFor="category-image-upload">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={uploadingImage}
+                            onClick={() => document.getElementById('category-image-upload')?.click()}
+                          >
+                            {uploadingImage ? 'Uploading...' : 'Choose Image'}
+                          </Button>
+                        </label>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="flex gap-3">
                     <Button type="submit" className="flex-1">
                       {editingCategory ? 'Update' : 'Create'}
@@ -190,6 +289,7 @@ export default function AdminCategories() {
                         setDialogOpen(false);
                         form.reset();
                         setEditingCategory(null);
+                        setImagePreview(null);
                       }}
                     >
                       Cancel
@@ -215,7 +315,15 @@ export default function AdminCategories() {
               <Card key={category.id}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Grid3x3 className="h-5 w-5" />
+                    {category.image_url ? (
+                      <img
+                        src={category.image_url}
+                        alt={category.name}
+                        className="h-10 w-10 rounded object-cover"
+                      />
+                    ) : (
+                      <Grid3x3 className="h-5 w-5" />
+                    )}
                     {category.name}
                   </CardTitle>
                 </CardHeader>
