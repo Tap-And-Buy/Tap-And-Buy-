@@ -372,7 +372,19 @@ export default function AdminProducts() {
                         <FormItem>
                           <FormLabel>Price (₹) *</FormLabel>
                           <FormControl>
-                            <Input type="number" step="0.01" placeholder="299.99" {...field} />
+                            <Input 
+                              type="text" 
+                              inputMode="decimal"
+                              placeholder="299.99" 
+                              {...field}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                // Allow only numbers and decimal point
+                                if (value === '' || /^\d*\.?\d*$/.test(value)) {
+                                  field.onChange(value);
+                                }
+                              }}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -517,7 +529,7 @@ export default function AdminProducts() {
         {filteredProducts.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
-              <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+            <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
               <h2 className="text-xl font-semibold mb-2">
                 {searchTerm ? 'No products found' : 'No products yet'}
               </h2>
