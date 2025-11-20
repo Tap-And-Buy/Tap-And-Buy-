@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Search, Tag, TrendingUp } from 'lucide-react';
+import { Search, Tag, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProductCard } from '@/components/common/ProductCard';
@@ -17,6 +17,7 @@ export default function Home() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [promotions, setPromotions] = useState<PromotionalImage[]>([]);
+  const [currentPromotionIndex, setCurrentPromotionIndex] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -56,6 +57,18 @@ export default function Home() {
     }
     return () => document.removeEventListener('click', handleClickOutside);
   }, [showSuggestions]);
+
+  useEffect(() => {
+    if (promotions.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentPromotionIndex((prevIndex) => 
+        prevIndex === promotions.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [promotions.length]);
 
   const loadData = async () => {
     try {
@@ -216,23 +229,55 @@ export default function Home() {
       <div className="max-w-screen-xl mx-auto p-4 space-y-8 pb-24">
         {promotions.length > 0 && (
           <section>
-            <Carousel className="w-full">
-              <CarouselContent>
-                {promotions.map(promo => (
-                  <CarouselItem key={promo.id}>
-                    <div className="relative aspect-[16/9] rounded-lg overflow-hidden">
-                      <img
-                        src={promo.image_url}
-                        alt={promo.title || 'Promotion'}
-                        className="w-full h-full object-cover"
+            <div className="relative w-full">
+              <div className="relative aspect-[16/9] rounded-lg overflow-hidden">
+                <img
+                  src={promotions[currentPromotionIndex].image_url}
+                  alt={promotions[currentPromotionIndex].title || 'Promotion'}
+                  className="w-full h-full object-cover transition-opacity duration-500"
+                />
+              </div>
+              
+              {promotions.length > 1 && (
+                <>
+                  {currentPromotionIndex > 0 && (
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full shadow-lg"
+                      onClick={() => setCurrentPromotionIndex(currentPromotionIndex - 1)}
+                    >
+                      <ChevronLeft className="h-6 w-6" />
+                    </Button>
+                  )}
+                  
+                  {currentPromotionIndex < promotions.length - 1 && (
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full shadow-lg"
+                      onClick={() => setCurrentPromotionIndex(currentPromotionIndex + 1)}
+                    >
+                      <ChevronRight className="h-6 w-6" />
+                    </Button>
+                  )}
+                  
+                  <div className="flex justify-center gap-2 mt-4">
+                    {promotions.map((_, index) => (
+                      <button
+                        key={index}
+                        className={`h-2 rounded-full transition-all ${
+                          index === currentPromotionIndex 
+                            ? 'w-8 bg-primary' 
+                            : 'w-2 bg-muted-foreground/30'
+                        }`}
+                        onClick={() => setCurrentPromotionIndex(index)}
                       />
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
-            </Carousel>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </section>
         )}
 
