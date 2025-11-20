@@ -3,6 +3,7 @@ import Welcome from './pages/Welcome';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import EmailConfirmation from './pages/EmailConfirmation';
+import AuthCallback from './pages/AuthCallback';
 import AdminLogin from './pages/admin/AdminLogin';
 import Home from './pages/Home';
 import Categories from './pages/Categories';
@@ -55,6 +56,12 @@ const routes: RouteConfig[] = [
     name: 'Email Confirmation',
     path: '/email-confirmation',
     element: <EmailConfirmation />,
+    visible: false,
+  },
+  {
+    name: 'Auth Callback',
+    path: '/auth/callback',
+    element: <AuthCallback />,
     visible: false,
   },
   {
