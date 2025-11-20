@@ -4,8 +4,7 @@ import { db } from '@/db/api';
 import type { Product } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { ArrowLeft, ShoppingCart, Zap, Heart, Share2 } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Zap, Heart, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProductCard } from '@/components/common/ProductCard';
@@ -21,12 +20,14 @@ export default function ProductDetail() {
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [wishlistProductIds, setWishlistProductIds] = useState<string[]>([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     if (id) {
       loadProduct(id);
       checkWishlistStatus(id);
       loadRelatedProducts();
+      setCurrentImageIndex(0);
     }
   }, [id]);
 
@@ -35,6 +36,7 @@ export default function ProductDetail() {
       setLoading(true);
       const data = await db.products.getById(productId);
       setProduct(data);
+      setCurrentImageIndex(0);
       
       if (user) {
         await db.recentlyViewed.add(productId);
@@ -88,6 +90,18 @@ export default function ProductDetail() {
       setIsInWishlist(inWishlist);
     } catch (error) {
       console.error('Error checking wishlist:', error);
+    }
+  };
+
+  const handlePreviousImage = () => {
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+  };
+
+  const handleNextImage = () => {
+    if (product?.image_urls && currentImageIndex < product.image_urls.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
     }
   };
 
@@ -214,27 +228,57 @@ export default function ProductDetail() {
         <div className="grid md:grid-cols-2 gap-8">
           <div>
             {product.image_urls && product.image_urls.length > 0 ? (
-              <Carousel className="w-full">
-                <CarouselContent>
-                  {product.image_urls.map((url, index) => (
-                    <CarouselItem key={index}>
-                      <div className="aspect-square bg-muted rounded-lg overflow-hidden">
-                        <img
-                          src={url}
-                          alt={`${product.name} - Image ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
+              <div className="relative">
+                <div className="aspect-square bg-muted rounded-lg overflow-hidden">
+                  <img
+                    src={product.image_urls[currentImageIndex]}
+                    alt={`${product.name} - Image ${currentImageIndex + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                
                 {product.image_urls.length > 1 && (
                   <>
-                    <CarouselPrevious />
-                    <CarouselNext />
+                    {currentImageIndex > 0 && (
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full shadow-lg"
+                        onClick={handlePreviousImage}
+                      >
+                        <ChevronLeft className="h-6 w-6" />
+                      </Button>
+                    )}
+                    
+                    {currentImageIndex < product.image_urls.length - 1 && (
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full shadow-lg"
+                        onClick={handleNextImage}
+                      >
+                        <ChevronRight className="h-6 w-6" />
+                      </Button>
+                    )}
                   </>
                 )}
-              </Carousel>
+                
+                {product.image_urls.length > 1 && (
+                  <div className="flex justify-center gap-2 mt-4">
+                    {product.image_urls.map((_, index) => (
+                      <button
+                        key={index}
+                        className={`h-2 rounded-full transition-all ${
+                          index === currentImageIndex 
+                            ? 'w-8 bg-primary' 
+                            : 'w-2 bg-muted-foreground/30'
+                        }`}
+                        onClick={() => setCurrentImageIndex(index)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             ) : (
               <div className="aspect-square bg-muted rounded-lg flex items-center justify-center">
                 <p className="text-muted-foreground">No Image Available</p>
