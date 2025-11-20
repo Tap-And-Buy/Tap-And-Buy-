@@ -10,6 +10,7 @@ import { Search, Grid3x3, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { ProductCard } from '@/components/common/ProductCard';
 import { useAuth } from '@/contexts/AuthContext';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 
 // Fuzzy search helper - calculates similarity between two strings
 const calculateSimilarity = (str1: string, str2: string): number => {
@@ -50,6 +51,7 @@ const calculateSimilarity = (str1: string, str2: string): number => {
 };
 
 export default function CategoryProducts() {
+  useScrollToTop();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
@@ -153,14 +155,19 @@ export default function CategoryProducts() {
         return { product: p, similarity: maxSimilarity };
       });
       
-      // Filter products with similarity > 0.5 (50% match)
+      // Filter products with similarity > 0.3 (30% match) - more lenient
       filtered = searchResults
-        .filter(result => result.similarity > 0.5)
+        .filter(result => result.similarity > 0.3)
         .sort((a, b) => b.similarity - a.similarity)
         .map(result => result.product);
     }
 
+    // Sort by stock status first (in stock first, out of stock last)
     filtered.sort((a, b) => {
+      if (a.stock_quantity === 0 && b.stock_quantity > 0) return 1;
+      if (a.stock_quantity > 0 && b.stock_quantity === 0) return -1;
+      
+      // Then apply the selected sort
       switch (sortBy) {
         case 'price-low':
           return a.price - b.price;
@@ -174,14 +181,25 @@ export default function CategoryProducts() {
 
     setFilteredProducts(filtered);
 
-    if (filtered.length === 0 && searchQuery) {
+    // Show recommended products based on search similarity
+    if (searchQuery && searchQuery.length >= 2) {
       const recommended = products
-        .filter(p => !searchQuery || (
-          !p.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !p.description?.toLowerCase().includes(searchQuery.toLowerCase())
-        ))
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 8);
+        .filter(p => {
+          const nameMatch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+          const descMatch = p.description?.toLowerCase().includes(searchQuery.toLowerCase());
+          return nameMatch || descMatch;
+        })
+        .map(p => {
+          const similarity = calculateSimilarity(
+            searchQuery.toLowerCase(),
+            p.name.toLowerCase()
+          );
+          return { product: p, similarity };
+        })
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, 8)
+        .map(item => item.product);
+      
       setRecommendedProducts(recommended);
     } else {
       setRecommendedProducts([]);

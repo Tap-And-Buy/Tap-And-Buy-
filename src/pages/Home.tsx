@@ -86,15 +86,22 @@ export default function Home() {
       setSearchHistory(historyData.map(h => h.search_term));
       setWishlistProductIds(wishlistIds);
 
+      // Sort products: in-stock first, out-of-stock last
+      const sortedProducts = [...productData].sort((a, b) => {
+        if (a.stock_quantity === 0 && b.stock_quantity > 0) return 1;
+        if (a.stock_quantity > 0 && b.stock_quantity === 0) return -1;
+        return 0;
+      });
+
       const categorizedProducts = {
-        under20: productData.filter(p => p.price < 20).slice(0, 10),
-        range20to50: productData.filter(p => p.price >= 20 && p.price < 50).slice(0, 10),
-        range50to100: productData.filter(p => p.price >= 50 && p.price < 100).slice(0, 10),
-        range100to200: productData.filter(p => p.price >= 100 && p.price < 200).slice(0, 10),
-        range200to500: productData.filter(p => p.price >= 200 && p.price < 500).slice(0, 10),
-        range500to800: productData.filter(p => p.price >= 500 && p.price < 800).slice(0, 10),
-        range800to1000: productData.filter(p => p.price >= 800 && p.price < 1000).slice(0, 10),
-        above1000: productData.filter(p => p.price >= 1000).slice(0, 10),
+        under20: sortedProducts.filter(p => p.price < 20).slice(0, 10),
+        range20to50: sortedProducts.filter(p => p.price >= 20 && p.price < 50).slice(0, 10),
+        range50to100: sortedProducts.filter(p => p.price >= 50 && p.price < 100).slice(0, 10),
+        range100to200: sortedProducts.filter(p => p.price >= 100 && p.price < 200).slice(0, 10),
+        range200to500: sortedProducts.filter(p => p.price >= 200 && p.price < 500).slice(0, 10),
+        range500to800: sortedProducts.filter(p => p.price >= 500 && p.price < 800).slice(0, 10),
+        range800to1000: sortedProducts.filter(p => p.price >= 800 && p.price < 1000).slice(0, 10),
+        above1000: sortedProducts.filter(p => p.price >= 1000).slice(0, 10),
       };
       setPriceRangeProducts(categorizedProducts);
     } catch (error) {
@@ -326,15 +333,14 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {priceRangeProducts.under20.map(product => (
-                <div key={product.id} className="flex-shrink-0 w-40">
-                  <ProductCard
-                    product={product}
-                    isInWishlist={wishlistProductIds.includes(product.id)}
-                    onWishlistChange={loadData}
-                  />
-                </div>
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isInWishlist={wishlistProductIds.includes(product.id)}
+                  onWishlistChange={loadData}
+                />
               ))}
             </div>
           </section>
@@ -348,15 +354,14 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {priceRangeProducts.range20to50.map(product => (
-                <div key={product.id} className="flex-shrink-0 w-40">
-                  <ProductCard
-                    product={product}
-                    isInWishlist={wishlistProductIds.includes(product.id)}
-                    onWishlistChange={loadData}
-                  />
-                </div>
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isInWishlist={wishlistProductIds.includes(product.id)}
+                  onWishlistChange={loadData}
+                />
               ))}
             </div>
           </section>
@@ -370,15 +375,14 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {priceRangeProducts.range50to100.map(product => (
-                <div key={product.id} className="flex-shrink-0 w-40">
-                  <ProductCard
-                    product={product}
-                    isInWishlist={wishlistProductIds.includes(product.id)}
-                    onWishlistChange={loadData}
-                  />
-                </div>
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isInWishlist={wishlistProductIds.includes(product.id)}
+                  onWishlistChange={loadData}
+                />
               ))}
             </div>
           </section>
@@ -392,15 +396,14 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {priceRangeProducts.range100to200.map(product => (
-                <div key={product.id} className="flex-shrink-0 w-40">
-                  <ProductCard
-                    product={product}
-                    isInWishlist={wishlistProductIds.includes(product.id)}
-                    onWishlistChange={loadData}
-                  />
-                </div>
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isInWishlist={wishlistProductIds.includes(product.id)}
+                  onWishlistChange={loadData}
+                />
               ))}
             </div>
           </section>
@@ -414,15 +417,14 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {priceRangeProducts.range200to500.map(product => (
-                <div key={product.id} className="flex-shrink-0 w-40">
-                  <ProductCard
-                    product={product}
-                    isInWishlist={wishlistProductIds.includes(product.id)}
-                    onWishlistChange={loadData}
-                  />
-                </div>
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isInWishlist={wishlistProductIds.includes(product.id)}
+                  onWishlistChange={loadData}
+                />
               ))}
             </div>
           </section>
@@ -436,15 +438,14 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {priceRangeProducts.range500to800.map(product => (
-                <div key={product.id} className="flex-shrink-0 w-40">
-                  <ProductCard
-                    product={product}
-                    isInWishlist={wishlistProductIds.includes(product.id)}
-                    onWishlistChange={loadData}
-                  />
-                </div>
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isInWishlist={wishlistProductIds.includes(product.id)}
+                  onWishlistChange={loadData}
+                />
               ))}
             </div>
           </section>
@@ -458,15 +459,14 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {priceRangeProducts.range800to1000.map(product => (
-                <div key={product.id} className="flex-shrink-0 w-40">
-                  <ProductCard
-                    product={product}
-                    isInWishlist={wishlistProductIds.includes(product.id)}
-                    onWishlistChange={loadData}
-                  />
-                </div>
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isInWishlist={wishlistProductIds.includes(product.id)}
+                  onWishlistChange={loadData}
+                />
               ))}
             </div>
           </section>
@@ -480,15 +480,14 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {priceRangeProducts.above1000.map(product => (
-                <div key={product.id} className="flex-shrink-0 w-40">
-                  <ProductCard
-                    product={product}
-                    isInWishlist={wishlistProductIds.includes(product.id)}
-                    onWishlistChange={loadData}
-                  />
-                </div>
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isInWishlist={wishlistProductIds.includes(product.id)}
+                  onWishlistChange={loadData}
+                />
               ))}
             </div>
           </section>
@@ -497,15 +496,14 @@ export default function Home() {
         {recentlyViewed.length > 0 && (
           <section>
             <h2 className="text-2xl font-bold mb-4">Recently Viewed</h2>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               {recentlyViewed.map(product => (
-                <div key={product.id} className="flex-shrink-0 w-40">
-                  <ProductCard
-                    product={product}
-                    isInWishlist={wishlistProductIds.includes(product.id)}
-                    onWishlistChange={loadData}
-                  />
-                </div>
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isInWishlist={wishlistProductIds.includes(product.id)}
+                  onWishlistChange={loadData}
+                />
               ))}
             </div>
           </section>

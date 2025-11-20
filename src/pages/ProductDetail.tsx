@@ -8,8 +8,10 @@ import { ArrowLeft, ShoppingCart, Zap, Heart, Share2, ChevronLeft, ChevronRight 
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProductCard } from '@/components/common/ProductCard';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 
 export default function ProductDetail() {
+  useScrollToTop();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -21,6 +23,8 @@ export default function ProductDetail() {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [wishlistProductIds, setWishlistProductIds] = useState<string[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -102,6 +106,30 @@ export default function ProductDetail() {
   const handleNextImage = () => {
     if (product?.image_urls && currentImageIndex < product.image_urls.length - 1) {
       setCurrentImageIndex(currentImageIndex + 1);
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const minSwipeDistance = 50;
+    
+    if (distance > minSwipeDistance) {
+      // Swiped left - next image
+      handleNextImage();
+    } else if (distance < -minSwipeDistance) {
+      // Swiped right - previous image
+      handlePreviousImage();
     }
   };
 
@@ -229,11 +257,16 @@ export default function ProductDetail() {
           <div>
             {product.image_urls && product.image_urls.length > 0 ? (
               <div className="relative">
-                <div className="aspect-square bg-muted rounded-lg overflow-hidden">
+                <div 
+                  className="aspect-square bg-muted rounded-lg overflow-hidden"
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                >
                   <img
                     src={product.image_urls[currentImageIndex]}
                     alt={`${product.name} - Image ${currentImageIndex + 1}`}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover transition-transform duration-200"
                   />
                 </div>
                 

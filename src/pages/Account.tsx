@@ -30,8 +30,10 @@ import { User, Package, MapPin, LogOut, Shield, Heart, Lock, KeyRound } from 'lu
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/db/supabase';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 
 export default function Account() {
+  useScrollToTop();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
