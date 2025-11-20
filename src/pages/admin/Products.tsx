@@ -43,6 +43,7 @@ export default function AdminProducts() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<ProductFormData>({
@@ -107,6 +108,60 @@ export default function AdminProducts() {
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    const totalImages = previewUrls.length + files.length;
+    if (totalImages > 5) {
+      toast.error('Maximum 5 images allowed');
+      return;
+    }
+
+    const validFiles: File[] = [];
+    const newPreviews: string[] = [];
+
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) {
+        toast.error(`${file.name} is not an image file`);
+        continue;
+      }
+
+      if (file.size > 1024 * 1024) {
+        toast.error(`${file.name} must be smaller than 1MB`);
+        continue;
+      }
+
+      validFiles.push(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        newPreviews.push(reader.result as string);
+        if (newPreviews.length === validFiles.length) {
+          setPreviewUrls(prev => [...prev, ...newPreviews]);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    setSelectedFiles(prev => [...prev, ...validFiles]);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = Array.from(e.dataTransfer.files);
     if (files.length === 0) return;
 
     const totalImages = previewUrls.length + files.length;
@@ -405,12 +460,19 @@ export default function AdminProducts() {
                       )}
                       {previewUrls.length < 5 && (
                         <div
-                          className="w-full h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-muted/50 transition-colors"
+                          className={`w-full h-32 border-2 border-dashed rounded-lg flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors ${
+                            isDragging 
+                              ? 'border-primary bg-primary/10' 
+                              : 'hover:bg-muted/50'
+                          }`}
                           onClick={() => fileInputRef.current?.click()}
+                          onDragOver={handleDragOver}
+                          onDragLeave={handleDragLeave}
+                          onDrop={handleDrop}
                         >
                           <ImageIcon className="h-8 w-8 text-muted-foreground" />
                           <p className="text-sm text-muted-foreground">
-                            Click to upload {previewUrls.length > 0 ? 'more' : ''} images
+                            {isDragging ? 'Drop images here' : `Click or drag to upload ${previewUrls.length > 0 ? 'more' : ''} images`}
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {previewUrls.length}/5 images • Max 1MB each
