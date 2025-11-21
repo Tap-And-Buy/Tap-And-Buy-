@@ -18,6 +18,7 @@ import OrderDetail from './pages/OrderDetail';
 import Addresses from './pages/Addresses';
 import Wishlist from './pages/Wishlist';
 import Support from './pages/Support';
+import Policies from './pages/Policies';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/Products';
 import AdminCategories from './pages/admin/Categories';
@@ -145,6 +146,12 @@ const routes: RouteConfig[] = [
     name: 'Support',
     path: '/support',
     element: <Support />,
+    visible: false,
+  },
+  {
+    name: 'Policies',
+    path: '/policies',
+    element: <Policies />,
     visible: false,
   },
   {
