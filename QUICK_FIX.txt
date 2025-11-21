@@ -1,0 +1,41 @@
+
+                    VERCEL DEPLOYMENT FIX                         ║
+
+
+
+ FILE CONTENT (copy exactly as shown):                           │
+
+
+{
+  "buildCommand": "vite build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "installCommand": "pnpm install"
+}
+
+
+ STEPS TO FIX:                                                    │
+
+
+1. In your Git repository, create a new file called: vercel.json
+   
+2. Copy the content above into vercel.json
+
+3. Commit and push:
+   git add vercel.json
+   git commit -m "Fix Vercel deployment"
+   git push
+
+4. Vercel will automatically redeploy - it should work now! ✅
+
+
+ WHY THIS WORKS:                                                  │
+
+
+Your package.json was trying to build to /tmp/outdir, but Vercel 
+cannot access /tmp directory. This vercel.json file tells Vercel to 
+use the standard "vite build" command which outputs to "dist" 
+directory instead.
+
+
+  That's it! Just create this ONE file and push to Git.          ║
