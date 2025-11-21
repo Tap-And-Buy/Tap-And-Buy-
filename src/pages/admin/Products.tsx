@@ -529,7 +529,7 @@ export default function AdminProducts() {
         {filteredProducts.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
-            <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+              <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
               <h2 className="text-xl font-semibold mb-2">
                 {searchTerm ? 'No products found' : 'No products yet'}
               </h2>
@@ -539,7 +539,7 @@ export default function AdminProducts() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {filteredProducts.map((product) => (
               <Card key={product.id}>
                 <CardHeader className="p-0">

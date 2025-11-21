@@ -21,7 +21,7 @@ import { AdminHeader } from '@/components/common/AdminHeader';
 
 const trackingSchema = z.object({
   tracking_info: z.string().min(5, 'Tracking info must be at least 5 characters'),
-  status: z.enum(['pending', 'processing', 'shipped', 'delivered', 'cancelled']),
+  status: z.enum(['pending', 'processing', 'order_placed', 'confirmed', 'shipped', 'delivered', 'cancelled']),
 });
 
 type TrackingFormData = z.infer<typeof trackingSchema>;
@@ -169,6 +169,8 @@ export default function AdminOrders() {
     const variants: Record<OrderStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
       pending: 'secondary',
       processing: 'secondary',
+      order_placed: 'default',
+      confirmed: 'default',
       shipped: 'default',
       delivered: 'outline',
       cancelled: 'destructive',
@@ -207,11 +209,17 @@ export default function AdminOrders() {
               <SelectItem value="all">All Orders</SelectItem>
               <SelectItem value="cancellation_requested">Cancellation Requests</SelectItem>
               <SelectItem value="processing">Processing</SelectItem>
+              <SelectItem value="order_placed">Order Placed</SelectItem>
               <SelectItem value="shipped">Shipped</SelectItem>
               <SelectItem value="delivered">Delivered</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        <div className="text-sm text-muted-foreground mb-4">
+          Showing {filteredOrders.length} {filteredOrders.length === 1 ? 'order' : 'orders'}
+          {filterStatus !== 'all' && ` (filtered by ${filterStatus.replace('_', ' ')})`}
         </div>
 
         {filteredOrders.length === 0 ? (
@@ -403,6 +411,7 @@ export default function AdminOrders() {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="processing">Processing</SelectItem>
+                        <SelectItem value="order_placed">Order Placed</SelectItem>
                         <SelectItem value="shipped">Shipped</SelectItem>
                         <SelectItem value="delivered">Delivered</SelectItem>
                         <SelectItem value="cancelled">Cancelled</SelectItem>
