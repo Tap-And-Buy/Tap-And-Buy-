@@ -19,6 +19,8 @@ import type {
   ProductWithCategory,
   Wishlist,
   WishlistWithProduct,
+  FirstOrderDevice,
+  Notification,
 } from '@/types';
 
 export const db = {
@@ -1008,6 +1010,119 @@ export const db = {
         await this.add(productId);
         return true;
       }
+    },
+  },
+
+  firstOrderDevices: {
+    async checkDevice(deviceId: string): Promise<boolean> {
+      const { data, error } = await supabase
+        .from('first_order_devices')
+        .select('id')
+        .eq('device_id', deviceId)
+        .maybeSingle();
+
+      if (error) throw error;
+      return !!data;
+    },
+
+    async create(deviceId: string, orderId: string, discountApplied: number): Promise<FirstOrderDevice> {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('first_order_devices')
+        .insert({
+          device_id: deviceId,
+          user_id: user.id,
+          order_id: orderId,
+          discount_applied: discountApplied,
+        })
+        .select()
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) throw new Error('Failed to create first order device record');
+      return data;
+    },
+
+    async getByDevice(deviceId: string): Promise<FirstOrderDevice | null> {
+      const { data, error } = await supabase
+        .from('first_order_devices')
+        .select('*')
+        .eq('device_id', deviceId)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+  },
+
+  notifications: {
+    async getAll(): Promise<Notification[]> {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return Array.isArray(data) ? data : [];
+    },
+
+    async getUnread(): Promise<Notification[]> {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('is_read', false)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return Array.isArray(data) ? data : [];
+    },
+
+    async getUnreadCount(): Promise<number> {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return 0;
+
+      const { data, error } = await supabase
+        .rpc('get_unread_count');
+
+      if (error) throw error;
+      return data || 0;
+    },
+
+    async markAsRead(notificationId: string): Promise<void> {
+      const { error } = await supabase
+        .rpc('mark_notification_read', { notification_id: notificationId });
+
+      if (error) throw error;
+    },
+
+    async markAllAsRead(): Promise<void> {
+      const { error } = await supabase
+        .rpc('mark_all_notifications_read');
+
+      if (error) throw error;
+    },
+
+    async delete(notificationId: string): Promise<void> {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('notifications')
+        .delete()
+        .eq('id', notificationId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
     },
   },
 };
