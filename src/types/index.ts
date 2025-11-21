@@ -6,9 +6,10 @@ export interface Option {
 }
 
 export type UserRole = 'customer' | 'admin';
-export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
-export type ReturnStatus = 'pending' | 'approved' | 'rejected';
+export type OrderStatus = 'pending' | 'processing' | 'order_placed' | 'shipped' | 'delivered' | 'cancelled' | 'confirmed';
+export type ReturnStatus = 'pending' | 'approved' | 'rejected' | 'refunded';
 export type SupportStatus = 'open' | 'responded' | 'closed';
+export type NotificationType = 'order' | 'system' | 'promotion';
 
 export interface Profile {
   id: string;
@@ -102,6 +103,15 @@ export interface ReturnRequest {
   updated_at: string;
 }
 
+export interface FirstOrderDevice {
+  id: string;
+  device_id: string;
+  user_id: string;
+  order_id: string;
+  discount_applied: boolean;
+  created_at: string;
+}
+
 export interface SearchHistory {
   id: string;
   user_id: string;
@@ -169,4 +179,15 @@ export interface Wishlist {
 
 export interface WishlistWithProduct extends Wishlist {
   product: Product;
+}
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  title: string;
+  message: string;
+  type: NotificationType;
+  related_id: string | null;
+  is_read: boolean;
+  created_at: string;
 }
