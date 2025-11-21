@@ -7,8 +7,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Trash2, Plus, Minus, ShoppingBag } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 
 export default function Cart() {
+  useScrollToTop();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [cartItems, setCartItems] = useState<CartItemWithProduct[]>([]);
@@ -70,10 +72,23 @@ export default function Cart() {
     }, 0);
   };
 
+  const calculateTotalQuantity = () => {
+    return cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  };
+
+  const calculateQuantityDiscount = (totalQty: number) => {
+    if (totalQty >= 35) return 150;
+    if (totalQty >= 20) return 80;
+    if (totalQty >= 10) return 40;
+    return 0;
+  };
+
   const subtotal = calculateSubtotal();
+  const totalQuantity = calculateTotalQuantity();
+  const quantityDiscount = calculateQuantityDiscount(totalQuantity);
   const platformFee = 10;
-  const deliveryFee = subtotal > 500 ? 0 : 60;
-  const total = subtotal + platformFee + deliveryFee;
+  const deliveryFee = 60;
+  const total = subtotal + platformFee + deliveryFee - quantityDiscount;
 
   if (loading) {
     return (
@@ -225,7 +240,7 @@ export default function Cart() {
 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span>Subtotal ({cartItems.length} items)</span>
+                    <span>Subtotal ({totalQuantity} items)</span>
                     <span>₹{subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
@@ -234,14 +249,13 @@ export default function Cart() {
                   </div>
                   <div className="flex justify-between">
                     <span>Delivery Fee</span>
-                    <span className={deliveryFee === 0 ? 'text-primary font-semibold' : ''}>
-                      {deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`}
-                    </span>
+                    <span>₹{deliveryFee}</span>
                   </div>
-                  {subtotal <= 500 && (
-                    <p className="text-xs text-muted-foreground">
-                      Add ₹{(500 - subtotal).toFixed(2)} more for free delivery
-                    </p>
+                  {quantityDiscount > 0 && (
+                    <div className="flex justify-between text-primary font-semibold">
+                      <span>Quantity Discount ({totalQuantity}+ items)</span>
+                      <span>-₹{quantityDiscount}</span>
+                    </div>
                   )}
                 </div>
 

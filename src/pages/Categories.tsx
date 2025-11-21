@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 import { useNavigate } from 'react-router-dom';
 import { db } from '@/db/api';
 import type { Category } from '@/types';
@@ -7,6 +8,7 @@ import { Grid3x3, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Categories() {
+  useScrollToTop();
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);

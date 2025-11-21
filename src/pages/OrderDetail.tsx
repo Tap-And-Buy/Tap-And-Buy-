@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Package, MapPin, CreditCard, Truck, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -27,6 +28,7 @@ type CancellationFormData = z.infer<typeof cancellationSchema>;
 type ReturnFormData = z.infer<typeof returnSchema>;
 
 export default function OrderDetail() {
+  useScrollToTop();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();

@@ -8,8 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 
 export default function Orders() {
+  useScrollToTop();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);

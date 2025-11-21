@@ -19,6 +19,7 @@ export default function Home() {
   const [promotions, setPromotions] = useState<PromotionalImage[]>([]);
   const [currentPromotionIndex, setCurrentPromotionIndex] = useState(0);
   const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
@@ -81,6 +82,7 @@ export default function Home() {
       ]);
 
       setPromotions(promoData);
+      setAllProducts(productData);
       setProducts(productData.slice(0, 30));
       setRecentlyViewed(recentData);
       setSearchHistory(historyData.map(h => h.search_term));
@@ -116,7 +118,7 @@ export default function Home() {
     setSearchTerm(value);
     
     if (value.trim().length >= 2) {
-      const suggestions = products.filter(product => 
+      const suggestions = allProducts.filter(product => 
         product.name.toLowerCase().includes(value.toLowerCase()) ||
         product.description?.toLowerCase().includes(value.toLowerCase())
       ).slice(0, 5);
@@ -291,35 +293,28 @@ export default function Home() {
         <section className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-6">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="h-6 w-6 text-primary" />
-            <h2 className="text-2xl font-bold">Special Offers</h2>
+            <h2 className="text-2xl font-bold">All Time Offers</h2>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="border-primary/20 bg-background/50">
               <CardContent className="p-4 text-center">
                 <Tag className="h-8 w-8 mx-auto mb-2 text-primary" />
                 <p className="font-semibold text-lg">₹40 OFF</p>
-                <p className="text-sm text-muted-foreground">On orders above ₹700</p>
+                <p className="text-sm text-muted-foreground">On orders with 10+ products</p>
               </CardContent>
             </Card>
             <Card className="border-primary/20 bg-background/50">
               <CardContent className="p-4 text-center">
                 <Tag className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <p className="font-semibold text-lg">₹100 OFF</p>
-                <p className="text-sm text-muted-foreground">On orders above ₹1200</p>
+                <p className="font-semibold text-lg">₹80 OFF</p>
+                <p className="text-sm text-muted-foreground">On orders with 20+ products</p>
               </CardContent>
             </Card>
             <Card className="border-primary/20 bg-background/50">
               <CardContent className="p-4 text-center">
                 <Tag className="h-8 w-8 mx-auto mb-2 text-primary" />
                 <p className="font-semibold text-lg">₹150 OFF</p>
-                <p className="text-sm text-muted-foreground">On orders above ₹2500</p>
-              </CardContent>
-            </Card>
-            <Card className="border-primary/20 bg-background/50">
-              <CardContent className="p-4 text-center">
-                <Tag className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <p className="font-semibold text-lg">FREE DELIVERY</p>
-                <p className="text-sm text-muted-foreground">On orders above ₹500</p>
+                <p className="text-sm text-muted-foreground">On orders with 35+ products</p>
               </CardContent>
             </Card>
           </div>
@@ -333,14 +328,15 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
               {priceRangeProducts.under20.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isInWishlist={wishlistProductIds.includes(product.id)}
-                  onWishlistChange={loadData}
-                />
+                <div key={product.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
+                  <ProductCard
+                    product={product}
+                    isInWishlist={wishlistProductIds.includes(product.id)}
+                    onWishlistChange={loadData}
+                  />
+                </div>
               ))}
             </div>
           </section>
@@ -354,14 +350,15 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
               {priceRangeProducts.range20to50.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isInWishlist={wishlistProductIds.includes(product.id)}
-                  onWishlistChange={loadData}
-                />
+                <div key={product.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
+                  <ProductCard
+                    product={product}
+                    isInWishlist={wishlistProductIds.includes(product.id)}
+                    onWishlistChange={loadData}
+                  />
+                </div>
               ))}
             </div>
           </section>
@@ -375,14 +372,15 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
               {priceRangeProducts.range50to100.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isInWishlist={wishlistProductIds.includes(product.id)}
-                  onWishlistChange={loadData}
-                />
+                <div key={product.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
+                  <ProductCard
+                    product={product}
+                    isInWishlist={wishlistProductIds.includes(product.id)}
+                    onWishlistChange={loadData}
+                  />
+                </div>
               ))}
             </div>
           </section>
@@ -396,14 +394,15 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
               {priceRangeProducts.range100to200.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isInWishlist={wishlistProductIds.includes(product.id)}
-                  onWishlistChange={loadData}
-                />
+                <div key={product.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
+                  <ProductCard
+                    product={product}
+                    isInWishlist={wishlistProductIds.includes(product.id)}
+                    onWishlistChange={loadData}
+                  />
+                </div>
               ))}
             </div>
           </section>
@@ -417,14 +416,15 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
               {priceRangeProducts.range200to500.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isInWishlist={wishlistProductIds.includes(product.id)}
-                  onWishlistChange={loadData}
-                />
+                <div key={product.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
+                  <ProductCard
+                    product={product}
+                    isInWishlist={wishlistProductIds.includes(product.id)}
+                    onWishlistChange={loadData}
+                  />
+                </div>
               ))}
             </div>
           </section>
@@ -438,14 +438,15 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
               {priceRangeProducts.range500to800.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isInWishlist={wishlistProductIds.includes(product.id)}
-                  onWishlistChange={loadData}
-                />
+                <div key={product.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
+                  <ProductCard
+                    product={product}
+                    isInWishlist={wishlistProductIds.includes(product.id)}
+                    onWishlistChange={loadData}
+                  />
+                </div>
               ))}
             </div>
           </section>
@@ -459,14 +460,15 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
               {priceRangeProducts.range800to1000.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isInWishlist={wishlistProductIds.includes(product.id)}
-                  onWishlistChange={loadData}
-                />
+                <div key={product.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
+                  <ProductCard
+                    product={product}
+                    isInWishlist={wishlistProductIds.includes(product.id)}
+                    onWishlistChange={loadData}
+                  />
+                </div>
               ))}
             </div>
           </section>
@@ -480,14 +482,15 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
               {priceRangeProducts.above1000.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isInWishlist={wishlistProductIds.includes(product.id)}
-                  onWishlistChange={loadData}
-                />
+                <div key={product.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
+                  <ProductCard
+                    product={product}
+                    isInWishlist={wishlistProductIds.includes(product.id)}
+                    onWishlistChange={loadData}
+                  />
+                </div>
               ))}
             </div>
           </section>

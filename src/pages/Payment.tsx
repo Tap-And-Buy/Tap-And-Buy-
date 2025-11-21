@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 import upiQrImg from '/upi-qr.jpg';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '@/db/api';
@@ -8,14 +9,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeft, Copy, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { getDeviceFingerprint } from '@/utils/deviceFingerprint';
 
 export default function Payment() {
+  useScrollToTop();
   const navigate = useNavigate();
   const location = useLocation();
   const [paymentReference, setPaymentReference] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { cartItems, address, subtotal, platformFee, deliveryFee, discount, total } =
+  const { cartItems, address, subtotal, platformFee, deliveryFee, discount, firstOrderDiscount, total } =
     location.state || {};
 
   if (!cartItems || !address) {
@@ -60,6 +63,16 @@ export default function Payment() {
       };
 
       const order = await db.orders.create(orderData);
+
+      if (firstOrderDiscount && firstOrderDiscount > 0) {
+        try {
+          const deviceId = await getDeviceFingerprint();
+          await db.firstOrderDevices.create(deviceId, order.id, firstOrderDiscount);
+        } catch (error) {
+          console.error('Error recording first order device:', error);
+        }
+      }
+
       await db.cart.clear();
 
       toast.success('Order placed successfully!');

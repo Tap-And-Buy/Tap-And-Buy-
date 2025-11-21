@@ -15,6 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ArrowLeft, Plus, Edit, Trash2, MapPin, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 
 const addressSchema = z.object({
   full_name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -30,6 +31,7 @@ const addressSchema = z.object({
 type AddressFormData = z.infer<typeof addressSchema>;
 
 export default function Addresses() {
+  useScrollToTop();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [addresses, setAddresses] = useState<Address[]>([]);

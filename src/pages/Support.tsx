@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,6 +13,7 @@ interface Message {
 }
 
 export default function Support() {
+  useScrollToTop();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -55,11 +57,11 @@ export default function Support() {
     }
 
     if (lower.includes('discount') || lower.includes('offer')) {
-      return 'Automatic discounts available: ₹40 off on orders above ₹700, ₹100 off on orders above ₹1200, ₹150 off on orders above ₹2500. Free delivery on orders above ₹500!';
+      return 'Automatic discounts available: ₹40 off on orders with 10+ products, ₹80 off on orders with 20+ products, ₹150 off on orders with 35+ products. First order discount: 2% off!';
     }
 
     if (lower.includes('fee') || lower.includes('charge')) {
-      return 'Platform fee: ₹10 (applied to all orders). Delivery fee: ₹60 (waived for orders above ₹500).';
+      return 'Platform fee: ₹10 (applied to all orders). Delivery fee: ₹60 (applied to all orders).';
     }
 
     if (lower.includes('contact') || lower.includes('email') || lower.includes('help')) {

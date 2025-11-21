@@ -10,8 +10,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, MapPin, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
+import { getDeviceFingerprint } from '@/utils/deviceFingerprint';
 
 export default function Checkout() {
+  useScrollToTop();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [cartItems, setCartItems] = useState<CartItemWithProduct[]>([]);
@@ -19,14 +22,31 @@ export default function Checkout() {
   const [selectedAddressId, setSelectedAddressId] = useState<string>('');
   const [applyDiscount, setApplyDiscount] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isFirstOrder, setIsFirstOrder] = useState(false);
+  const [checkingFirstOrder, setCheckingFirstOrder] = useState(true);
 
   useEffect(() => {
     if (user) {
       loadData();
+      checkFirstOrder();
     } else {
       navigate('/login');
     }
   }, [user]);
+
+  const checkFirstOrder = async () => {
+    try {
+      setCheckingFirstOrder(true);
+      const deviceId = await getDeviceFingerprint();
+      const existingOrder = await db.firstOrderDevices.checkDevice(deviceId);
+      setIsFirstOrder(!existingOrder);
+    } catch (error) {
+      console.error('Error checking first order:', error);
+      setIsFirstOrder(false);
+    } finally {
+      setCheckingFirstOrder(false);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -66,18 +86,31 @@ export default function Checkout() {
     }, 0);
   };
 
+  const calculateTotalQuantity = () => {
+    return cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  };
+
+  const calculateQuantityDiscount = (totalQty: number) => {
+    if (totalQty >= 35) return 150;
+    if (totalQty >= 20) return 80;
+    if (totalQty >= 10) return 40;
+    return 0;
+  };
+
   const subtotal = calculateSubtotal();
+  const totalQuantity = calculateTotalQuantity();
   const platformFee = 10;
-  const deliveryFee = subtotal > 500 ? 0 : 60;
+  const deliveryFee = 60;
 
   let discount = 0;
   if (applyDiscount) {
-    if (subtotal > 2500) discount = 150;
-    else if (subtotal > 1200) discount = 100;
-    else if (subtotal > 700) discount = 40;
+    discount = calculateQuantityDiscount(totalQuantity);
   }
 
-  const total = subtotal + platformFee + deliveryFee - discount;
+  const firstOrderDiscount = isFirstOrder ? Math.round(subtotal * 0.02) : 0;
+  const totalDiscount = discount + firstOrderDiscount;
+
+  const total = subtotal + platformFee + deliveryFee - totalDiscount;
 
   const handleProceedToPayment = () => {
     if (!selectedAddressId) {
@@ -99,6 +132,7 @@ export default function Checkout() {
         platformFee,
         deliveryFee,
         discount,
+        firstOrderDiscount,
         total,
       },
     });
@@ -252,19 +286,32 @@ export default function Checkout() {
                   </div>
                   <div className="flex justify-between">
                     <span>Delivery Fee</span>
-                    <span className={deliveryFee === 0 ? 'text-primary font-semibold' : ''}>
-                      {deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`}
-                    </span>
+                    <span>₹{deliveryFee}</span>
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-primary">
-                      <span>Discount</span>
+                      <span>Quantity Discount ({totalQuantity}+ items)</span>
                       <span>-₹{discount}</span>
+                    </div>
+                  )}
+                  {firstOrderDiscount > 0 && (
+                    <div className="flex justify-between text-primary font-semibold">
+                      <span>First Order Discount (2%)</span>
+                      <span>-₹{firstOrderDiscount}</span>
                     </div>
                   )}
                 </div>
 
-                {subtotal > 700 && (
+                {isFirstOrder && !checkingFirstOrder && (
+                  <div className="border rounded-lg p-3 bg-primary/10">
+                    <p className="text-sm font-semibold text-primary">🎉 First Order Discount Applied!</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      You're getting 2% off on your first order (₹{firstOrderDiscount} saved)
+                    </p>
+                  </div>
+                )}
+
+                {totalQuantity >= 10 && (
                   <div className="border rounded-lg p-3 bg-muted/50">
                     <div className="flex items-start gap-2">
                       <Checkbox
@@ -274,14 +321,14 @@ export default function Checkout() {
                       />
                       <div className="flex-1">
                         <Label htmlFor="discount" className="text-sm font-medium cursor-pointer">
-                          Apply Discount
+                          Apply Quantity Discount
                         </Label>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {subtotal > 2500
-                            ? 'Get ₹150 off on orders above ₹2500'
-                            : subtotal > 1200
-                            ? 'Get ₹100 off on orders above ₹1200'
-                            : 'Get ₹40 off on orders above ₹700'}
+                          {totalQuantity >= 35
+                            ? 'Get ₹150 off on orders with 35+ products'
+                            : totalQuantity >= 20
+                            ? 'Get ₹80 off on orders with 20+ products'
+                            : 'Get ₹40 off on orders with 10+ products'}
                         </p>
                       </div>
                     </div>

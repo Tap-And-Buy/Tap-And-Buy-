@@ -7,9 +7,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ArrowLeft, Heart } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 import { ProductCard } from '@/components/common/ProductCard';
 
 export default function Wishlist() {
+  useScrollToTop();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
@@ -80,7 +82,7 @@ export default function Wishlist() {
             <p className="text-muted-foreground">
               {products.length} {products.length === 1 ? 'item' : 'items'} in your wishlist
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               {products.map(product => (
                 <ProductCard
                   key={product.id}

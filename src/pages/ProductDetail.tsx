@@ -406,7 +406,7 @@ export default function ProductDetail() {
               <CardContent className="p-4 space-y-2 text-sm">
                 <h3 className="font-semibold mb-3">Delivery Information</h3>
                 <p>• Delivery within 6-8 days</p>
-                <p>• Free delivery on orders above ₹500</p>
+                <p>• Delivery charge: ₹60</p>
                 <p>• Prepaid payment only</p>
                 <p>• Return available for damaged items (within 12 hours)</p>
               </CardContent>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { db } from '@/db/api';
 import type { Product } from '@/types';
@@ -11,44 +11,6 @@ import { toast } from 'sonner';
 import { ProductCard } from '@/components/common/ProductCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { useScrollToTop } from '@/hooks/useScrollToTop';
-
-// Fuzzy search helper - calculates similarity between two strings
-const calculateSimilarity = (str1: string, str2: string): number => {
-  const s1 = str1.toLowerCase();
-  const s2 = str2.toLowerCase();
-  
-  // Exact match
-  if (s1 === s2) return 1;
-  
-  // Contains match
-  if (s1.includes(s2) || s2.includes(s1)) return 0.8;
-  
-  // Calculate Levenshtein distance for fuzzy matching
-  const matrix: number[][] = [];
-  for (let i = 0; i <= s2.length; i++) {
-    matrix[i] = [i];
-  }
-  for (let j = 0; j <= s1.length; j++) {
-    matrix[0][j] = j;
-  }
-  for (let i = 1; i <= s2.length; i++) {
-    for (let j = 1; j <= s1.length; j++) {
-      if (s2.charAt(i - 1) === s1.charAt(j - 1)) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j - 1] + 1,
-          matrix[i][j - 1] + 1,
-          matrix[i - 1][j] + 1
-        );
-      }
-    }
-  }
-  
-  const distance = matrix[s2.length][s1.length];
-  const maxLength = Math.max(s1.length, s2.length);
-  return 1 - distance / maxLength;
-};
 
 export default function CategoryProducts() {
   useScrollToTop();
@@ -68,20 +30,7 @@ export default function CategoryProducts() {
   const [loading, setLoading] = useState(true);
   const [wishlistProductIds, setWishlistProductIds] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (categoryId) {
-      loadProducts(categoryId);
-    } else if (minPriceParam || maxPriceParam) {
-      loadAllProducts();
-    }
-    loadWishlist();
-  }, [categoryId, minPriceParam, maxPriceParam, user]);
-
-  useEffect(() => {
-    filterAndSortProducts();
-  }, [products, searchQuery, sortBy, minPriceParam, maxPriceParam]);
-
-  const loadProducts = async (catId: string) => {
+  const loadProducts = useCallback(async (catId: string) => {
     try {
       setLoading(true);
       const data = await db.products.getAll(catId);
@@ -92,9 +41,22 @@ export default function CategoryProducts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadAllProducts = async () => {
+  const loadSearchResults = useCallback(async (searchTerm: string) => {
+    try {
+      setLoading(true);
+      const data = await db.products.search(searchTerm);
+      setProducts(data);
+    } catch (error) {
+      console.error('Error searching products:', error);
+      toast.error('Failed to search products');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadAllProducts = useCallback(async () => {
     try {
       setLoading(true);
       const data = await db.products.getAll();
@@ -105,9 +67,9 @@ export default function CategoryProducts() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const loadWishlist = async () => {
+  const loadWishlist = useCallback(async () => {
     if (!user) return;
     try {
       const wishlistIds = await db.wishlist.getProductIds();
@@ -115,7 +77,22 @@ export default function CategoryProducts() {
     } catch (error) {
       console.error('Error loading wishlist:', error);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (searchParam) {
+      loadSearchResults(searchParam);
+    } else if (categoryId) {
+      loadProducts(categoryId);
+    } else if (minPriceParam || maxPriceParam) {
+      loadAllProducts();
+    }
+    loadWishlist();
+  }, [categoryId, minPriceParam, maxPriceParam, searchParam, loadProducts, loadSearchResults, loadAllProducts, loadWishlist]);
+
+  useEffect(() => {
+    filterAndSortProducts();
+  }, [products, searchQuery, sortBy, minPriceParam, maxPriceParam]);
 
   const filterAndSortProducts = () => {
     let filtered = [...products];
@@ -130,36 +107,12 @@ export default function CategoryProducts() {
       filtered = filtered.filter(p => p.price <= maxPrice);
     }
 
-    if (searchQuery) {
-      // Fuzzy search with similarity scoring
-      const searchResults = filtered.map(p => {
-        const nameWords = p.name.toLowerCase().split(' ');
-        const descWords = p.description?.toLowerCase().split(' ') || [];
-        const searchWords = searchQuery.toLowerCase().split(' ');
-        
-        let maxSimilarity = 0;
-        
-        // Check each search word against product name and description words
-        searchWords.forEach(searchWord => {
-          nameWords.forEach(nameWord => {
-            const similarity = calculateSimilarity(nameWord, searchWord);
-            maxSimilarity = Math.max(maxSimilarity, similarity);
-          });
-          
-          descWords.forEach(descWord => {
-            const similarity = calculateSimilarity(descWord, searchWord);
-            maxSimilarity = Math.max(maxSimilarity, similarity * 0.8); // Description matches weighted lower
-          });
-        });
-        
-        return { product: p, similarity: maxSimilarity };
-      });
-      
-      // Filter products with similarity > 0.3 (30% match) - more lenient
-      filtered = searchResults
-        .filter(result => result.similarity > 0.3)
-        .sort((a, b) => b.similarity - a.similarity)
-        .map(result => result.product);
+    // If there's a local search query (different from URL search param), filter by it
+    if (searchQuery && searchQuery !== searchParam) {
+      filtered = filtered.filter(p => 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     }
 
     // Sort by stock status first (in stock first, out of stock last)
@@ -189,16 +142,7 @@ export default function CategoryProducts() {
           const descMatch = p.description?.toLowerCase().includes(searchQuery.toLowerCase());
           return nameMatch || descMatch;
         })
-        .map(p => {
-          const similarity = calculateSimilarity(
-            searchQuery.toLowerCase(),
-            p.name.toLowerCase()
-          );
-          return { product: p, similarity };
-        })
-        .sort((a, b) => b.similarity - a.similarity)
-        .slice(0, 8)
-        .map(item => item.product);
+        .slice(0, 8);
       
       setRecommendedProducts(recommended);
     } else {
@@ -281,7 +225,7 @@ export default function CategoryProducts() {
             {recommendedProducts.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold mb-4">Recommended Products</h2>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {recommendedProducts.map(product => (
                     <ProductCard
                       key={product.id}
@@ -295,7 +239,7 @@ export default function CategoryProducts() {
             )}
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {filteredProducts.map(product => (
               <ProductCard
                 key={product.id}
