@@ -20,8 +20,7 @@ When opening the website, three options are displayed:
 - Admin Login
 - Customer Registration
 - Customer Login
-\n### 2.2 Admin Role
-**Login Credentials:** Embedded in code with bcrypt encryption (credentials to be provided separately)
+\n### 2.2 Admin Role\n**Login Credentials:** Embedded in code with bcrypt encryption (credentials to be provided separately)
 
 **Capabilities:**
 - Add, edit, and remove product categories with category image upload (one image per category for visual identification)
@@ -29,50 +28,72 @@ When opening the website, three options are displayed:
 - Add and manage homepage promotional images (6-7 images upload capacity)
 - Change application logo
 - View all customer orders with filters (newest, oldest, high price, low price, order ID search)
-- Manage return/refund requests with filters (newest, oldest)\n- Handle customer feedback and support messages
+- Filter orders by status: Processing, Order Placed\n- View order count for each filter status (e.g., 'Processing: 15 orders')
+- View order placement timestamp for each order
+- Manage return/refund requests with filters (newest, oldest, order ID search, reference number search)
+- View return request timestamp for each return request
+- Handle customer feedback and support messages
 - Enter tracking details and order information manually
 - Approve or reject order cancellation requests
-- Access order management dashboard
-- Manage Products, Manage Returns, and Manage Categories sections displayed in two-row layout
-
-### 2.3 Customer Role
+- Access order management dashboard with timestamp display for order placement and return requests
+- Manage Products (with device-responsive layout:2 rows on mobile, 4 rows on laptop/desktop/tablet), Manage Returns, and Manage Categories sections displayed in two-row layout
+- **Send push notifications to customers for order updates and promotional announcements**
+\n### 2.3 Customer Role
 **Registration & Login:**
 - Register using email or phone number
 - OTP verification via email or phone (customer selects preferred method)
+- Registration confirmation email with properly configured links
 - Login with registered credentials
 - Logout confirmation: When customer clicks logout button, a confirmation popup appears asking'Are you sure you want to logout?' with Yes/No options. Logout only proceeds if Yes is selected.
 
 **Capabilities:**
 - Browse and search products with search history display
-- Search recommendations: When searching for products (e.g., 'soap stand'), display recommended search titles related to the query under the search bar
-- Intelligent search results: Display products matching search queries (e.g., 'products under 50 rupees' shows items under₹50). If search is unrelated, analyze and display relevant products. Eliminate404 error pages for searches.\n- View product details (images, description, price, offers)
+- Search icon displayed inside the search bar
+- Search recommendations: When searching for products (e.g., 'soap stand'), display recommended search titles (both newly added and older products) related to the query under the search bar
+- Intelligent search results: Display products matching search queries (e.g., 'products under 50 rupees' shows items under₹50). If search is unrelated, analyze and display relevant products. If no products found, display message: 'No product was found'\n- Search results display promptly without indefinite loading
+- View product details (images, description, price, offers)
+- Product Image Navigation: For products with 2 or more images, display navigation arrows with optimized image loading (transition time under 1 second):\n  - When viewing the first image: Show right arrow at the right center side of the image
+  - When viewing middle images (2nd, 3rd, etc.): Show both left and right arrows at the left and right center sides of the image
+  - When viewing the last image: Show left arrow at the left center side of the image
+- Arrows should be clearly visible and positioned at the vertical center of the image
 - Share products via share button on product page
 - Add products to wishlist by clicking heart icon on product page
 - View and manage wishlist items from Account page
-- Add products to cart or use'Buy Now' option
-- Add and manage multiple delivery addresses
+- Add products to cart or use'Buy Now' option\n- Add and manage multiple delivery addresses
 - Select delivery address during checkout
-- Make prepaid payments only
-- View order history and order details with unique Order ID
+- Make prepaid payments only\n- View order history and order details with unique Order ID and timestamp
 - Track order status\n- Submit return requests for damaged products (within 12 hours of delivery)
-- Submit order cancellation requests
-- Update password and account details with OTP verification
+- Submit order cancellation requests\n- Password Management: Access password management in Account Settings with the following options:
+  - Change password by entering current password, new password, and confirm new password\n  - Forgot Password option: Displays below the current password field. When clicked, shows popup message: 'We will send you a changed random password to your email. Do you want to reset your password?'
+  - If user confirms, system generates and sends a random password (mix of letters and numbers) to registered email\n  - User can login with the random password and optionally change it by copying the random password into the 'current password' field and creating a new password
+- Update account details with OTP verification
 - Use in-app chatbot for order inquiries
-\n---
+- Receive email notifications for all order status changes and account activities
+- **Receive in-app push notifications for order updates, promotional offers, and important announcements**
+- **Manage notification preferences in Account Settings**
+
+---
 
 ## 3. Website Features
 
 ### 3.1 Bottom Navigation Menu
-- **Home:** Featured products (30 products displayed vertically in two rows), recently viewed products (10 products displayed horizontally with horizontal scrolling)\n- **Categories:** Browse products by category (displayed horizontally with horizontal scrolling)
+- **Home:** Featured products (30 products displayed vertically in two rows on mobile, four rows on laptop/desktop/tablet), recently viewed products (10 products displayed horizontally with horizontal scrolling)\n- **Categories:** Browse products by category (displayed horizontally with horizontal scrolling, clicking category shows products in 2 rows on mobile, 4 rows on other devices)
 - **Cart:** View added items, quantities, and proceed to checkout
-- **Account:** Login, profile management, order history, saved addresses, wishlist access
+- **Account:** Login, profile management, order history, saved addresses, wishlist access, password management, notification preferences
 - **Customer Care:** Order inquiries and support\n\n### 3.2 Product Management
 - Admin can add product categories with one category image upload for visual identification
 - Admin can add products with up to 5 image uploads per product
 - Admin can add images, descriptions, and pricing\n- No pre-populated product list\n- Dummy products for initial testing (to be removed before publishing)
-
-### 3.3 Promotional Content Management
+- **Product Listing Layout:**
+  - Mobile devices: 2 rows\n  - Laptop/Desktop/Tablet: 4 rows\n  - Applied to all product listing pages (categories, search results, admin manage products, price range results)
+\n### 3.3 Promotional Content Management
 - Admin can upload 6-7 promotional images for homepage display
+- **Auto-Rotating Promotional Images:** Promotional images automatically rotate on the homepage with the following behavior:
+  - First image displays initially
+  - After 5 seconds, automatically transitions to the second image
+  - After another 5 seconds, transitions to the third image
+  - Continues rotating through all promotional images with5-second intervals
+  - Cycles back to the first image after displaying the last image
 - Promotional images managed through'Manage Promotions' section
 \n### 3.4 Product Interaction Features
 - **Share Button:** Each product displays a share button allowing customers to share product details via social media, messaging apps, or copy link
@@ -87,25 +108,35 @@ When opening the website, three options are displayed:
 - Customers can add wishlisted products to cart directly from wishlist page
 
 ### 3.6 Search & Recommendations
-- Search functionality with search history display
-- Search recommendations displayed under search bar when typing (e.g., searching'soap stand' shows related title suggestions)
+- Search functionality with search history display and search icon
+- Search recommendations displayed under search bar when typing (e.g., searching'soap stand' shows related title suggestions including both new and old products)
 - Click on search history to repeat searches
-- Intelligent search results: Display products matching search criteria (e.g., 'products under 50 rupees' shows items under ₹50). Analyze unrelated searches and display relevant products.\n- Recently visited products displayed on homepage (10 products horizontally)
+- Intelligent search results: Display products matching search criteria (e.g., 'products under 50 rupees' shows items under ₹50). Analyze unrelated searches and display relevant products.\n- Display'No product was found' message when search yields no results
+- Optimized search performance - eliminate continuous loading issue
+- Recently visited products displayed on homepage (10 products horizontally)
 - Related product recommendations displayed under product details page
 
 ### 3.7 Price Range Exploration
 - 'Explore Products by Price' section displayed on homepage under attractive offers section
-- Horizontal scrolling layout for price range options
+- **Horizontal scrolling layout** for price range options
 - Also displayed in Categories section horizontally
-- Price ranges:\n  - Under ₹20\n  - Under ₹50 (shows products₹20-₹50)
-  - Under ₹100 (shows products ₹50-₹100)\n  - Under ₹200 (shows products ₹100-₹200)
-  - Under ₹500 (shows products ₹200-₹500)
-  - Under ₹800 (shows products ₹500-₹800)
-  - Under ₹1000 (shows products ₹800-₹1000)
-  - Above ₹1000\n- Clicking each price range displays products within that specific range
+- **Updated Price Ranges:**
+  - Under₹20\n  - ₹20 - ₹50
+  - ₹50 - ₹100
+  - ₹100 - ₹200
+  - ₹200 - ₹500
+  - ₹500 - ₹800
+  - ₹800 - ₹1000\n  - Above ₹1000
+- Clicking each price range displays products within that specific range in **horizontal scrolling layout**
+- Products displayed in horizontal scrolling format for price range results only
+- All other product listings (categories, search results, admin manage products) maintain vertical layout (2 rows mobile, 4 rows other devices)
 
 ### 3.8 Offers Display
-- All available offers (₹40 off on₹700, ₹100 off on ₹1200, ₹150 off on ₹2500) displayed attractively on homepage
+- **All-Time Offers:**
+  - 10+ products in order: ₹40 discount
+  - 20+ products in order: ₹80 discount
+  - 35+ products in order: ₹150 discount
+  - Orders above ₹499: Free delivery
 - Offers section positioned prominently with impressive visual design
 - Offers displayed before'Explore Products by Price' section
 \n### 3.9 Shopping Cart & Checkout
@@ -113,7 +144,31 @@ When opening the website, three options are displayed:
 - Direct'Buy Now' option for immediate purchase
 - Select delivery address from saved addresses
 - Apply available offers during checkout
-\n---
+- **Important Instructions Display:** Show order placement guidelines to customers during checkout process
+\n### 3.10 In-App Notification System
+- **Notification Bell Icon:** Display notification bell icon in top navigation bar with unread count badge
+- **Notification Center:** Clicking bell icon opens notification center showing all notifications
+- **Notification Types:**
+  - Order status updates (Processing, Order Placed, Shipped, Delivered, Cancelled)
+  - Return request status updates (Received, Approved, Rejected)
+  - Refund processing updates\n  - Promotional offers and discounts
+  - New product arrivals
+  - Price drop alerts for wishlisted items
+  - Admin announcements
+- **Notification Display:**
+  - Show notification icon, title, message preview, and timestamp
+  - Unread notifications highlighted with different background color
+  - Mark as read when clicked
+  - Delete individual notifications or clear all\n- **Real-Time Notifications:** Use WebSocket or Server-Sent Events for instant notification delivery
+- **Notification Preferences:** Customers can manage notification settings in Account page:\n  - Enable/disable specific notification types
+  - Choose notification delivery method (in-app only, in-app + email)\n  - Set quiet hours (no notifications during specified time)
+- **Notification Persistence:** Store notifications in database for 30 days\n- **Admin Notification Management:**
+  - Send bulk notifications to all customers
+  - Send targeted notifications to specific customer segments
+  - Schedule notifications for future delivery
+  - View notification delivery status and read rates
+
+---
 
 ## 4. Payment System
 
@@ -126,49 +181,66 @@ When opening the website, three options are displayed:
 - Customer pastes reference number in final payment step
 - Order confirmed only after successful payment
 - Unique Order ID generated automatically upon payment confirmation
+- **Timestamp recorded at order placement** (displayed in both customer order view and admin order management)
+- **Push notification sent to customer upon successful order placement**
 
 ### 4.3 Pricing & Fees
 - Platform fee: ₹10 (applied to all orders)
-- Delivery fee: ₹60 (waived for orders above ₹500)
-- Free delivery for orders above ₹500
+- Delivery fee: ₹60 (waived for orders above ₹499)
+- Free delivery for orders above ₹499
 \n### 4.4 Automatic Offers
-- Orders above ₹700:₹40 discount (if offer selected)
-- Orders above ₹1200: ₹100 discount (if offer selected)
-- Orders above ₹2500: ₹150 discount (if offer selected)
-- Discounts applied only when customer selects the offer
+- Orders with10+ products: ₹40 discount (automatically applied)
+- Orders with 20+ products: ₹80 discount (automatically applied)
+- Orders with 35+ products: ₹150 discount (automatically applied)\n- Orders above ₹499: Free delivery (automatically applied)
+
+### 4.5 First Order Discount
+- **First-time customers only:** 2% discount on first order
+- **Device-based restriction:** Discount can only be claimed once per mobile device, even if customer changes email ID
+- System tracks device identifier to prevent multiple claims
+- Discount automatically applied at checkout for eligible first orders
 
 ---
 
 ## 5. Order Management
 
-### 5.1 Order Tracking\n- Each order assigned unique Order ID
-- Order status tracking: processing, shipped, delivered\n- Admin enters tracking details manually
-- Customers can view order status in account section
+### 5.1 Order Tracking
+- Each order assigned unique Order ID
+- **Order placement timestamp recorded and displayed** in both customer order view and admin manage orders section
+- Order status tracking: Processing, Order Placed, Shipped, Delivered\n- Admin enters tracking details manually\n- Customers can view order status in account section
+- **Push notification sent for each order status change**
 
 ### 5.2 Delivery Timeline
 - Orders will be delivered within 6to 8 days after order confirmation
 - If not delivered within 8 days, it may take an extra 1to 3 days to be delivered
 \n### 5.3 Order Cancellation
 - Customer submits cancellation request\n- Request sent to admin for approval
-- Admin approves or rejects cancellation
-- Automated notification of cancellation status
-- Order activities tracked automatically
+- Admin approves or rejects cancellation\n- Automated notification of cancellation status via email and push notification
+- Order activities tracked automatically with timestamps
 
 ---
 
 ## 6. Returns & Refund Policy
 
 ### 6.1 Return Eligibility
-- Only damaged products eligible for return/refund
+- Only damaged or missing items eligible for return/refund
 - Orders below ₹200 not eligible for return or refund
 - Return request must be submitted within 12 hours after delivery
-- No general returns accepted
-
-### 6.2 Refund Process
+- **Return request timestamp recorded and displayed** in both customer return view and admin manage returns section
+- Return requests reviewed and managed within 36 hours after submission
+- No general returns accepted\n
+### 6.2 Return Process for Damaged/Missing Items
+- Customer must share unboxing video to tapandbuy.in@gmail.com with Order ID\n- Admin verifies damaged/missing product claim through video evidence
+- Products must be unused and in original packaging
+- Return requests managed within 36 hours\n- **Push notification sent when return request is received, approved, or rejected**
+\n### 6.3 Refund Process
 - Refund covers product price only (delivery fee excluded)
-- Admin verifies damaged product claim
-- Refund processed after verification
-- Admin manages return requests with filtering options
+- Admin verifies damaged product claim\n- Refunds (if approved) processed to original payment method within 7 business days after inspection
+- Admin manages return requests with filtering options (newest, oldest, order ID search, reference number search)
+- **Push notification sent when refund is processed**
+
+### 6.4 Rejected Parcel Policy
+- If customer denies delivery at doorstep, deductions apply:\n  - 2x shipping fee\n  - 10% packing fee
+- Remaining amount refunded to original payment method
 \n---
 
 ## 7. Customer Care Module
@@ -179,76 +251,180 @@ When opening the website, three options are displayed:
 - Order tracking by Order ID
 - Delivery date inquiries
 - Non-application queries receive standard message
-
-### 7.2 Agent Support
+\n### 7.2 Agent Support
 - For complex issues, customers directed to contact email
 - Email support: tapandbuy.in@gmail.com
 \n---
 
-## 8. Technical Requirements
+## 8. Email Notification System
 
-### 8.1 Authentication & Security
+### 8.1 Automated Email Notifications
+Customers receive email notifications for the following events:
+\n**Registration & Account Management:**
+- Registration confirmation with account details
+- Password change confirmation
+- Forgot password - random password delivery
+\n**Order Lifecycle:**
+- **Order Received (Processing):** 'Your order has been received. Order ID: [ID]. Order placed at: [Timestamp]. Please wait for admin to confirm your order.'
+- **Order Placed:** 'Your order has been successfully placed. Order ID: [ID]. Order placed at: [Timestamp].' + Admin description from order management
+- **Order Shipped:** Shipping confirmation with tracking details and timestamp
+- **Order Delivered:** Delivery confirmation with timestamp\n- **Order Cancelled:** Cancellation confirmation with reason (if provided) and timestamp
+\n**Returns & Refunds:**
+- Return request received confirmation with Order ID and return request timestamp
+- Return request approved/rejected notification with timestamps
+- Refund processed confirmation with amount and processing date
+
+### 8.2 Email Content Requirements
+- Include Order ID in all order-related emails
+- **Include timestamp for order placement in all order-related emails**
+- **Include timestamp for return request submission in all return-related emails**\n- Include admin-entered descriptions for order placed emails
+- Professional formatting with Tap And Buy branding
+
+---
+
+## 9. Technical Requirements
+
+### 9.1 Authentication & Security
 - JWT or session-based user authentication
 - OTP verification for registration and password updates
 - Bcrypt encryption for admin credentials
 - Secure admin login embedded in code
 - Logout confirmation popup to prevent accidental logout
+- Random password generation for forgot password functionality (alphanumeric mix)
+- Device identifier tracking for first-order discount enforcement
 
-### 8.2 Database Structure
+### 9.2 Database Structure
 - Users (customers and admin)
 - Products and categories (with multiple image support)
 - Category images (one per category)
-- Orders and order tracking
+- Orders and order tracking with **order placement timestamps**
 - Addresses\n- Wishlist items
 - Feedback and support tickets
 - Search history
-- Return/refund requests
-- Promotional images (6-7 images)\n
-### 8.3 Admin Dashboard
+- Return/refund requests with **return request timestamps**
+- Promotional images (6-7 images)\n- Password reset tokens and temporary passwords
+- Device identifiers for first-order tracking
+- Email notification logs
+- **Push notifications (notification ID, user ID, type, title, message, read status, timestamp)**
+- **Notification preferences (user ID, notification type, enabled status, delivery method)**
+
+### 9.3 Admin Dashboard
 - Product and category management (up to 5 images per product, 1 image per category)
-- Manage Products, Manage Returns, Manage Categories displayed in two-row layout
-- Order management with filtering\n- Return request management
-- Homepage content management
-- Promotional images management (6-7 images upload)\n- Customer support interface
+- Manage Products with device-responsive layout (2 rows mobile, 4 rows laptop/desktop/tablet)
+- Manage Returns with filters (newest, oldest, order ID, reference number) and **return request timestamp display**
+- Manage Categories displayed in two-row layout
+- Order management with filtering (newest, oldest, high price, low price, order ID, Processing, Order Placed)\n- Order count display for each filter status (e.g., 'Processing: 15 orders')
+- **Order placement timestamp display** for each order in admin order management
+- Return request management\n- Homepage content management\n- Promotional images management (6-7 images upload)
+- Customer support interface
+- **Notification management: Send bulk/targeted notifications, schedule notifications, view delivery statistics**
 
-### 8.4 Payment Integration
+### 9.4 Payment Integration
 - UPI payment gateway\n- Paytm, GPay integration
-- Razorpay or similar payment processor
-- Reference number verification system
-\n### 8.5 Search & Recommendation System
+- Razorpay or similar payment processor\n- Reference number verification system
+\n### 9.5 Search & Recommendation System
 - Intelligent search with query analysis
-- Search recommendations under search bar
+- Search icon display in search bar
+- Search recommendations under search bar (including both new and old products)
 - Related product recommendations on product detail pages
-- Price range filtering and display
+- Price range filtering with horizontal scrolling display for price range results
 - Search history tracking
-- Elimination of 404 errors for product searches
+- 'No product found' message display
+- Optimized search performance (eliminate continuous loading)
 
-### 8.6 Responsive Design
+### 9.6 Responsive Design
 - Mobile-friendly interface
 - Responsive layout for all screen sizes
+- Device-specific product listing layouts:\n  - Mobile: 2 rows (for categories, search results, admin manage products)\n  - Laptop/Desktop/Tablet: 4 rows (for categories, search results, admin manage products)
+  - Price range results: Horizontal scrolling layout on all devices
 - Optimized navigation for mobile devices
-\n---
+\n### 9.7 Image Navigation System
+- Dynamic arrow display based on current image position
+- **Optimized image loading:** Transition time under 1 second between images
+- Touch/swipe support for mobile devices
+- Arrow positioning at vertical center of images
+\n### 9.8 Email System
+- Reliable email delivery for registration confirmations\n- Proper URL configuration in email templates
+- Random password generation and delivery for forgot password requests
+- Email verification and link validation
+- **Automated email notifications for all order status changes with timestamps**
+- **Automated email notifications for all return status changes with timestamps**
+- Email templates for all notification types
 
-## 9. Testing & Deployment
+### 9.9 Promotional Image Carousel
+- Auto-rotation functionality with 5-second intervals
+- Smooth transitions between promotional images
+- Automatic cycling through all uploaded promotional images
+- Loop back to first image after displaying last image
+\n### 9.10 Timestamp Tracking System
+- **Record timestamp for order placement**
+- **Record timestamp for return request submission**
+- **Display order placement timestamp in customer order view**
+- **Display order placement timestamp in admin order management**\n- **Display return request timestamp in customer return view**
+- **Display return request timestamp in admin return management**
+- **Include timestamps in all order-related email notifications**
+- **Include timestamps in all return-related email notifications**
+- Timezone handling for accurate time display
 
-### 9.1 Initial Testing Phase
+### 9.11 Push Notification System
+- **Real-time notification delivery using WebSocket or Server-Sent Events (SSE)**
+- **Notification badge counter on notification bell icon**
+- **Browser notification API integration for desktop notifications (with user permission)**
+- **Notification sound alerts (optional, user-configurable)**
+- **Notification grouping by type and date**
+- **Notification expiration after 30 days**
+- **Notification delivery tracking and analytics**
+- **Fallback to polling mechanism if WebSocket connection fails**
+- **Support for notification deep linking (clicking notification navigates to relevant page)**
+
+---
+
+## 10. Testing & Deployment
+
+### 10.1 Initial Testing Phase
 - Dummy admin login credentials provided
 - Dummy customer login credentials provided
 - Sample products and data for testing
 - Owner verification before publishing
+- Test registration email links and accessibility
+- Test password management and forgot password functionality
+- Test product image navigation arrows and loading speed
+- Test promotional image auto-rotation
+- Test search functionality (including old and new products, loading performance)
+- Test device-responsive product layouts (2 rows mobile, 4 rows other devices for categories/search/admin; horizontal scrolling for price ranges)
+- **Test timestamp recording and display for orders**
+- **Test timestamp recording and display for return requests**
+- **Test email notification delivery for all scenarios with timestamps**
+- Test first-order discount and device tracking
+- Test admin filter options and order count display
+- **Test price range horizontal scrolling layout**
+- **Test order and return filtering options**
+- **Test push notification delivery for all scenarios**
+- **Test notification preferences management**
+- **Test real-time notification updates**
+- **Test notification bell icon and unread count**
+- **Test notification center functionality**
+- **Test admin notification management (bulk send, targeted send, scheduling)**
+- **Test browser notification permissions and display**
+- **Test notification deep linking**
 
-### 9.2 Production Deployment
+### 10.2 Production Deployment
 - Remove all dummy data after approval
 - Remove dummy customer login\n- Retain secure admin login
+- Verify all email links are accessible
+- Verify email notification system is operational with timestamps
+- **Verify push notification system is operational**
+- **Configure WebSocket/SSE server for production**
 - Ready for real-world publishing
 
 ---
 
-## 10. Design Style\n
-### 10.1 Color Scheme
+## 11. Design Style\n
+### 11.1 Color Scheme
 - Primary colors: White and Green (matching logo green tone)
 - Clean, fresh appearance with green accents for CTAs and highlights
-\n### 10.2 Visual Elements
+- **Notification bell icon in green with red badge for unread count**
+\n### 11.2 Visual Elements
 - Use provided logo (1000070948.jpg) consistently across pages
 - Card-based layout for product displays
 - Clear visual hierarchy with green highlights for important actions
@@ -256,20 +432,438 @@ When opening the website, three options are displayed:
 - Subtle shadows for depth and element separation
 - Heart icon in green when product is wishlisted, outlined when not
 - Share icon positioned consistently on all product cards
+- Search icon displayed inside search bar
 - Attractive and impressive offers display section on homepage
-- Horizontal scrolling layout for price range exploration and categories
-
-### 10.3 Layout Style
+- Horizontal scrolling layout for price range exploration, categories, and recently viewed products
+- **Navigation arrows:** Green-colored arrows with semi-transparent white background, positioned at vertical center of product images
+- **Promotional image transitions:** Smooth fade or slide transitions between images
+- **Notification bell icon with animated badge for new notifications**
+- **Notification center with clean card-based layout**
+- **Unread notifications highlighted with light green background**
+\n### 11.3 Layout Style
 - Grid-based product layout for easy browsing
+- Device-responsive product grids:\n  - Mobile: 2 rows (for categories, search results, admin manage products)\n  - Laptop/Desktop/Tablet: 4 rows (for categories, search results, admin manage products)
+  - **Price range results: Horizontal scrolling layout on all devices**
 - Bottom navigation bar for mobile-first experience
 - Clean white backgrounds with green interactive elements
 - Spacious layout with adequate padding for readability
-- Featured products:30 products vertically in two rows
+- Featured products:30products vertically in two rows (mobile) or four rows (other devices)
 - Recently viewed products: 10 products horizontally with scrolling
-- Price range options: horizontal scrolling layout
-- Two-row layout for admin management sections (Manage Products, Manage Returns, Manage Categories)
+- Price range options: horizontal scrolling layout\n- Two-row layout for admin management sections (Manage Products, Manage Returns, Manage Categories)
+- **Notification center: Dropdown panel from notification bell icon with scrollable list**
+
+---
+
+## 12. Reference Images
+- Logo: 1000070948.jpg\n- UPI Payment QR Code: 1000074194.jpg (UPI ID: gokul-rv@indianbank)
+- Screenshot References: 1000074574.png, 1000074575.png, 1000074573.png, 1000077497.png, 1000077496.png, 1000077505.png, 1000077504.png\n\n---
+
+## 13. Implementation Changes Summary
+
+### Modified Files and Features:
+\n**1. Returns & Refund Policy (Multiple Files)**
+- Updated return policy to require unboxing video submission
+- Added 36-hour review timeline for return requests
+- Implemented rejected parcel deduction logic (2x shipping + 10% packing fee)
+- Added product condition requirements (unused, original packaging)
+- Updated refund timeline to 7 business days after inspection
+- **Added return request timestamp recording and display**
+
+**2. Search Functionality (SearchBar.js / SearchBar.tsx, SearchResults.js / SearchResults.tsx)**
+- Added search icon to search bar
+- Fixed search algorithm to include both newly added and older products in suggestions
+- Implemented 'No product found' message display
+- Optimized search performance to eliminate continuous loading issue
+- Enhanced search result relevance algorithm
+\n**3. Homepage Offers Section (HomePage.js / HomePage.tsx,OffersDisplay.js / OffersDisplay.tsx)**
+- Updated offers to quantity-based discounts:\n  - 10+ products: ₹40 off
+  - 20+ products: ₹80 off\n  - 35+ products: ₹150 off
+- Changed free delivery threshold to ₹499
+- Updated offer display design and messaging
+\n**4. Product Listing Layout (ProductList.js / ProductList.tsx, CategoryView.js / CategoryView.tsx, PriceRangeView.js / PriceRangeView.tsx)**
+- Implemented responsive grid layout:\n  - Mobile: 2 columns (for categories, search results, admin manage products)
+  - Laptop/Desktop/Tablet: 4 columns (for categories, search results, admin manage products)
+- **Implemented horizontal scrolling layout for price range results only**
+- Applied layout to all product listing pages
+
+**5. Timestamp System (Order.js / Order.tsx, ReturnRequest.js / ReturnRequest.tsx)**
+- **Added timestamp recording for order placement**
+- **Added timestamp recording for return request submission**
+- **Implemented timestamp display in customer order view**
+- **Implemented timestamp display in admin order management**\n- **Implemented timestamp display in customer return view**
+- **Implemented timestamp display in admin return management**
+- Added timezone handling\n
+**6. Admin Order Management (AdminOrders.js / AdminOrders.tsx)**
+- Added 'Order Placed' filter option after 'Processing'\n- Implemented order count display for each filter status
+- Enhanced filter UI to show count (e.g., 'Processing: 15 orders')
+- Added combined filtering (status + sort by newest/oldest)
+- **Added order placement timestamp display for each order**
+\n**7. Admin Return Management (AdminReturns.js / AdminReturns.tsx)**
+- Added newest/oldest sorting options
+- Added order ID search functionality
+- Added reference number search functionality
+- Enhanced filter UI consistency
+- **Added return request timestamp display for each return request**
+
+**8. Product Image Navigation (ProductDetail.js / ProductDetail.tsx)**
+- Optimized image loading performance (target: under 1 second transition)
+- Implemented image preloading for adjacent images
+- Enhanced arrow click handlers for faster response
+- Added loading state management
+\n**9. Checkout Instructions (Checkout.js / Checkout.tsx)**
+- Added prominent display of order placement guidelines
+- Included return policy summary
+- Added rejected parcel policy notice
+- Implemented collapsible instructions section
+\n**10. Email Notification System (services/emailService.js, email-templates/)**
+- Created email templates for all notification types:\n  - Registration confirmation
+  - Password change\n  - Order received (processing) **with order placement timestamp**
+  - Order placed (with admin description) **with order placement timestamp**
+  - Order shipped **with timestamp**
+  - Order delivered **with timestamp**
+  - Order cancelled **with timestamp**
+  - Return request received **with return request timestamp**
+  - Return approved/rejected **with timestamps**
+  - Refund processed **with processing date**
+- Implemented automated email sending for all events
+- **Added Order ID and timestamp to all order-related emails**
+- **Added return request timestamp to all return-related emails**
+
+**11. First Order Discount System (Checkout.js / Checkout.tsx, models/User.js, models/Device.js)**
+- Implemented device identifier tracking\n- Added 2% first-order discount logic
+- Created device-based restriction to prevent multiple claims
+- Added discount display in checkout summary
+- Implemented database schema for device tracking
+
+**12. Homepage Layout (HomePage.js / HomePage.tsx, PriceRangeExplorer.js / PriceRangeExplorer.tsx)**
+- **Updated price range options to: Under₹20, ₹20-₹50, ₹50-₹100, ₹100-₹200, ₹200-₹500, ₹500-₹800, ₹800-₹1000, Above ₹1000**
+- Ensured horizontal scrolling for:\n  - Price range exploration section
+  - Recently viewed products section
+- **Ensured price range results display in horizontal scrolling layout**
+- Maintained vertical two-row layout for featured products on mobile
+- Maintained vertical four-row layout for featured products on other devices
+
+**13. Database Schema Updates (models/)**
+- **Added order_placed_timestamp field to Order model**
+- **Added return_requested_timestamp field to ReturnRequest model**
+- Created Device model for first-order tracking
+- Added email notification log table
+- Updated User model for device association
+- **Added Notification model (notification_id, user_id, type, title, message, read_status, created_at)**
+- **Added NotificationPreference model (user_id, notification_type, enabled, delivery_method)**
+\n**14. Backend API Endpoints (routes/, controllers/)**
+- **Updated order creation endpoint to record order placement timestamp**
+- **Updated return request endpoint to record return request timestamp**
+- Added device tracking endpoints
+- Added first-order discount validation endpoint
+- Enhanced search endpoint for improved performance
+- **Added email notification trigger endpoints with timestamp inclusion**
+- **Added push notification endpoints:**
+  - POST /api/notifications/send (admin sends notification)
+  - GET /api/notifications (customer fetches notifications)
+  - PUT /api/notifications/:id/read (mark notification as read)
+  - DELETE /api/notifications/:id (delete notification)
+  - DELETE /api/notifications/clear-all (clear all notifications)
+  - GET /api/notifications/preferences (get notification preferences)
+  - PUT /api/notifications/preferences (update notification preferences)
+
+**15. Push Notification System (NEW)**
+- **Created NotificationBell.js / NotificationBell.tsx component**
+  - Display bell icon with unread count badge
+  - Open notification center dropdown on click
+  - Real-time badge update\n- **Created NotificationCenter.js / NotificationCenter.tsx component**\n  - Display all notifications in scrollable list
+  - Show notification icon, title, message preview, timestamp
+  - Highlight unread notifications\n  - Mark as read on click
+  - Delete individual notifications
+  - Clear all notifications button
+- **Created NotificationPreferences.js / NotificationPreferences.tsx component**
+  - Toggle notification types on/off
+  - Select delivery method (in-app only, in-app + email)\n  - Set quiet hours
+- **Created WebSocket/SSE service (services/notificationService.js)**
+  - Establish real-time connection
+  - Listen for notification events
+  - Update notification state
+  - Handle connection errors and reconnection
+- **Created notification trigger functions (utils/notificationTriggers.js)**
+  - Trigger notifications for order status changes
+  - Trigger notifications for return status changes
+  - Trigger notifications for promotional offers
+  - Trigger notifications for admin announcements
+- **Created AdminNotificationPanel.js / AdminNotificationPanel.tsx**
+  - Send bulk notifications to all customers
+  - Send targeted notifications to customer segments
+  - Schedule notifications for future delivery
+  - View notification delivery statistics
+- **Integrated browser notification API**
+  - Request notification permission on first login
+  - Display desktop notifications for important events
+  - Handle notification click to navigate to relevant page
 \n---
 
-## 11. Reference Images
-- Logo: 1000070948.jpg\n- UPI Payment QR Code: 1000074194.jpg (UPI ID: gokul-rv@indianbank)
-- Screenshot References: 1000074574.png, 1000074575.png, 1000074573.png
+## 14. Complete Application Testing Checklist
+
+### 14.1 User Authentication & Registration
+- [ ] Customer registration with email\n- [ ] Customer registration with phone number
+- [ ] OTP verification for email registration
+- [ ] OTP verification for phone registration
+- [ ] Registration confirmation email delivery and link accessibility
+- [ ] Customer login with valid credentials
+- [ ] Customer login with invalid credentials (error handling)
+- [ ] Admin login with valid credentials
+- [ ] Admin login with invalid credentials (error handling)
+- [ ] Logout confirmation popup functionality
+- [ ] Logout cancellation (clicking'No')
+- [ ] Successful logout (clicking 'Yes')
+- [ ] Session persistence across page refreshes
+\n### 14.2 Password Management
+- [ ] Change password with correct current password
+- [ ] Change password with incorrect current password (error handling)
+- [ ] Password confirmation validation
+- [ ] Forgot password popup display
+- [ ] Random password generation and email delivery
+- [ ] Login with random password
+- [ ] Change random password to custom password
+- [ ] Password change confirmation email\n\n### 14.3 Product Browsing & Search
+- [ ] Homepage featured products display (30 products, correct layout per device)
+- [ ] Recently viewed products display (10 products, horizontal scrolling)
+- [ ] Search icon display in search bar
+- [ ] Search functionality with valid product names
+- [ ] Search suggestions display (including old and new products)
+- [ ] Search history tracking and display
+- [ ] Click on search history to repeat search
+- [ ] Intelligent search (e.g., 'products under50 rupees')
+- [ ] 'No product found' message for invalid searches
+- [ ] Search performance (no continuous loading)
+- [ ] Category browsing (horizontal scrolling)
+- [ ] Category product listing (2 rows mobile, 4 rows other devices)\n- [ ] **Price range exploration (horizontal scrolling with updated ranges: Under ₹20, ₹20-₹50, ₹50-₹100, ₹100-₹200, ₹200-₹500, ₹500-₹800, ₹800-₹1000, Above ₹1000)**
+- [ ] **Price range filtering accuracy with horizontal scrolling display**
+- [ ] Product detail page display
+- [ ] Product image navigation arrows display
+- [ ] Product image transition speed (under 1 second)
+- [ ] Product image navigation on mobile (swipe support)
+- [ ] Related product recommendations\n\n### 14.4 Wishlist & Sharing
+- [ ] Add product to wishlist (heart icon)
+- [ ] Remove product from wishlist\n- [ ] Wishlist persistence across sessions
+- [ ] Wishlist page display from Account section
+- [ ] Add to cart from wishlist page
+- [ ] Share product functionality (social media, messaging, copy link)
+- [ ] **Push notification for price drop on wishlisted items**
+\n### 14.5 Shopping Cart & Checkout
+- [ ] Add product to cart\n- [ ] Update product quantity in cart
+- [ ] Remove product from cart
+- [ ] Cart summary accuracy
+- [ ] 'Buy Now' direct purchase option
+- [ ] Add delivery address\n- [ ] Edit delivery address
+- [ ] Delete delivery address
+- [ ] Select delivery address during checkout
+- [ ] Platform fee calculation (₹10)\n- [ ] Delivery fee calculation (₹60or free above ₹499)
+- [ ] Quantity-based discount application:\n  - [ ] 10+ products: ₹40 off
+  - [ ] 20+ products: ₹80 off
+  - [ ] 35+ products: ₹150 off
+- [ ] Free delivery for orders above ₹499
+- [ ] First-order discount (2% for first-time customers)
+- [ ] Device-based first-order restriction (one per device)
+- [ ] Order placement instructions display
+- [ ] Checkout summary accuracy
+\n### 14.6 Payment Processing
+- [ ] UPI QR code display (1000074194.jpg)
+- [ ] UPI ID display (gokul-rv@indianbank)
+- [ ] Order amount display in payment app
+- [ ] Reference number input field
+- [ ] Payment confirmation with valid reference number
+- [ ] Payment rejection with invalid reference number
+- [ ] Order ID generation after successful payment
+- [ ] **Timestamp recording at order placement**
+- [ ] **Order confirmation email delivery with timestamp**
+- [ ] **Push notification sent upon successful order placement**
+\n### 14.7 Order Management (Customer)
+- [ ] Order history display
+- [ ] Order details display with Order ID
+- [ ] **Order timestamp display in customer order view**
+- [ ] Order status tracking (Processing, Order Placed, Shipped, Delivered)\n- [ ] Order cancellation request submission
+- [ ] Order cancellation confirmation email
+- [ ] Tracking details display (when provided by admin)
+- [ ] **Push notification for each order status change**
+\n### 14.8 Order Management (Admin)
+- [ ] View all orders
+- [ ] Filter orders by newest\n- [ ] Filter orders by oldest
+- [ ] Filter orders by high price
+- [ ] Filter orders by low price
+- [ ] Filter orders by Processing status
+- [ ] Filter orders by Order Placed status
+- [ ] Order count display for each filter
+- [ ] Search orders by Order ID
+- [ ] **Order placement timestamp display in admin order management**
+- [ ] Enter tracking details\n- [ ] Update order status
+- [ ] Approve order cancellation
+- [ ] Reject order cancellation
+- [ ] **Send order status update emails with timestamps**
+- [ ] **Send push notifications for order status updates**
+
+### 14.9 Returns & Refunds (Customer)
+- [ ] Submit return request within 12 hours of delivery
+- [ ] Return request blocked after 12 hours
+- [ ] Return request blocked for orders below ₹200
+- [ ] **Return request timestamp recording**
+- [ ] **Return request confirmation email with timestamp**
+- [ ] Unboxing video submission instructions
+- [ ] Return status tracking\n- [ ] **Refund confirmation email with processing date**
+- [ ] **Push notification when return request is received, approved, or rejected**
+- [ ] **Push notification when refund is processed**\n
+### 14.10 Returns & Refunds (Admin)
+- [ ] View all return requests\n- [ ] Filter returns by newest
+- [ ] Filter returns by oldest
+- [ ] Search returns by Order ID
+- [ ] Search returns by reference number
+- [ ] **Return request timestamp display in admin return management**
+- [ ] Approve return request
+- [ ] Reject return request
+- [ ] Process refund (product price only, excluding delivery fee)
+- [ ] Refund timeline (7 business days after inspection)
+- [ ] **Send return status update emails with timestamps**
+- [ ] **Send push notifications for return status updates**
+
+### 14.11 Rejected Parcel Handling
+- [ ] Deduction calculation (2x shipping + 10% packing fee)
+- [ ] Refund calculation for rejected parcels
+- [ ] Rejected parcel notification email
+\n### 14.12 Email Notification System
+- [ ] Registration confirmation email
+- [ ] Password change confirmation email
+- [ ] Forgot password email (random password)
+- [ ] **Order received email (Processing status) with order placement timestamp**
+- [ ] **Order placed email (with admin description) with order placement timestamp**
+- [ ] **Order shipped email with timestamp**
+- [ ] **Order delivered email with timestamp**
+- [ ] **Order cancelled email with timestamp**
+- [ ] **Return request received email with return request timestamp**
+- [ ] **Return approved email with timestamps**
+- [ ] **Return rejected email with timestamps**
+- [ ] **Refund processed email with processing date**
+- [ ] **Email content accuracy (Order ID, timestamps, descriptions)**
+- [ ] Email formatting and branding
+
+### 14.13 Push Notification System (NEW)
+- [ ] **Notification bell icon display in top navigation**
+- [ ] **Unread notification count badge display**
+- [ ] **Notification center opens on bell icon click**
+- [ ] **All notifications display in notification center**
+- [ ] **Unread notifications highlighted**
+- [ ] **Mark notification as read on click**
+- [ ] **Delete individual notification**
+- [ ] **Clear all notifications**
+- [ ] **Real-time notification delivery (WebSocket/SSE)**
+- [ ] **Push notification for order placement**
+- [ ] **Push notification for order status changes**
+- [ ] **Push notification for return request status**
+- [ ] **Push notification for refund processing**
+- [ ] **Push notification for promotional offers**\n- [ ] **Push notification for new product arrivals**
+- [ ] **Push notification for price drop on wishlisted items**\n- [ ] **Push notification for admin announcements**
+- [ ] **Notification preferences page access from Account**
+- [ ] **Enable/disable specific notification types**
+- [ ] **Choose notification delivery method (in-app only, in-app + email)**
+- [ ] **Set quiet hours for notifications**
+- [ ] **Browser notification permission request**
+- [ ] **Desktop notification display (with user permission)**
+- [ ] **Notification click navigates to relevant page (deep linking)**
+- [ ] **Notification sound alerts (optional, user-configurable)**
+- [ ] **Notification persistence (30 days)**
+- [ ] **Notification grouping by type and date**
+- [ ] **Admin bulk notification sending**
+- [ ] **Admin targeted notification sending (customer segments)**
+- [ ] **Admin notification scheduling**
+- [ ] **Admin notification delivery statistics**
+- [ ] **WebSocket connection error handling and reconnection**
+- [ ] **Fallback to polling if WebSocket fails**
+\n### 14.14 Admin Product Management
+- [ ] Add product category with image
+- [ ] Edit product category
+- [ ] Delete product category
+- [ ] Add product with up to 5 images
+- [ ] Edit product details
+- [ ] Delete product\n- [ ] Product listing layout (2 rows mobile, 4 rows other devices)
+- [ ] Upload promotional images (6-7 images)
+- [ ] Edit promotional images
+- [ ] Delete promotional images
+- [ ] Promotional image auto-rotation (5-second intervals)
+- [ ] Change application logo
+\n### 14.15 Customer Care & Chatbot
+- [ ] Chatbot access from bottom navigation
+- [ ] Automated responses for application queries
+- [ ] Return policy information in chatbot
+- [ ] Order tracking by Order ID in chatbot
+- [ ] Delivery date inquiries in chatbot
+- [ ] Standard message for non-application queries
+- [ ] Email support contact display
+\n### 14.16 Responsive Design
+- [ ] Mobile layout (all pages)
+- [ ] Tablet layout (all pages)
+- [ ] Laptop layout (all pages)
+- [ ] Desktop layout (all pages)\n- [ ] Product listing: 2 rows on mobile (categories, search, admin)
+- [ ] Product listing: 4 rows on laptop/desktop/tablet (categories, search, admin)
+- [ ] **Price range results: Horizontal scrolling on all devices**
+- [ ] Horizontal scrolling sections (categories, price ranges, recently viewed)
+- [ ] Bottom navigation functionality on mobile
+- [ ] Touch/swipe support for image navigation
+- [ ] **Notification bell icon responsive display**
+- [ ] **Notification center responsive layout**
+\n### 14.17 Performance & Optimization
+- [ ] Page load times (under 3 seconds)
+- [ ] Image loading optimization
+- [ ] Product image transition speed (under 1 second)\n- [ ] Search performance (no continuous loading)
+- [ ] Promotional image carousel smooth transitions
+- [ ] Database query optimization
+- [ ] API response times\n- [ ] **WebSocket/SSE connection performance**
+- [ ] **Notification delivery latency (under 2 seconds)**
+\n### 14.18 Security & Data Protection
+- [ ] Admin credentials encryption (bcrypt)
+- [ ] JWT/session token security
+- [ ] OTP expiration handling
+- [ ] Password strength validation
+- [ ] SQL injection prevention
+- [ ] XSS attack prevention
+- [ ] CSRF protection
+- [ ] Secure payment reference number handling
+- [ ] Device identifier privacy compliance
+- [ ] **WebSocket connection authentication**
+- [ ] **Notification data encryption**
+\n### 14.19 Edge Cases & Error Handling
+- [ ] Empty cart checkout attempt
+- [ ] Invalid delivery address
+- [ ] Payment failure handling
+- [ ] Network error handling
+- [ ] Session timeout handling
+- [ ] Duplicate order prevention
+- [ ] Concurrent order modification handling
+- [ ] Image upload size limits
+- [ ] Invalid file type uploads
+- [ ] Database connection failures
+- [ ] **WebSocket connection failure handling**
+- [ ] **Notification delivery failure handling**
+- [ ] **Browser notification permission denial**
+\n### 14.20 Cross-Browser Compatibility
+- [ ] Chrome (desktop and mobile)
+- [ ] Firefox (desktop and mobile)
+- [ ] Safari (desktop and mobile)
+- [ ] Edge (desktop)\n- [ ] Opera (desktop and mobile)
+- [ ] **Browser notification API compatibility**
+\n### 14.21 Final Pre-Launch Checks
+- [ ] Remove all dummy data
+- [ ] Remove dummy customer login
+- [ ] Verify admin login credentials
+- [ ] Verify email configuration
+- [ ] Verify payment gateway configuration
+- [ ] Verify UPI QR code and ID\n- [ ] Verify all email links accessibility
+- [ ] Verify logo display (1000070948.jpg)
+- [ ] Verify contact email (tapandbuy.in@gmail.com)
+- [ ] Verify all reference images
+- [ ] Database backup\n- [ ] SSL certificate installation
+- [ ] Domain configuration
+- [ ] Privacy policy and terms of service
+- [ ] GDPR compliance (if applicable)
+- [ ] **WebSocket/SSE server configuration for production**
+- [ ] **Notification system load testing**
+- [ ] Owner final approval
+
+---
+\n**End of Requirements Document**
