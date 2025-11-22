@@ -1,378 +1,347 @@
-# Implementation Changes Summary
+# Implementation Changes - Password Recovery & Anonymous Access
 
-## Overview
-This document outlines all the changes made to the e-commerce application to improve user experience, fix bugs, and add new features.
+## Summary
+
+This document outlines all the changes made to implement two major features:
+1. **Password Recovery with Email Delivery** - Temporary passwords are sent via email without displaying them in the app
+2. **Anonymous Access with Mandatory Login Triggers** - Users can browse freely but must login for specific actions
 
 ---
 
-## 1. Search Functionality Fixes
+## 1. Password Recovery and Reset
 
-### Issues Fixed
-- Search was continuously loading and not displaying results
-- Search suggestions only showed newly added products (limited to 30 items)
-- Missing search icon in search bar
+### Overview
+When a user initiates "Forgot Current Password", the application generates a temporary password and sends it to the user's registered email address. The password is **never displayed** in the app interface.
 
 ### Changes Made
 
-#### File: `src/pages/Home.tsx`
-- **Added** `allProducts` state to store all products for search suggestions
-- **Updated** `loadData()` to store all products separately: `setAllProducts(productData)`
-- **Modified** `handleSearchInput()` to use `allProducts` instead of limited `products` array
-- **Result**: Search suggestions now show all products (old and new) matching the search query
+#### A. Created Supabase Edge Function
+**File:** `supabase/functions/send-temp-password/index.ts`
 
-#### File: `src/pages/CategoryProducts.tsx`
-- **Fixed** `useEffect` dependency to load products when `searchParam` is present
-- **Added** `searchParam` to the dependency array: `[categoryId, minPriceParam, maxPriceParam, searchParam, user]`
-- **Result**: Search results now load properly and display all matching products
+**Purpose:** Handles the generation and email delivery of temporary passwords
 
-### Features
-- ✅ Search icon already present in search bar
-- ✅ "No products found" message already implemented
-- ✅ Relevant product recommendations based on similarity scoring
+**Key Features:**
+- Generates a secure random temporary password
+- Updates the user's password in Supabase Auth
+- Sends a professionally formatted HTML email with the temporary password
+- Uses Resend API for email delivery
+- Includes proper error handling and CORS support
 
----
+**Email Content:**
+- Clear subject line: "Your Temporary Password - Tap And Buy"
+- Professional HTML template with branding
+- Highlighted password in a prominent box
+- Security instructions and recommendations
+- Warning to change password after login
 
-## 2. Product Grid Layout Updates
+#### B. Updated Account Page
+**File:** `src/pages/Account.tsx`
 
-### Requirement
-- Mobile devices: 2 columns
-- Desktop/Laptop/Tablet: 4 columns
+**Changes:**
+- Modified `handleForgotPassword()` function to call the edge function instead of generating password locally
+- Removed `generateRandomPassword()` function (no longer needed)
+- Updated success message to: "A temporary password has been sent to your registered email. Please check your inbox to proceed."
+- Password is **never** shown in toast notifications or on screen
 
-### Files Modified
-
-#### `src/pages/CategoryProducts.tsx`
-- **Changed**: `grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4` 
-- **To**: `grid grid-cols-2 lg:grid-cols-4`
-- **Applied to**: Main product list and recommended products section
-
-#### `src/pages/admin/Products.tsx`
-- **Changed**: `grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`
-- **To**: `grid grid-cols-2 lg:grid-cols-4`
-- **Applied to**: Admin product management grid
-
-#### `src/pages/Wishlist.tsx`
-- **Changed**: `grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4`
-- **To**: `grid grid-cols-2 lg:grid-cols-4`
-- **Applied to**: Wishlist product grid
-
----
-
-## 3. Manual Price Input in Admin Panel
-
-### Issue Fixed
-- Price input field showed up/down arrows (number input type)
-- Users couldn't type amounts manually on laptop/PC
-
-### Changes Made
-
-#### File: `src/pages/admin/Products.tsx`
-- **Changed**: `type="number"` to `type="text"`
-- **Added**: `inputMode="decimal"` for mobile keyboard optimization
-- **Added**: Custom `onChange` handler with regex validation: `/^\d*\.?\d*$/`
-- **Result**: Users can now type prices manually while maintaining numeric validation
-
----
-
-## 4. Homepage Offers Update
-
-### Old Offers (Amount-based)
-- ₹40 OFF on orders above ₹700
-- ₹100 OFF on orders above ₹1200
-- ₹150 OFF on orders above ₹2500
-- FREE DELIVERY on orders above ₹500
-
-### New Offers (Quantity-based)
-- ₹40 OFF on orders with 10+ products
-- ₹80 OFF on orders with 20+ products
-- ₹150 OFF on orders with 35+ products
-- FREE DELIVERY on orders above ₹499
-
-### Changes Made
-
-#### File: `src/pages/Home.tsx`
-- **Updated** section title from "Special Offers" to "All Time Offers"
-- **Modified** all 4 offer cards to reflect quantity-based discounts
-- **Updated** free delivery threshold from ₹500 to ₹499
-
----
-
-## 5. Quantity-Based Discount Implementation
-
-### Cart Page
-
-#### File: `src/pages/Cart.tsx`
-- **Added** `calculateTotalQuantity()` function
-- **Added** `calculateQuantityDiscount(totalQty)` function with logic:
-  - 35+ items: ₹150 off
-  - 20+ items: ₹80 off
-  - 10+ items: ₹40 off
-- **Updated** `deliveryFee` threshold from ₹500 to ₹499
-- **Modified** total calculation: `subtotal + platformFee + deliveryFee - quantityDiscount`
-- **Updated** UI to display:
-  - Total quantity in subtotal line
-  - Quantity discount line (when applicable)
-  - Updated free delivery message threshold
-
-### Checkout Page
-
-#### File: `src/pages/Checkout.tsx`
-- **Added** `calculateTotalQuantity()` function
-- **Added** `calculateQuantityDiscount(totalQty)` function (same logic as Cart)
-- **Updated** `deliveryFee` threshold from ₹500 to ₹499
-- **Replaced** amount-based discount logic with quantity-based logic
-- **Updated** discount checkbox section:
-  - Changed condition from `subtotal > 700` to `totalQuantity >= 10`
-  - Updated label to "Apply Quantity Discount"
-  - Updated description to show quantity-based discount tiers
-- **Updated** UI to display quantity discount with item count
-
----
-
-## 6. Scroll-to-Top on Page Navigation
-
-### Implementation
-
-#### File: `src/hooks/useScrollToTop.ts` (Already Created)
+**Before:**
 ```typescript
-import { useEffect } from 'react';
-import { useLocation } from 'react-router';
-
-export function useScrollToTop() {
-  const location = useLocation();
-
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [location.pathname]);
-}
+const handleForgotPassword = async () => {
+  const randomPassword = generateRandomPassword();
+  await supabase.auth.updateUser({ password: randomPassword });
+  toast.success(`Your new password is: ${randomPassword}`); // ❌ Shows password
+};
 ```
 
-### Pages Updated (Already Implemented)
-- ✅ Account.tsx
-- ✅ ProductDetail.tsx
-- ✅ CategoryProducts.tsx
-- ✅ Cart.tsx
-- ✅ Checkout.tsx
-- ✅ Orders.tsx
-- ✅ OrderDetail.tsx
-- ✅ Addresses.tsx
-- ✅ Categories.tsx
-- ✅ Wishlist.tsx
-- ✅ Support.tsx
-- ✅ Payment.tsx
+**After:**
+```typescript
+const handleForgotPassword = async () => {
+  await supabase.functions.invoke('send-temp-password', {
+    body: JSON.stringify({ email: user.email }),
+  });
+  toast.success('A temporary password has been sent to your registered email...'); // ✅ No password shown
+};
+```
+
+#### C. Configured Email Service
+**Secret Added:** `RESEND_API_KEY`
+- Added to Supabase secrets for secure email delivery
+- Used by the edge function to authenticate with Resend API
 
 ---
 
-## 7. Product Image Carousel Touch/Swipe Support
+## 2. Anonymous Access and Mandatory Login Triggers
 
-### Implementation (Already Completed)
+### Overview
+New users can explore the app freely without registration. Authentication is only required when attempting specific actions like purchasing, adding to cart, wishlisting, or accessing account features.
 
-#### File: `src/pages/ProductDetail.tsx`
-- **Added** touch event handlers:
-  - `handleTouchStart`: Records initial touch position
-  - `handleTouchMove`: Tracks touch movement
-  - `handleTouchEnd`: Detects swipe direction and changes image
-- **Added** swipe detection with 50px minimum distance threshold
-- **Updated** image transition to `transition-transform duration-200` for faster response
-- **Result**: Users can swipe left/right to navigate product images on mobile
+### Changes Made
+
+#### A. Updated App Routing
+**File:** `src/App.tsx`
+
+**Changes:**
+- Extended the `RequireAuth` whitelist to include browsing pages
+- Changed default redirect from `/welcome` to `/` (home page)
+
+**Whitelisted Routes (No Authentication Required):**
+- `/` - Home page
+- `/categories` - Categories listing
+- `/category-products` - Products by category
+- `/product/*` - Product detail pages
+- `/support` - Customer support
+- `/policies` - Policies page
+- `/welcome` - Welcome/login selection page
+- `/login` - Login page
+- `/register` - Registration page
+- `/email-confirmation` - Email confirmation
+- `/admin/login` - Admin login
+- `/admin/*` - Admin pages
+
+**Before:**
+```typescript
+<RequireAuth whiteList={['/welcome', '/login', '/register']}>
+  {/* ... */}
+  <Route path="*" element={<Navigate to="/welcome" replace />} />
+</RequireAuth>
+```
+
+**After:**
+```typescript
+<RequireAuth whiteList={[
+  '/welcome', '/login', '/register', 
+  '/', '/categories', '/category-products', '/product/*', '/support', '/policies'
+]}>
+  {/* ... */}
+  <Route path="*" element={<Navigate to="/" replace />} />
+</RequireAuth>
+```
+
+#### B. Updated Bottom Navigation
+**File:** `src/components/common/BottomNav.tsx`
+
+**Changes:**
+- Added authentication check for Cart and Account navigation items
+- Redirects to `/welcome` page when unauthenticated users click these items
+- Home and Categories remain accessible without authentication
+
+**Implementation:**
+```typescript
+const handleNavClick = (path: string, requiresAuth: boolean) => (e: React.MouseEvent) => {
+  if (requiresAuth && !user) {
+    e.preventDefault();
+    navigate('/welcome');
+  }
+};
+
+const navItems = [
+  { path: '/', icon: Home, label: 'Home', requiresAuth: false },
+  { path: '/categories', icon: Grid3x3, label: 'Categories', requiresAuth: false },
+  { path: '/cart', icon: ShoppingCart, label: 'Cart', requiresAuth: true }, // ✅ Requires auth
+  { path: '/account', icon: User, label: 'Account', requiresAuth: true }, // ✅ Requires auth
+];
+```
+
+#### C. Updated Product Detail Page
+**File:** `src/pages/ProductDetail.tsx`
+
+**Changes:**
+- Updated all authentication redirects from `/login` to `/welcome`
+- Added checks for:
+  - **Buy Now button** - Redirects to `/welcome` if not authenticated
+  - **Add to Cart button** - Redirects to `/welcome` if not authenticated
+  - **Wishlist heart icon** - Redirects to `/welcome` if not authenticated
+
+**Modified Functions:**
+- `handleBuyNow()` - Changed redirect from `/login` to `/welcome`
+- `handleAddToCart()` - Changed redirect from `/login` to `/welcome`
+- `handleWishlist()` - Changed redirect from `/login` to `/welcome`
+
+**Example:**
+```typescript
+const handleBuyNow = async () => {
+  if (!user) {
+    toast.error('Please login to continue');
+    navigate('/welcome'); // ✅ Redirects to welcome page
+    return;
+  }
+  // ... proceed with purchase
+};
+```
+
+#### D. Updated Product Card Component
+**File:** `src/components/common/ProductCard.tsx`
+
+**Changes:**
+- Added `useAuth` hook to check authentication status
+- Added authentication check to wishlist toggle
+- Redirects to `/welcome` when unauthenticated users click the wishlist heart
+
+**Implementation:**
+```typescript
+import { useAuth } from '@/contexts/AuthContext';
+
+const handleWishlist = async (e: React.MouseEvent) => {
+  e.stopPropagation();
+  
+  if (!user) {
+    toast.error('Please login to add to wishlist');
+    navigate('/welcome'); // ✅ Redirects to welcome page
+    return;
+  }
+  
+  // ... proceed with wishlist toggle
+};
+```
 
 ---
 
-## 8. Drag-and-Drop Image Upload in Admin
+## Files Modified
 
-### Implementation (Already Completed)
+### Core Application Files
+1. **src/App.tsx**
+   - Extended whitelist for anonymous browsing
+   - Changed default redirect to home page
 
-#### File: `src/pages/admin/Products.tsx`
-- **Added** `isDragging` state for visual feedback
-- **Added** drag event handlers:
-  - `handleDragOver`: Prevents default and shows drag state
-  - `handleDragLeave`: Removes drag state
-  - `handleDrop`: Processes dropped files
-- **Added** conditional styling:
-  - `border-primary` and `bg-primary/10` when dragging
-  - Visual feedback for better UX
-- **Result**: Admins can drag and drop images directly onto the upload area
+2. **src/pages/Account.tsx**
+   - Implemented edge function call for password reset
+   - Removed local password generation
+   - Updated user feedback messages
 
----
+3. **src/pages/ProductDetail.tsx**
+   - Updated Buy Now authentication redirect
+   - Updated Add to Cart authentication redirect
+   - Updated Wishlist authentication redirect
 
-## 9. Stock Sorting (Already Implemented)
+4. **src/components/common/BottomNav.tsx**
+   - Added authentication checks for navigation items
+   - Implemented conditional navigation logic
 
-#### File: `src/pages/Home.tsx`
-- **Added** stock sorting logic in `loadData()`:
-  - In-stock products (stock_quantity > 0) appear first
-  - Out-of-stock products (stock_quantity = 0) appear last
-- **Applied to**: All product sections on homepage
+5. **src/components/common/ProductCard.tsx**
+   - Added authentication check for wishlist toggle
+   - Implemented redirect to welcome page
 
----
-
-## 10. Auto-Rotating Promotional Banners (Already Implemented)
-
-#### File: `src/pages/Home.tsx`
-- **Implemented** auto-rotation with 5-second interval
-- **Uses** `useEffect` with `setInterval`
-- **Features**: Automatic cycling through promotional images
+### Backend Files
+6. **supabase/functions/send-temp-password/index.ts** (NEW)
+   - Created edge function for password reset email delivery
+   - Integrated with Resend API for email sending
+   - Implemented secure password generation and update
 
 ---
 
-## Files Modified Summary
+## User Experience Flow
 
-### Core Functionality Files
-1. `src/pages/Home.tsx` - Search, offers, product display
-2. `src/pages/CategoryProducts.tsx` - Search results, grid layout
-3. `src/pages/Cart.tsx` - Quantity discounts, grid layout
-4. `src/pages/Checkout.tsx` - Quantity discounts
-5. `src/pages/admin/Products.tsx` - Manual price input, grid layout, drag-drop
-6. `src/pages/Wishlist.tsx` - Grid layout
-7. `src/pages/ProductDetail.tsx` - Touch/swipe support, scroll-to-top
+### Anonymous User Journey
+1. **App Launch** → User lands on Home page (no login required)
+2. **Browse Products** → User can view categories and product details freely
+3. **Attempt Action** → User clicks "Buy Now", "Add to Cart", "Wishlist", or "Account"
+4. **Redirect** → User is redirected to Welcome page
+5. **Choose Option** → User can select "Login" or "Register"
 
-### Hook Files
-8. `src/hooks/useScrollToTop.ts` - Scroll-to-top functionality
+### Password Recovery Journey
+1. **Account Page** → Logged-in user clicks "Forgot your current password?"
+2. **Confirmation Dialog** → User confirms password reset request
+3. **Email Sent** → System generates temporary password and sends email
+4. **User Feedback** → Toast message: "A temporary password has been sent to your registered email. Please check your inbox to proceed."
+5. **Check Email** → User receives professional email with temporary password
+6. **Login** → User logs in with temporary password
+7. **Change Password** → User is advised to change password immediately
 
-### Pages with Scroll-to-Top Added
-9. `src/pages/Account.tsx`
-10. `src/pages/Orders.tsx`
-11. `src/pages/OrderDetail.tsx`
-12. `src/pages/Addresses.tsx`
-13. `src/pages/Categories.tsx`
-14. `src/pages/Support.tsx`
-15. `src/pages/Payment.tsx`
+---
+
+## Security Considerations
+
+### Password Reset Security
+- ✅ Temporary passwords are never displayed in the app
+- ✅ Passwords are generated server-side using secure random generation
+- ✅ Email delivery uses authenticated API (Resend)
+- ✅ Users are instructed to change password after login
+- ✅ Edge function uses service role key for admin operations
+
+### Authentication Flow Security
+- ✅ Sensitive actions require authentication
+- ✅ Unauthenticated users are redirected to welcome page
+- ✅ No data exposure for anonymous users
+- ✅ Clear user feedback for authentication requirements
 
 ---
 
 ## Testing Checklist
 
-### Search Functionality
-- [ ] Search bar displays search icon
-- [ ] Typing in search shows suggestions from all products (old and new)
-- [ ] Clicking a suggestion navigates to search results
-- [ ] Search results page displays matching products
-- [ ] "No products found" message appears when no matches
-- [ ] Recommended products show when search has no results
+### Password Recovery
+- [ ] Click "Forgot your current password?" in Account page
+- [ ] Verify confirmation dialog appears
+- [ ] Confirm password reset
+- [ ] Verify toast message shows (without password)
+- [ ] Check email inbox for temporary password email
+- [ ] Verify email contains password and instructions
+- [ ] Login with temporary password
+- [ ] Change password after login
 
-### Product Grid Layouts
-- [ ] Mobile (< 1024px): Products display in 2 columns
-- [ ] Desktop (≥ 1024px): Products display in 4 columns
-- [ ] Grid layout consistent across:
-  - [ ] Category products page
-  - [ ] Search results page
-  - [ ] Admin products page
-  - [ ] Wishlist page
-
-### Admin Panel
-- [ ] Price input allows manual typing
-- [ ] Price input accepts decimal values (e.g., 299.99)
-- [ ] Price input rejects non-numeric characters
-- [ ] Drag and drop image upload works
-- [ ] Visual feedback appears when dragging files
-
-### Homepage
-- [ ] "All Time Offers" section displays correctly
-- [ ] Offers show quantity-based discounts (10+, 20+, 35+)
-- [ ] Free delivery shows ₹499 threshold
-- [ ] Promotional banners auto-rotate every 5 seconds
-- [ ] Price range sections display in 2-row grids
-
-### Cart & Checkout
-- [ ] Quantity discount applies for 10+ items (₹40 off)
-- [ ] Quantity discount applies for 20+ items (₹80 off)
-- [ ] Quantity discount applies for 35+ items (₹150 off)
-- [ ] Free delivery applies for orders above ₹499
-- [ ] Discount checkbox appears when eligible
-- [ ] Total calculation is correct with discounts
-- [ ] Item count displays total quantity (not unique items)
-
-### Navigation & UX
-- [ ] Page scrolls to top when navigating between pages
-- [ ] Scroll-to-top works on all pages (13 pages total)
-- [ ] Product image carousel responds to touch/swipe on mobile
-- [ ] Image transitions are fast (200ms)
-- [ ] Swipe detection requires 50px minimum distance
-
-### Product Display
-- [ ] In-stock products appear before out-of-stock
-- [ ] Out-of-stock products appear at the bottom
-- [ ] Product images load correctly
-- [ ] Product cards display properly in grids
-
-### Responsive Design
-- [ ] Mobile view (< 640px): All features work
-- [ ] Tablet view (640px - 1024px): All features work
-- [ ] Desktop view (≥ 1024px): All features work
-- [ ] Touch gestures work on mobile devices
-- [ ] Mouse interactions work on desktop
-
-### Performance
-- [ ] Search suggestions appear quickly (< 500ms)
-- [ ] Page navigation is smooth
-- [ ] Image carousel transitions are smooth
-- [ ] No console errors or warnings
-- [ ] All API calls complete successfully
+### Anonymous Access
+- [ ] Launch app without logging in
+- [ ] Verify redirect to Home page (not Welcome page)
+- [ ] Browse categories without authentication
+- [ ] View product details without authentication
+- [ ] Click "Buy Now" → Verify redirect to Welcome page
+- [ ] Click "Add to Cart" → Verify redirect to Welcome page
+- [ ] Click wishlist heart → Verify redirect to Welcome page
+- [ ] Click "Account" in bottom nav → Verify redirect to Welcome page
+- [ ] Click "Cart" in bottom nav → Verify redirect to Welcome page
+- [ ] Verify Home and Categories navigation work without auth
 
 ---
 
-## Pending Requirements (Not Yet Implemented)
+## Configuration Requirements
 
-### 1. Policies Section
-- Add return/refund policies information
-- Display policies in appropriate location
+### Environment Variables
+The following secret must be configured in Supabase:
+- `RESEND_API_KEY` - API key for Resend email service
 
-### 2. Time Tracking
-- Add timestamps for order placement
-- Add timestamps for return requests
-- Display in customer orders and admin panel
-
-### 3. Admin Order Management
-- Add "Order Placed" filter option after "Processing"
-- Show count of filtered orders
-- Add sorting by newest/oldest for all filters
-- Add search by order ID/reference number in returns
-
-### 4. Email Notifications
-- Send emails for: registration, password change, order processing, order placed, order cancelled
-- Include admin description in order placed emails
-
-### 5. First Order Discount
-- Implement 2% off on first order
-- Device-based tracking (one per device)
-
-### 6. Homepage Layout Adjustment
-- Keep price range sections in horizontal scroll
-- Keep recently viewed in horizontal scroll
-- Featured products in vertical 2-row grid
+### Email Service Setup
+1. Sign up for Resend account at https://resend.com
+2. Generate API key
+3. Add API key to Supabase secrets using the command:
+   ```bash
+   supabase secrets set RESEND_API_KEY=your_actual_api_key
+   ```
 
 ---
 
-## Technical Notes
+## Future Enhancements
 
-### Code Quality
-- All changes pass linting checks
-- TypeScript types are properly defined
-- No console errors or warnings
-- Follows React best practices
+### Potential Improvements
+1. **Email Customization**
+   - Allow custom email templates
+   - Add company logo to emails
+   - Support multiple languages
 
-### Browser Compatibility
-- Touch events supported on mobile browsers
-- Drag-and-drop supported on modern browsers
-- Responsive design works across all screen sizes
+2. **Password Policy**
+   - Enforce password complexity requirements
+   - Add password expiration for temporary passwords
+   - Implement password history
 
-### Performance Considerations
-- Search suggestions limited to 5 results for performance
-- Product images lazy-loaded where applicable
-- Efficient state management with React hooks
+3. **User Experience**
+   - Add "Remember me" functionality
+   - Implement social login options
+   - Add biometric authentication
+
+4. **Security**
+   - Add rate limiting for password reset requests
+   - Implement CAPTCHA for sensitive actions
+   - Add two-factor authentication
 
 ---
 
 ## Conclusion
 
-This implementation successfully addresses the following requirements:
-1. ✅ Fixed search functionality (loading issue, all products in suggestions)
-2. ✅ Updated product grid layouts (2 columns mobile, 4 columns desktop)
-3. ✅ Fixed manual price input in admin panel
-4. ✅ Updated homepage offers to quantity-based discounts
-5. ✅ Implemented quantity-based discount logic in cart and checkout
-6. ✅ Scroll-to-top on page navigation (13 pages)
-7. ✅ Touch/swipe support for product image carousel
-8. ✅ Drag-and-drop image upload in admin panel
-9. ✅ Stock sorting (in-stock first, out-of-stock last)
-10. ✅ Auto-rotating promotional banners
+All requested features have been successfully implemented:
 
-All changes have been tested with the linter and are ready for production deployment.
+✅ **Password Recovery**: Temporary passwords are sent via email without displaying in the app
+
+✅ **Anonymous Access**: Users can browse freely without forced registration
+
+✅ **Mandatory Login Triggers**: Authentication required for Buy Now, Add to Cart, Wishlist, and Account access
+
+✅ **Welcome Page Redirect**: All authentication triggers redirect to the Welcome page with Login/Register options
+
+The implementation follows security best practices and provides a smooth user experience for both anonymous browsing and authenticated actions.
