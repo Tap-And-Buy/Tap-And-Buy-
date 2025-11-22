@@ -26,7 +26,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { User, Package, MapPin, LogOut, Shield, Heart, Lock, KeyRound } from 'lucide-react';
+import { User, Package, MapPin, LogOut, Shield, Heart, Lock, KeyRound, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/db/supabase';
@@ -252,6 +252,20 @@ export default function Account() {
                 <div>
                   <h3 className="font-semibold">My Wishlist</h3>
                   <p className="text-sm text-muted-foreground">View saved products</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/support')}>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-full">
+                  <MessageCircle className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold">Customer Support</h3>
+                  <p className="text-sm text-muted-foreground">Get help and assistance</p>
                 </div>
               </div>
             </CardContent>
