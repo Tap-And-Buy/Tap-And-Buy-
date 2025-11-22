@@ -146,7 +146,6 @@ const routes: RouteConfig[] = [
     name: 'Support',
     path: '/support',
     element: <Support />,
-    visible: false,
   },
   {
     name: 'Policies',
