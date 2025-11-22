@@ -15,12 +15,19 @@ Email: tapandbuy.in@gmail.com
 ---
 
 ## 2. User Roles & Access
-\n### 2.1 Initial Landing Page
-When opening the website, three options are displayed:
-- Admin Login
-- Customer Registration
-- Customer Login
-\n### 2.2 Admin Role\n**Login Credentials:** Embedded in code with bcrypt encryption (credentials to be provided separately)
+\n### 2.1 Initial Landing Page & Anonymous Access
+**Anonymous Exploration:**
+- When opening the website, users are directed straight to the **Home Page** without being forced to register or log in.
+- Anonymous users can freely explore the application, browse products, search, view categories, and view product details.
+\n**Mandatory Authentication Triggers:**
+- Anonymous users must be redirected to the **Welcome Page** (containing Log In and Register options) when attempting any of the following actions:
+  - Tapping the 'Buy Now' button
+  - Tapping the 'Add to Cart' button
+  - Tapping the 'Wishlisting Heart Symbol'
+  - Tapping the 'Account Option' in the bottom navigation menu
+- The Welcome Page clearly presents options to either Log In (for existing accounts) or Register (for new accounts).
+
+### 2.2 Admin Role\n**Login Credentials:** Embedded in code with bcrypt encryption (credentials to be provided separately)
 
 **Capabilities:**
 - Add, edit, and remove product categories with category image upload (one image per category for visual identification)
@@ -36,8 +43,8 @@ When opening the website, three options are displayed:
 - Enter tracking details and order information manually
 - Approve or reject order cancellation requests
 - Access order management dashboard with timestamp display for order placement and return requests
-- Manage Products (with device-responsive layout:2 rows on mobile, 4 rows on laptop/desktop/tablet), Manage Returns, and Manage Categories sections displayed in two-row layout
-- **Send push notifications to customers for order updates and promotional announcements**
+- Manage Products (with device-responsive layout: 2 rows on mobile, 4 rows on laptop/desktop/tablet), Manage Returns, and Manage Categories sections displayed in two-row layout
+- Send push notifications to customers for order updates and promotional announcements
 \n### 2.3 Customer Role
 **Registration & Login:**
 - Register using email or phone number
@@ -46,40 +53,46 @@ When opening the website, three options are displayed:
 - Login with registered credentials
 - Logout confirmation: When customer clicks logout button, a confirmation popup appears asking'Are you sure you want to logout?' with Yes/No options. Logout only proceeds if Yes is selected.
 
+**Password Recovery and Reset:**
+- **Forgot Password Flow:**
+  - When a user initiates 'Forgot Current Password' or similar password recovery flow, the application immediately sends a randomly generated temporary password to the user's registered email address.
+  - **The application must NOT display or notify the user of the temporary password within the app interface** (i.e., do not show it on the screen, in a push notification, or in an in-app message).
+  - Upon successful email transmission, display a clear message to the user:'A temporary password has been sent to your registered email. Please check your inbox to proceed.'
+  - User can login with the temporary password received via email and optionally change it by copying the temporary password into the 'current password' field and creating a new password.
+
 **Capabilities:**
 - Browse and search products with search history display
 - Search icon displayed inside the search bar
 - Search recommendations: When searching for products (e.g., 'soap stand'), display recommended search titles (both newly added and older products) related to the query under the search bar
 - Intelligent search results: Display products matching search queries (e.g., 'products under 50 rupees' shows items under₹50). If search is unrelated, analyze and display relevant products. If no products found, display message: 'No product was found'\n- Search results display promptly without indefinite loading
-- View product details (images, description, price, offers)
-- Product Image Navigation: For products with 2 or more images, display navigation arrows with optimized image loading (transition time under 1 second):\n  - When viewing the first image: Show right arrow at the right center side of the image
+- View product details (images, description, price, offers)\n- Product Image Navigation: For products with 2 or more images, display navigation arrows with optimized image loading (transition time under 1 second):\n  - When viewing the first image: Show right arrow at the right center side of the image
   - When viewing middle images (2nd, 3rd, etc.): Show both left and right arrows at the left and right center sides of the image
   - When viewing the last image: Show left arrow at the left center side of the image
 - Arrows should be clearly visible and positioned at the vertical center of the image
 - Share products via share button on product page
-- Add products to wishlist by clicking heart icon on product page
+- Add products to wishlist by clicking heart icon on product page (requires login)
 - View and manage wishlist items from Account page
-- Add products to cart or use'Buy Now' option\n- Add and manage multiple delivery addresses
-- Select delivery address during checkout
-- Make prepaid payments only\n- View order history and order details with unique Order ID and timestamp
+- Add products to cart or use'Buy Now' option (requires login)
+- Add and manage multiple delivery addresses\n- Select delivery address during checkout\n- Make prepaid payments only\n- View order history and order details with unique Order ID and timestamp
 - Track order status\n- Submit return requests for damaged products (within 12 hours of delivery)
-- Submit order cancellation requests\n- Password Management: Access password management in Account Settings with the following options:
+- Submit order cancellation requests
+- Password Management: Access password management in Account Settings with the following options:
   - Change password by entering current password, new password, and confirm new password\n  - Forgot Password option: Displays below the current password field. When clicked, shows popup message: 'We will send you a changed random password to your email. Do you want to reset your password?'
-  - If user confirms, system generates and sends a random password (mix of letters and numbers) to registered email\n  - User can login with the random password and optionally change it by copying the random password into the 'current password' field and creating a new password
+  - If user confirms, system generates and sends a random password (mix of letters and numbers) to registered email (NOT displayed in-app)
+  - User can login with the random password and optionally change it by copying the random password into the 'current password' field and creating a new password
 - Update account details with OTP verification
 - Use in-app chatbot for order inquiries
 - Receive email notifications for all order status changes and account activities
-- **Receive in-app push notifications for order updates, promotional offers, and important announcements**
-- **Manage notification preferences in Account Settings**
-
----
+- Receive in-app push notifications for order updates, promotional offers, and important announcements
+- Manage notification preferences in Account Settings
+\n---
 
 ## 3. Website Features
 
 ### 3.1 Bottom Navigation Menu
 - **Home:** Featured products (30 products displayed vertically in two rows on mobile, four rows on laptop/desktop/tablet), recently viewed products (10 products displayed horizontally with horizontal scrolling)\n- **Categories:** Browse products by category (displayed horizontally with horizontal scrolling, clicking category shows products in 2 rows on mobile, 4 rows on other devices)
-- **Cart:** View added items, quantities, and proceed to checkout
-- **Account:** Login, profile management, order history, saved addresses, wishlist access, password management, notification preferences
+- **Cart:** View added items, quantities, and proceed to checkout (requires login if not authenticated)
+- **Account:** Login, profile management, order history, saved addresses, wishlist access, password management, notification preferences (requires login if not authenticated)
 - **Customer Care:** Order inquiries and support\n\n### 3.2 Product Management
 - Admin can add product categories with one category image upload for visual identification
 - Admin can add products with up to 5 image uploads per product
@@ -97,7 +110,7 @@ When opening the website, three options are displayed:
 - Promotional images managed through'Manage Promotions' section
 \n### 3.4 Product Interaction Features
 - **Share Button:** Each product displays a share button allowing customers to share product details via social media, messaging apps, or copy link
-- **Wishlist Heart Icon:** Each product displays a heart icon that customers can click to add/remove products from their wishlist
+- **Wishlist Heart Icon:** Each product displays a heart icon that customers can click to add/remove products from their wishlist (requires login)
 - Heart icon fills with color when product is added to wishlist
 - Wishlist items persist across sessions for logged-in users
 \n### 3.5 Wishlist Page
@@ -121,12 +134,13 @@ When opening the website, three options are displayed:
 - **Horizontal scrolling layout** for price range options
 - Also displayed in Categories section horizontally
 - **Updated Price Ranges:**
-  - Under₹20\n  - ₹20 - ₹50
+  - Under ₹20\n  - ₹20 - ₹50
   - ₹50 - ₹100
   - ₹100 - ₹200
   - ₹200 - ₹500
   - ₹500 - ₹800
-  - ₹800 - ₹1000\n  - Above ₹1000
+  - ₹800 - ₹1000
+  - Above ₹1000
 - Clicking each price range displays products within that specific range in **horizontal scrolling layout**
 - Products displayed in horizontal scrolling format for price range results only
 - All other product listings (categories, search results, admin manage products) maintain vertical layout (2 rows mobile, 4 rows other devices)
@@ -140,8 +154,9 @@ When opening the website, three options are displayed:
 - Offers section positioned prominently with impressive visual design
 - Offers displayed before'Explore Products by Price' section
 \n### 3.9 Shopping Cart & Checkout
-- Add multiple products to cart\n- View cart summary with quantities and prices
-- Direct'Buy Now' option for immediate purchase
+- Add multiple products to cart (requires login)
+- View cart summary with quantities and prices
+- Direct'Buy Now' option for immediate purchase (requires login)
 - Select delivery address from saved addresses
 - Apply available offers during checkout
 - **Important Instructions Display:** Show order placement guidelines to customers during checkout process
@@ -159,10 +174,12 @@ When opening the website, three options are displayed:
   - Show notification icon, title, message preview, and timestamp
   - Unread notifications highlighted with different background color
   - Mark as read when clicked
-  - Delete individual notifications or clear all\n- **Real-Time Notifications:** Use WebSocket or Server-Sent Events for instant notification delivery
+  - Delete individual notifications or clear all
+- **Real-Time Notifications:** Use WebSocket or Server-Sent Events for instant notification delivery
 - **Notification Preferences:** Customers can manage notification settings in Account page:\n  - Enable/disable specific notification types
   - Choose notification delivery method (in-app only, in-app + email)\n  - Set quiet hours (no notifications during specified time)
-- **Notification Persistence:** Store notifications in database for 30 days\n- **Admin Notification Management:**
+- **Notification Persistence:** Store notifications in database for 30 days
+- **Admin Notification Management:**
   - Send bulk notifications to all customers
   - Send targeted notifications to specific customer segments
   - Schedule notifications for future delivery
@@ -263,7 +280,7 @@ Customers receive email notifications for the following events:
 \n**Registration & Account Management:**
 - Registration confirmation with account details
 - Password change confirmation
-- Forgot password - random password delivery
+- Forgot password - random password delivery (temporary password sent via email only, NOT displayed in-app)
 \n**Order Lifecycle:**
 - **Order Received (Processing):** 'Your order has been received. Order ID: [ID]. Order placed at: [Timestamp]. Please wait for admin to confirm your order.'
 - **Order Placed:** 'Your order has been successfully placed. Order ID: [ID]. Order placed at: [Timestamp].' + Admin description from order management
@@ -291,7 +308,10 @@ Customers receive email notifications for the following events:
 - Secure admin login embedded in code
 - Logout confirmation popup to prevent accidental logout
 - Random password generation for forgot password functionality (alphanumeric mix)
+- **Temporary password delivery via email only (NOT displayed in-app)**
 - Device identifier tracking for first-order discount enforcement
+- **Anonymous access to Home Page without forced login**
+- **Mandatory login triggers for: Buy Now, Add to Cart, Wishlist, Account access**
 
 ### 9.2 Database Structure
 - Users (customers and admin)
@@ -345,7 +365,7 @@ Customers receive email notifications for the following events:
 - Arrow positioning at vertical center of images
 \n### 9.8 Email System
 - Reliable email delivery for registration confirmations\n- Proper URL configuration in email templates
-- Random password generation and delivery for forgot password requests
+- Random password generation and delivery for forgot password requests (email only, NOT in-app)
 - Email verification and link validation
 - **Automated email notifications for all order status changes with timestamps**
 - **Automated email notifications for all return status changes with timestamps**
@@ -387,7 +407,7 @@ Customers receive email notifications for the following events:
 - Sample products and data for testing
 - Owner verification before publishing
 - Test registration email links and accessibility
-- Test password management and forgot password functionality
+- Test password management and forgot password functionality (verify temporary password NOT displayed in-app)
 - Test product image navigation arrows and loading speed
 - Test promotional image auto-rotation
 - Test search functionality (including old and new products, loading performance)
@@ -407,8 +427,10 @@ Customers receive email notifications for the following events:
 - **Test admin notification management (bulk send, targeted send, scheduling)**
 - **Test browser notification permissions and display**
 - **Test notification deep linking**
-
-### 10.2 Production Deployment
+- **Test anonymous access to Home Page**
+- **Test mandatory login triggers (Buy Now, Add to Cart, Wishlist, Account)**
+- **Test Welcome Page redirection for unauthenticated users**
+\n### 10.2 Production Deployment
 - Remove all dummy data after approval
 - Remove dummy customer login\n- Retain secure admin login
 - Verify all email links are accessible
@@ -442,7 +464,8 @@ Customers receive email notifications for the following events:
 - **Unread notifications highlighted with light green background**
 \n### 11.3 Layout Style
 - Grid-based product layout for easy browsing
-- Device-responsive product grids:\n  - Mobile: 2 rows (for categories, search results, admin manage products)\n  - Laptop/Desktop/Tablet: 4 rows (for categories, search results, admin manage products)
+- Device-responsive product grids:\n  - Mobile: 2 rows (for categories, search results, admin manage products)
+  - Laptop/Desktop/Tablet: 4 rows (for categories, search results, admin manage products)
   - **Price range results: Horizontal scrolling layout on all devices**
 - Bottom navigation bar for mobile-first experience
 - Clean white backgrounds with green interactive elements
@@ -456,7 +479,8 @@ Customers receive email notifications for the following events:
 
 ## 12. Reference Images
 - Logo: 1000070948.jpg\n- UPI Payment QR Code: 1000074194.jpg (UPI ID: gokul-rv@indianbank)
-- Screenshot References: 1000074574.png, 1000074575.png, 1000074573.png, 1000077497.png, 1000077496.png, 1000077505.png, 1000077504.png\n\n---
+- Screenshot References: 1000074574.png, 1000074575.png, 1000074573.png, 1000077497.png, 1000077496.png, 1000077505.png, 1000077504.png\n- Build Error Screenshot: 1000083161.png
+\n---
 
 ## 13. Implementation Changes Summary
 
@@ -472,13 +496,14 @@ Customers receive email notifications for the following events:
 **2. Search Functionality (SearchBar.js / SearchBar.tsx, SearchResults.js / SearchResults.tsx)**
 - Added search icon to search bar
 - Fixed search algorithm to include both newly added and older products in suggestions
-- Implemented 'No product found' message display
-- Optimized search performance to eliminate continuous loading issue
+- Implemented 'No product found' message display\n- Optimized search performance to eliminate continuous loading issue
 - Enhanced search result relevance algorithm
-\n**3. Homepage Offers Section (HomePage.js / HomePage.tsx,OffersDisplay.js / OffersDisplay.tsx)**
+
+**3. Homepage Offers Section (HomePage.js / HomePage.tsx,OffersDisplay.js / OffersDisplay.tsx)**
 - Updated offers to quantity-based discounts:\n  - 10+ products: ₹40 off
-  - 20+ products: ₹80 off\n  - 35+ products: ₹150 off
-- Changed free delivery threshold to ₹499
+  - 20+ products: ₹80 off
+  - 35+ products: ₹150 off
+- Changed free delivery threshold to₹499
 - Updated offer display design and messaging
 \n**4. Product Listing Layout (ProductList.js / ProductList.tsx, CategoryView.js / CategoryView.tsx, PriceRangeView.js / PriceRangeView.tsx)**
 - Implemented responsive grid layout:\n  - Mobile: 2 columns (for categories, search results, admin manage products)
@@ -490,7 +515,8 @@ Customers receive email notifications for the following events:
 - **Added timestamp recording for order placement**
 - **Added timestamp recording for return request submission**
 - **Implemented timestamp display in customer order view**
-- **Implemented timestamp display in admin order management**\n- **Implemented timestamp display in customer return view**
+- **Implemented timestamp display in admin order management**
+- **Implemented timestamp display in customer return view**
 - **Implemented timestamp display in admin return management**
 - Added timezone handling\n
 **6. Admin Order Management (AdminOrders.js / AdminOrders.tsx)**
@@ -536,7 +562,7 @@ Customers receive email notifications for the following events:
 - Implemented database schema for device tracking
 
 **12. Homepage Layout (HomePage.js / HomePage.tsx, PriceRangeExplorer.js / PriceRangeExplorer.tsx)**
-- **Updated price range options to: Under₹20, ₹20-₹50, ₹50-₹100, ₹100-₹200, ₹200-₹500, ₹500-₹800, ₹800-₹1000, Above ₹1000**
+- **Updated price range options to: Under ₹20, ₹20-₹50, ₹50-₹100, ₹100-₹200, ₹200-₹500, ₹500-₹800, ₹800-₹1000, Above ₹1000**
 - Ensured horizontal scrolling for:\n  - Price range exploration section
   - Recently viewed products section
 - **Ensured price range results display in horizontal scrolling layout**
@@ -578,8 +604,7 @@ Customers receive email notifications for the following events:
   - Clear all notifications button
 - **Created NotificationPreferences.js / NotificationPreferences.tsx component**
   - Toggle notification types on/off
-  - Select delivery method (in-app only, in-app + email)\n  - Set quiet hours
-- **Created WebSocket/SSE service (services/notificationService.js)**
+  - Select delivery method (in-app only, in-app + email)\n  - Set quiet hours\n- **Created WebSocket/SSE service (services/notificationService.js)**
   - Establish real-time connection
   - Listen for notification events
   - Update notification state
@@ -598,11 +623,37 @@ Customers receive email notifications for the following events:
   - Request notification permission on first login
   - Display desktop notifications for important events
   - Handle notification click to navigate to relevant page
-\n---
+\n**16. Password Recovery System (NEW - services/passwordService.js, components/ForgotPassword.js / ForgotPassword.tsx)**\n- **Modified forgot password flow to send temporary password via email only**
+- **Removed in-app display of temporary password**
+- **Added user feedback message: 'A temporary password has been sent to your registered email. Please check your inbox to proceed.'**
+- **Updated email template for temporary password delivery**
+- **Ensured temporary password is NOT shown in push notifications or in-app messages**
+
+**17. Anonymous Access & Mandatory Login System (NEW - App.js / App.tsx, AuthGuard.js / AuthGuard.tsx, WelcomePage.js / WelcomePage.tsx)**
+- **Implemented anonymous access to Home Page without forced login**
+- **Created Welcome Page with Log In and Register options**
+- **Added authentication guards for specific actions:**
+  - Buy Now button click\n  - Add to Cart button click
+  - Wishlist heart icon click
+  - Account option in bottom navigation
+- **Implemented redirection to Welcome Page for unauthenticated users attempting protected actions**
+- **Updated navigation logic to allow free exploration before authentication**
+- **Modified HomePage.js / HomePage.tsx to allow anonymous browsing**
+- **Modified ProductDetail.js / ProductDetail.tsx to trigger login for Buy Now, Add to Cart, Wishlist**
+- **Modified BottomNavigation.js / BottomNavigation.tsx to trigger login for Account access**
+
+---
 
 ## 14. Complete Application Testing Checklist
 
 ### 14.1 User Authentication & Registration
+- [ ] **Anonymous user can access Home Page without login**
+- [ ] **Anonymous user can browse products, categories, and search**
+- [ ] **Anonymous user redirected to Welcome Page when clicking Buy Now**
+- [ ] **Anonymous user redirected to Welcome Page when clicking Add to Cart**
+- [ ] **Anonymous user redirected to Welcome Page when clicking Wishlist heart icon**
+- [ ] **Anonymous user redirected to Welcome Page when clicking Account option**
+- [ ] **Welcome Page displays Log In and Register options clearly**
 - [ ] Customer registration with email\n- [ ] Customer registration with phone number
 - [ ] OTP verification for email registration
 - [ ] OTP verification for phone registration
@@ -620,8 +671,11 @@ Customers receive email notifications for the following events:
 - [ ] Change password with incorrect current password (error handling)
 - [ ] Password confirmation validation
 - [ ] Forgot password popup display
-- [ ] Random password generation and email delivery
-- [ ] Login with random password
+- [ ] **Random password generation and email delivery (NOT displayed in-app)**
+- [ ] **User feedback message displayed: 'A temporary password has been sent to your registered email. Please check your inbox to proceed.'**
+- [ ] **Verify temporary password is NOT shown in push notifications**
+- [ ] **Verify temporary password is NOT shown in any in-app message**
+- [ ] Login with random password received via email
 - [ ] Change random password to custom password
 - [ ] Password change confirmation email\n\n### 14.3 Product Browsing & Search
 - [ ] Homepage featured products display (30 products, correct layout per device)
@@ -637,22 +691,24 @@ Customers receive email notifications for the following events:
 - [ ] Category browsing (horizontal scrolling)
 - [ ] Category product listing (2 rows mobile, 4 rows other devices)\n- [ ] **Price range exploration (horizontal scrolling with updated ranges: Under ₹20, ₹20-₹50, ₹50-₹100, ₹100-₹200, ₹200-₹500, ₹500-₹800, ₹800-₹1000, Above ₹1000)**
 - [ ] **Price range filtering accuracy with horizontal scrolling display**
-- [ ] Product detail page display
-- [ ] Product image navigation arrows display
+- [ ] Product detail page display\n- [ ] Product image navigation arrows display
 - [ ] Product image transition speed (under 1 second)
 - [ ] Product image navigation on mobile (swipe support)
 - [ ] Related product recommendations\n\n### 14.4 Wishlist & Sharing
-- [ ] Add product to wishlist (heart icon)
+- [ ] **Anonymous user redirected to Welcome Page when clicking wishlist heart icon**
+- [ ] Add product to wishlist (heart icon) after login
 - [ ] Remove product from wishlist\n- [ ] Wishlist persistence across sessions
 - [ ] Wishlist page display from Account section
 - [ ] Add to cart from wishlist page
 - [ ] Share product functionality (social media, messaging, copy link)
 - [ ] **Push notification for price drop on wishlisted items**
 \n### 14.5 Shopping Cart & Checkout
-- [ ] Add product to cart\n- [ ] Update product quantity in cart
+- [ ] **Anonymous user redirected to Welcome Page when clicking Add to Cart**\n- [ ] **Anonymous user redirected to Welcome Page when clicking Buy Now**
+- [ ] Add product to cart after login
+- [ ] Update product quantity in cart
 - [ ] Remove product from cart
 - [ ] Cart summary accuracy
-- [ ] 'Buy Now' direct purchase option
+- [ ] 'Buy Now' direct purchase option after login
 - [ ] Add delivery address\n- [ ] Edit delivery address
 - [ ] Delete delivery address
 - [ ] Select delivery address during checkout
@@ -730,7 +786,7 @@ Customers receive email notifications for the following events:
 \n### 14.12 Email Notification System
 - [ ] Registration confirmation email
 - [ ] Password change confirmation email
-- [ ] Forgot password email (random password)
+- [ ] **Forgot password email (random password) - verify NOT displayed in-app**
 - [ ] **Order received email (Processing status) with order placement timestamp**
 - [ ] **Order placed email (with admin description) with order placement timestamp**
 - [ ] **Order shipped email with timestamp**
@@ -742,8 +798,7 @@ Customers receive email notifications for the following events:
 - [ ] **Refund processed email with processing date**
 - [ ] **Email content accuracy (Order ID, timestamps, descriptions)**
 - [ ] Email formatting and branding
-
-### 14.13 Push Notification System (NEW)
+\n### 14.13 Push Notification System
 - [ ] **Notification bell icon display in top navigation**
 - [ ] **Unread notification count badge display**
 - [ ] **Notification center opens on bell icon click**
@@ -757,8 +812,10 @@ Customers receive email notifications for the following events:
 - [ ] **Push notification for order status changes**
 - [ ] **Push notification for return request status**
 - [ ] **Push notification for refund processing**
-- [ ] **Push notification for promotional offers**\n- [ ] **Push notification for new product arrivals**
+- [ ] **Push notification for promotional offers**
+- [ ] **Push notification for new product arrivals**
 - [ ] **Push notification for price drop on wishlisted items**\n- [ ] **Push notification for admin announcements**
+- [ ] **Verify temporary password is NOT sent via push notification**
 - [ ] **Notification preferences page access from Account**
 - [ ] **Enable/disable specific notification types**
 - [ ] **Choose notification delivery method (in-app only, in-app + email)**
@@ -799,8 +856,7 @@ Customers receive email notifications for the following events:
 - [ ] Mobile layout (all pages)
 - [ ] Tablet layout (all pages)
 - [ ] Laptop layout (all pages)
-- [ ] Desktop layout (all pages)\n- [ ] Product listing: 2 rows on mobile (categories, search, admin)
-- [ ] Product listing: 4 rows on laptop/desktop/tablet (categories, search, admin)
+- [ ] Desktop layout (all pages)\n- [ ] Product listing: 2 rows on mobile (categories, search, admin)\n- [ ] Product listing: 4 rows on laptop/desktop/tablet (categories, search, admin)
 - [ ] **Price range results: Horizontal scrolling on all devices**
 - [ ] Horizontal scrolling sections (categories, price ranges, recently viewed)
 - [ ] Bottom navigation functionality on mobile
@@ -810,10 +866,12 @@ Customers receive email notifications for the following events:
 \n### 14.17 Performance & Optimization
 - [ ] Page load times (under 3 seconds)
 - [ ] Image loading optimization
-- [ ] Product image transition speed (under 1 second)\n- [ ] Search performance (no continuous loading)
+- [ ] Product image transition speed (under 1 second)
+- [ ] Search performance (no continuous loading)
 - [ ] Promotional image carousel smooth transitions
 - [ ] Database query optimization
-- [ ] API response times\n- [ ] **WebSocket/SSE connection performance**
+- [ ] API response times
+- [ ] **WebSocket/SSE connection performance**
 - [ ] **Notification delivery latency (under 2 seconds)**
 \n### 14.18 Security & Data Protection
 - [ ] Admin credentials encryption (bcrypt)
@@ -827,6 +885,7 @@ Customers receive email notifications for the following events:
 - [ ] Device identifier privacy compliance
 - [ ] **WebSocket connection authentication**
 - [ ] **Notification data encryption**
+- [ ] **Temporary password secure generation and transmission**
 \n### 14.19 Edge Cases & Error Handling
 - [ ] Empty cart checkout attempt
 - [ ] Invalid delivery address
@@ -841,7 +900,9 @@ Customers receive email notifications for the following events:
 - [ ] **WebSocket connection failure handling**
 - [ ] **Notification delivery failure handling**
 - [ ] **Browser notification permission denial**
-\n### 14.20 Cross-Browser Compatibility
+- [ ] **Anonymous user attempting protected actions**
+
+### 14.20 Cross-Browser Compatibility
 - [ ] Chrome (desktop and mobile)
 - [ ] Firefox (desktop and mobile)
 - [ ] Safari (desktop and mobile)
@@ -863,7 +924,106 @@ Customers receive email notifications for the following events:
 - [ ] GDPR compliance (if applicable)
 - [ ] **WebSocket/SSE server configuration for production**
 - [ ] **Notification system load testing**
-- [ ] Owner final approval
+- [ ] **Verify anonymous access and mandatory login triggers**
+- [ ] **Verify temporary password is NOT displayed in-app**
+- [ ] Owner final approval\n
+---
+
+**End of Requirements Document**
+
+---\n
+# CHANGES_SUMMARY.md
+
+## Summary of Changes Made to Requirements Document
+
+### Change Request 1: Password Recovery and Reset (Off-App Temporary Password Delivery)
+
+**What Changed:**
+- Modified the password recovery flow to ensure temporary passwords are sent ONLY via email and are NOT displayed within the application interface.\n- Added explicit user feedback message:'A temporary password has been sent to your registered email. Please check your inbox to proceed.'
+- Ensured temporary passwords are NOT shown in push notifications or any in-app messages.
+
+**Files Modified:**
+1. **Section 2.3 Customer Role - Password Recovery and Reset**
+   - Added new subsection detailing off-app temporary password delivery
+   - Specified that temporary password must NOT be displayed in-app
+   - Added user feedback message requirement
+
+2. **Section 9.1 Authentication & Security**
+   - Added requirement:'Temporary password delivery via email only (NOT displayed in-app)'
+\n3. **Section 13Implementation Changes Summary - Item 16(NEW)**
+   - Added new entry: 'Password Recovery System'
+   - Listed modified files: services/passwordService.js, components/ForgotPassword.js / ForgotPassword.tsx
+   - Detailed changes: Modified forgot password flow, removed in-app display, added user feedback message, updated email template
+
+4. **Section 14.2 Password Management (Testing Checklist)**
+   - Added test cases:\n     - Random password generation and email delivery (NOT displayed in-app)
+     - User feedback message displayed\n     - Verify temporary password is NOT shown in push notifications
+     - Verify temporary password is NOT shown in any in-app message
+\n5. **Section 14.13 Push Notification System (Testing Checklist)**
+   - Added test case: 'Verify temporary password is NOT sent via push notification'
+
+6. **Section 14.18 Security & Data Protection (Testing Checklist)**
+   - Added test case: 'Temporary password secure generation and transmission'
 
 ---
-\n**End of Requirements Document**
+
+### Change Request 2: Anonymous Access and Mandatory Login Triggers\n
+**What Changed:**\n- Implemented anonymous access to the Home Page without forced login/registration
+- Users can freely explore products, categories, and search without authentication
+- Mandatory login is triggered only when users attempt specific actions: Buy Now, Add to Cart, Wishlist, or Account access
+- Users are redirected to a Welcome Page (with Log In and Register options) when attempting protected actions
+
+**Files Modified:**
+1. **Section 2.1 Initial Landing Page & Anonymous Access (NEW)**
+   - Replaced previous'Initial Landing Page' section\n   - Added 'Anonymous Exploration' subsection: Users directed to Home Page without forced login
+   - Added 'Mandatory Authentication Triggers' subsection: Listed four protected actions (Buy Now, Add to Cart, Wishlist, Account)\n   - Specified redirection to Welcome Page for unauthenticated users
+\n2. **Section 3.1 Bottom Navigation Menu**
+   - Updated Cart description: Added '(requires login if not authenticated)'\n   - Updated Account description: Added '(requires login if not authenticated)'
+\n3. **Section 3.4 Product Interaction Features**
+   - Updated Wishlist Heart Icon description: Added '(requires login)'
+\n4. **Section 3.9 Shopping Cart & Checkout**
+   - Updated 'Add multiple products to cart': Added '(requires login)'
+   - Updated 'Direct Buy Now option': Added '(requires login)'\n\n5. **Section 9.1 Authentication & Security**\n   - Added requirements:\n     - 'Anonymous access to Home Page without forced login'\n     - 'Mandatory login triggers for: Buy Now, Add to Cart, Wishlist, Account access'
+\n6. **Section 13 Implementation Changes Summary - Item 17 (NEW)**
+   - Added new entry: 'Anonymous Access & Mandatory Login System'
+   - Listed modified files: App.js / App.tsx, AuthGuard.js / AuthGuard.tsx, WelcomePage.js / WelcomePage.tsx, HomePage.js / HomePage.tsx, ProductDetail.js / ProductDetail.tsx,BottomNavigation.js / BottomNavigation.tsx\n   - Detailed changes: Implemented anonymous access, created Welcome Page, added authentication guards, implemented redirection logic, modified navigation logic
+
+7. **Section 14.1 User Authentication & Registration (Testing Checklist)**
+   - Added test cases at the beginning:\n     - Anonymous user can access Home Page without login
+     - Anonymous user can browse products, categories, and search
+     - Anonymous user redirected to Welcome Page when clicking Buy Now
+     - Anonymous user redirected to Welcome Page when clicking Add to Cart
+     - Anonymous user redirected to Welcome Page when clicking Wishlist heart icon
+     - Anonymous user redirected to Welcome Page when clicking Account option
+     - Welcome Page displays Log In and Register options clearly
+\n8. **Section 14.4 Wishlist & Sharing (Testing Checklist)**
+   - Added test case: 'Anonymous user redirected to Welcome Page when clicking wishlist heart icon'
+
+9. **Section 14.5 Shopping Cart & Checkout (Testing Checklist)**
+   - Added test cases:
+     - Anonymous user redirected to Welcome Page when clicking Add to Cart
+     - Anonymous user redirected to Welcome Page when clicking Buy Now
+\n10. **Section 14.19 Edge Cases & Error Handling (Testing Checklist)**
+    - Added test case: 'Anonymous user attempting protected actions'
+
+11. **Section 14.21 Final Pre-Launch Checks (Testing Checklist)**
+    - Added test cases:
+      - Verify anonymous access and mandatory login triggers\n      - Verify temporary password is NOT displayed in-app
+\n---
+
+### Additional Changes:\n- **Section 12Reference Images**: Added new reference image '1000083161.png' (Build Error Screenshot)
+\n---
+
+## Files Modified Summary:\n
+### Password Recovery Changes:
+- services/passwordService.js
+- components/ForgotPassword.js / ForgotPassword.tsx\n- email-templates/ (temporary password email template)
+
+### Anonymous Access & Mandatory Login Changes:
+- App.js / App.tsx
+- AuthGuard.js / AuthGuard.tsx (NEW)
+- WelcomePage.js / WelcomePage.tsx (NEW)
+- HomePage.js / HomePage.tsx\n- ProductDetail.js / ProductDetail.tsx
+- BottomNavigation.js / BottomNavigation.tsx\n\n---
+
+**End of Changes Summary**
