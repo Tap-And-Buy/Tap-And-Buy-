@@ -14,14 +14,27 @@ function AppContent() {
   return (
     <>
       <Toaster position="top-center" richColors />
-      <RequireAuth whiteList={['/welcome', '/login', '/register', '/email-confirmation', '/admin/login', '/admin/*']}>
+      <RequireAuth whiteList={[
+        '/welcome',
+        '/login', 
+        '/register', 
+        '/email-confirmation', 
+        '/admin/login', 
+        '/admin/*',
+        '/',
+        '/categories',
+        '/category-products',
+        '/product/*',
+        '/support',
+        '/policies'
+      ]}>
         <div className="flex flex-col min-h-screen">
           <main className={hideBottomNav ? 'flex-grow' : 'flex-grow pb-16'}>
             <Routes>
               {routes.map((route, index) => (
                 <Route key={index} path={route.path} element={route.element} />
               ))}
-              <Route path="*" element={<Navigate to="/welcome" replace />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
           {!hideBottomNav && <BottomNav />}
