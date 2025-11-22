@@ -66,15 +66,6 @@ export default function Account() {
     }
   };
 
-  const generateRandomPassword = () => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let password = '';
-    for (let i = 0; i < 12; i++) {
-      password += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return password;
-  };
-
   const handleChangePassword = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
       toast.error('Please fill in all fields');
@@ -128,22 +119,26 @@ export default function Account() {
 
   const handleForgotPassword = async () => {
     try {
-      const randomPassword = generateRandomPassword();
-      
-      const { error } = await supabase.auth.updateUser({
-        password: randomPassword,
-      });
-
-      if (error) {
-        toast.error('Failed to reset password');
+      if (!user?.email) {
+        toast.error('Email not found');
         return;
       }
 
-      toast.success(`Random password sent to your email: ${user?.email}`, {
-        description: `Your new password is: ${randomPassword}. Please copy it and change it after logging in.`,
-        duration: 10000,
+      const { data, error } = await supabase.functions.invoke('send-temp-password', {
+        body: JSON.stringify({ email: user.email }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
 
+      if (error) {
+        const errorMsg = await error?.context?.text();
+        console.error('Edge function error in send-temp-password:', errorMsg);
+        toast.error('Failed to send temporary password');
+        return;
+      }
+
+      toast.success('A temporary password has been sent to your registered email. Please check your inbox to proceed.');
       setForgotPasswordDialogOpen(false);
     } catch (error) {
       console.error('Error resetting password:', error);
