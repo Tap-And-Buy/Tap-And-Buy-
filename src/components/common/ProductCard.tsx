@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { db } from '@/db/api';
 import type { Product } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ProductCardProps {
   product: Product;
@@ -15,6 +16,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product, isInWishlist = false, onWishlistChange }: ProductCardProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isWishlisted, setIsWishlisted] = useState(isInWishlist);
   const [isTogglingWishlist, setIsTogglingWishlist] = useState(false);
 
@@ -49,6 +51,12 @@ export function ProductCard({ product, isInWishlist = false, onWishlistChange }:
 
   const handleWishlist = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    if (!user) {
+      toast.error('Please login to add to wishlist');
+      navigate('/welcome');
+      return;
+    }
     
     setIsTogglingWishlist(true);
     try {
