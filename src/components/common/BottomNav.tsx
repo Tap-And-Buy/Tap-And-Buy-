@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { Home, Grid3x3, ShoppingCart, User, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,6 +13,7 @@ import { NotificationPanel } from './NotificationPanel';
 
 export function BottomNav() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [cartCount, setCartCount] = useState(0);
   const [notificationCount, setNotificationCount] = useState(0);
@@ -30,11 +31,18 @@ export function BottomNav() {
     }
   }, [user, location.pathname]);
 
+  const handleNavClick = (path: string, requiresAuth: boolean) => (e: React.MouseEvent) => {
+    if (requiresAuth && !user) {
+      e.preventDefault();
+      navigate('/welcome');
+    }
+  };
+
   const navItems = [
-    { path: '/', icon: Home, label: 'Home' },
-    { path: '/categories', icon: Grid3x3, label: 'Categories' },
-    { path: '/cart', icon: ShoppingCart, label: 'Cart', badge: cartCount },
-    { path: '/account', icon: User, label: 'Account' },
+    { path: '/', icon: Home, label: 'Home', requiresAuth: false },
+    { path: '/categories', icon: Grid3x3, label: 'Categories', requiresAuth: false },
+    { path: '/cart', icon: ShoppingCart, label: 'Cart', badge: cartCount, requiresAuth: true },
+    { path: '/account', icon: User, label: 'Account', requiresAuth: true },
   ];
 
   return (
@@ -48,6 +56,7 @@ export function BottomNav() {
             <Link
               key={item.path}
               to={item.path}
+              onClick={handleNavClick(item.path, item.requiresAuth)}
               className={cn(
                 'flex flex-col items-center justify-center flex-1 h-full relative',
                 'transition-colors',
