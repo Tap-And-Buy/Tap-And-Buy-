@@ -161,7 +161,7 @@ export default function ProductDetail() {
   const handleWishlist = async () => {
     if (!user) {
       toast.error('Please login to add to wishlist');
-      navigate('/login');
+      navigate('/welcome');
       return;
     }
 
@@ -183,7 +183,7 @@ export default function ProductDetail() {
   const handleAddToCart = async () => {
     if (!user) {
       toast.error('Please login to add items to cart');
-      navigate('/login');
+      navigate('/welcome');
       return;
     }
 
@@ -201,7 +201,7 @@ export default function ProductDetail() {
   const handleBuyNow = async () => {
     if (!user) {
       toast.error('Please login to continue');
-      navigate('/login');
+      navigate('/welcome');
       return;
     }
 
