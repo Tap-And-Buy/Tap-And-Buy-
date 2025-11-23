@@ -39,7 +39,6 @@ export default function Account() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
-  const [forgotPasswordDialogOpen, setForgotPasswordDialogOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -114,35 +113,6 @@ export default function Account() {
       toast.error('Failed to change password');
     } finally {
       setIsChangingPassword(false);
-    }
-  };
-
-  const handleForgotPassword = async () => {
-    try {
-      if (!user?.email) {
-        toast.error('Email not found');
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke('send-temp-password', {
-        body: JSON.stringify({ email: user.email }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (error) {
-        const errorMsg = await error?.context?.text();
-        console.error('Edge function error in send-temp-password:', errorMsg);
-        toast.error('Failed to send temporary password');
-        return;
-      }
-
-      toast.success('A temporary password has been sent to your registered email. Please check your inbox to proceed.');
-      setForgotPasswordDialogOpen(false);
-    } catch (error) {
-      console.error('Error resetting password:', error);
-      toast.error('Failed to reset password');
     }
   };
 
@@ -356,16 +326,6 @@ export default function Account() {
                       placeholder="Confirm new password"
                     />
                   </div>
-                  <Button
-                    variant="link"
-                    className="p-0 h-auto text-sm"
-                    onClick={() => {
-                      setPasswordDialogOpen(false);
-                      setForgotPasswordDialogOpen(true);
-                    }}
-                  >
-                    Forgot your current password?
-                  </Button>
                 </div>
                 <DialogFooter>
                   <Button
@@ -388,25 +348,6 @@ export default function Account() {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-
-            <AlertDialog open={forgotPasswordDialogOpen} onOpenChange={setForgotPasswordDialogOpen}>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Forgot Password?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    We will generate a random password and display it here. 
-                    You can use this password to login and then change it to a new one.
-                    Do you want to proceed?
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleForgotPassword}>
-                    Yes, Reset Password
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
           </CardContent>
         </Card>
 
