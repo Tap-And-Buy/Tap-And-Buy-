@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 
@@ -18,15 +19,27 @@ const schema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
 type FormData = z.infer<typeof schema>;
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
 
 export default function AdminLogin() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { email: '', password: '' },
+  });
+
+  const forgotPasswordForm = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: { email: '' },
   });
 
   const handleLogin = async (data: FormData) => {
@@ -52,6 +65,40 @@ export default function AdminLogin() {
       toast.error(err.message || 'Login failed');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (data: ForgotPasswordFormData) => {
+    setForgotPasswordLoading(true);
+    try {
+      const { error } = await supabase.functions.invoke('forgot-password', {
+        body: JSON.stringify({ email: data.email }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (error) {
+        const errorMsg = await error?.context?.text();
+        const errorData = errorMsg ? JSON.parse(errorMsg) : null;
+        
+        if (errorData?.error === 'This email is not registered') {
+          toast.error('This email is not registered');
+        } else {
+          console.error('Edge function error in forgot-password:', errorMsg);
+          toast.error('Failed to send temporary password');
+        }
+        return;
+      }
+
+      toast.success('A new password has been sent to your email address. Please check your inbox.');
+      setForgotPasswordOpen(false);
+      forgotPasswordForm.reset();
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      toast.error('Failed to reset password');
+    } finally {
+      setForgotPasswordLoading(false);
     }
   };
 
@@ -117,6 +164,55 @@ export default function AdminLogin() {
 
             <div className="mt-4 text-center text-sm text-muted-foreground">
               <p>⚠️ Admin access only</p>
+            </div>
+
+            <div className="mt-3 text-center text-sm">
+              <Dialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen}>
+                <DialogTrigger asChild>
+                  <button className="text-muted-foreground hover:text-primary transition-colors">
+                    Forgot your password?
+                  </button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Reset Admin Password</DialogTitle>
+                    <DialogDescription>
+                      Enter your admin email address and we'll send you a new password.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <Form {...forgotPasswordForm}>
+                    <form onSubmit={forgotPasswordForm.handleSubmit(handleForgotPassword)} className="space-y-4">
+                      <FormField
+                        control={forgotPasswordForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email *</FormLabel>
+                            <FormControl>
+                              <Input type="email" placeholder="Enter your admin email" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="flex-1"
+                          onClick={() => setForgotPasswordOpen(false)}
+                          disabled={forgotPasswordLoading}
+                        >
+                          Cancel
+                        </Button>
+                        <Button type="submit" className="flex-1" disabled={forgotPasswordLoading}>
+                          {forgotPasswordLoading ? 'Sending...' : 'Send Password'}
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
             </div>
           </CardContent>
         </Card>
