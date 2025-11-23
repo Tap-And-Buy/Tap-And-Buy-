@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { toast } from 'sonner';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertCircle } from 'lucide-react';
 import logoImg from '/logo.png';
 
 const loginSchema = z.object({
@@ -77,6 +78,13 @@ export default function Login() {
             </div>
           </CardHeader>
           <CardContent>
+            <Alert className="mb-4 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+              <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500" />
+              <AlertDescription className="text-amber-800 dark:text-amber-400">
+                <strong>Important:</strong> Please set a memorable password. This site does not allow you to reset your password if you forget it.
+              </AlertDescription>
+            </Alert>
+
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-4">
                 <FormField
