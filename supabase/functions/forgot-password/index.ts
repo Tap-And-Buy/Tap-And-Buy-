@@ -24,6 +24,21 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const resendApiKey = Deno.env.get('RESEND_API_KEY');
 
+    console.log('Environment check:', {
+      hasSupabaseUrl: !!supabaseUrl,
+      hasServiceKey: !!supabaseServiceKey,
+      hasResendKey: !!resendApiKey,
+      resendKeyPrefix: resendApiKey?.substring(0, 8)
+    });
+
+    if (!resendApiKey) {
+      console.error('RESEND_API_KEY is not configured');
+      return new Response(
+        JSON.stringify({ error: 'Email service is not configured. Please contact support.' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     // Check if user exists
@@ -172,16 +187,34 @@ Deno.serve(async (req) => {
 
         if (!emailResponse.ok) {
           const errorText = await emailResponse.text();
-          console.error('Resend API error:', errorText);
+          console.error('Resend API error response:', {
+            status: emailResponse.status,
+            statusText: emailResponse.statusText,
+            body: errorText
+          });
+          
+          let errorMessage = 'Failed to send email. Please contact support.';
+          try {
+            const errorData = JSON.parse(errorText);
+            if (errorData.message) {
+              errorMessage = `Email error: ${errorData.message}`;
+            }
+          } catch (e) {
+            // If parsing fails, use default message
+          }
+          
           return new Response(
-            JSON.stringify({ error: 'Failed to send email. Please contact support.' }),
+            JSON.stringify({ error: errorMessage }),
             { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
+
+        const emailResult = await emailResponse.json();
+        console.log('Email sent successfully:', emailResult);
       } catch (emailError) {
         console.error('Error sending email:', emailError);
         return new Response(
-          JSON.stringify({ error: 'Failed to send email. Please contact support.' }),
+          JSON.stringify({ error: `Failed to send email: ${emailError.message}` }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
