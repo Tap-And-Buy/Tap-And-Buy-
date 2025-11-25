@@ -225,7 +225,7 @@ export default function CategoryProducts() {
             {recommendedProducts.length > 0 && (
               <div>
                 <h2 className="text-xl font-bold mb-4">Recommended Products</h2>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                   {recommendedProducts.map(product => (
                     <ProductCard
                       key={product.id}
@@ -239,7 +239,7 @@ export default function CategoryProducts() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {filteredProducts.map(product => (
               <ProductCard
                 key={product.id}
