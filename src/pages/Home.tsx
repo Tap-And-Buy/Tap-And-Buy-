@@ -499,7 +499,7 @@ export default function Home() {
         {recentlyViewed.length > 0 && (
           <section>
             <h2 className="text-2xl font-bold mb-4">Recently Viewed</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {recentlyViewed.map(product => (
                 <ProductCard
                   key={product.id}
@@ -514,7 +514,7 @@ export default function Home() {
 
         <section>
           <h2 className="text-2xl font-bold mb-4">Featured Products</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {products.map(product => (
               <ProductCard
                 key={product.id}
