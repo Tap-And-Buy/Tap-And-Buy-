@@ -49,11 +49,13 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 // Test connection on initialization
-supabase
-  .from('categories')
-  .select('count')
-  .limit(1)
-  .then(({ error }) => {
+(async () => {
+  try {
+    const { error } = await supabase
+      .from('categories')
+      .select('count')
+      .limit(1);
+
     if (error) {
       console.error('Supabase connection test failed:', error);
       console.error('Please check:');
@@ -63,7 +65,7 @@ supabase
     } else {
       console.log('✅ Supabase connection successful');
     }
-  })
-  .catch((error: unknown) => {
+  } catch (error: unknown) {
     console.error('Supabase connection test error:', error);
-  });
+  }
+})();
