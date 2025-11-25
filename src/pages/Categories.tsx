@@ -63,31 +63,33 @@ export default function Categories() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {categories.map(category => (
               <Card
                 key={category.id}
-                className="cursor-pointer hover:shadow-lg hover:scale-105 transition-all"
+                className="cursor-pointer hover:shadow-lg hover:scale-105 transition-all overflow-hidden"
                 onClick={() => handleCategoryClick(category.id, category.name)}
               >
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-3">
-                    {category.image_url && (
+                <CardContent className="p-0">
+                  {category.image_url && (
+                    <div className="w-full h-40 bg-muted">
                       <img
                         src={category.image_url}
                         alt={category.name}
-                        className="h-12 w-12 rounded object-cover flex-shrink-0"
+                        className="w-full h-full object-cover"
                       />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-lg font-semibold mb-1">{category.name}</h3>
-                      {category.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {category.description}
-                        </p>
-                      )}
                     </div>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                  )}
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold mb-1 flex items-center justify-between">
+                      {category.name}
+                      <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    </h3>
+                    {category.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {category.description}
+                      </p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
