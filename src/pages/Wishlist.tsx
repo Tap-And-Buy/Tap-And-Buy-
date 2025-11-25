@@ -82,7 +82,7 @@ export default function Wishlist() {
             <p className="text-muted-foreground">
               {products.length} {products.length === 1 ? 'item' : 'items'} in your wishlist
             </p>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {products.map(product => (
                 <ProductCard
                   key={product.id}
