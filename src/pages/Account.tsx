@@ -265,6 +265,12 @@ export default function Account() {
                 <Button variant="outline" onClick={() => navigate('/admin/promotions')}>
                   Promotions
                 </Button>
+                <Button variant="outline" onClick={() => navigate('/admin/coupons')}>
+                  Coupons
+                </Button>
+                <Button variant="outline" onClick={() => navigate('/admin/users')}>
+                  Users
+                </Button>
               </div>
             </CardContent>
           </Card>
