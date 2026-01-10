@@ -8,9 +8,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
-import { ArrowLeft, AlertCircle } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import logoImg from '/logo.png';
 
 const loginSchema = z.object({
@@ -23,6 +31,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function Login() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -43,6 +52,22 @@ export default function Login() {
           return;
         }
         throw error;
+      }
+
+      // Check if user is admin
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (profile?.role === 'admin') {
+          toast.success('Welcome back, Admin!');
+          navigate('/admin/dashboard');
+          return;
+        }
       }
 
       toast.success('Login successful!');
@@ -78,13 +103,6 @@ export default function Login() {
             </div>
           </CardHeader>
           <CardContent>
-            <Alert className="mb-4 border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
-              <AlertCircle className="h-4 w-4 text-amber-600 dark:text-amber-500" />
-              <AlertDescription className="text-amber-800 dark:text-amber-400">
-                <strong>Important:</strong> Please set a memorable password. This site does not allow you to reset your password if you forget it.
-              </AlertDescription>
-            </Alert>
-
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleLogin)} className="space-y-4">
                 <FormField
@@ -113,6 +131,16 @@ export default function Login() {
                     </FormItem>
                   )}
                 />
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="link"
+                    className="px-0 text-sm"
+                    onClick={() => setShowForgotPassword(true)}
+                  >
+                    Forgot Password?
+                  </Button>
+                </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Signing in...' : 'Login'}
                 </Button>
@@ -128,6 +156,24 @@ export default function Login() {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Forgot Password?</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>To reset your password, please contact us at:</p>
+              <p className="font-semibold text-primary">tapandbuy.in@gmail.com</p>
+              <p className="text-sm">Include your registered email address in your message.</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setShowForgotPassword(false)}>
+              Got it
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
