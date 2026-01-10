@@ -25,6 +25,7 @@ export default function ProductDetail() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [imagesLoaded, setImagesLoaded] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     if (id) {
@@ -32,8 +33,22 @@ export default function ProductDetail() {
       checkWishlistStatus(id);
       loadRelatedProducts();
       setCurrentImageIndex(0);
+      setImagesLoaded(new Set());
     }
   }, [id]);
+
+  // Preload all product images
+  useEffect(() => {
+    if (product?.image_urls && product.image_urls.length > 0) {
+      product.image_urls.forEach((url, index) => {
+        const img = new Image();
+        img.onload = () => {
+          setImagesLoaded(prev => new Set(prev).add(index));
+        };
+        img.src = url;
+      });
+    }
+  }, [product?.image_urls]);
 
   const loadProduct = async (productId: string) => {
     try {
@@ -258,15 +273,21 @@ export default function ProductDetail() {
             {product.image_urls && product.image_urls.length > 0 ? (
               <div className="relative">
                 <div 
-                  className="aspect-square bg-muted rounded-lg overflow-hidden"
+                  className="aspect-square bg-muted rounded-lg overflow-hidden relative"
                   onTouchStart={handleTouchStart}
                   onTouchMove={handleTouchMove}
                   onTouchEnd={handleTouchEnd}
                 >
+                  {!imagesLoaded.has(currentImageIndex) && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+                    </div>
+                  )}
                   <img
                     src={product.image_urls[currentImageIndex]}
                     alt={`${product.name} - Image ${currentImageIndex + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-200"
+                    className="w-full h-full object-cover transition-opacity duration-200"
+                    style={{ opacity: imagesLoaded.has(currentImageIndex) ? 1 : 0 }}
                   />
                 </div>
                 
