@@ -38,6 +38,7 @@ export default function AdminOrders() {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [expandedOrders, setExpandedOrders] = useState<Record<string, OrderWithDetails>>({});
   const [loadingDetails, setLoadingDetails] = useState<Record<string, boolean>>({});
+  const [updating, setUpdating] = useState(false);
 
   const form = useForm<TrackingFormData>({
     resolver: zodResolver(trackingSchema),
@@ -106,18 +107,29 @@ export default function AdminOrders() {
     if (!selectedOrder) return;
 
     try {
+      setUpdating(true);
+      console.log('Updating order with data:', { 
+        orderId: selectedOrder.id, 
+        tracking_info: data.tracking_info, 
+        status: data.status 
+      });
+      
       await db.orders.update(selectedOrder.id, {
         tracking_info: data.tracking_info,
         status: data.status as OrderStatus,
       });
-      toast.success('Order updated successfully');
+      
+      toast.success(`Order updated successfully to ${data.status.replace('_', ' ')}`);
       setDialogOpen(false);
       form.reset();
       setSelectedOrder(null);
-      loadOrders();
+      await loadOrders();
     } catch (error) {
       console.error('Error updating order:', error);
-      toast.error('Failed to update order');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update order';
+      toast.error(`Update failed: ${errorMessage}`);
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -210,6 +222,7 @@ export default function AdminOrders() {
               <SelectItem value="cancellation_requested">Cancellation Requests</SelectItem>
               <SelectItem value="processing">Processing</SelectItem>
               <SelectItem value="order_placed">Order Placed</SelectItem>
+              <SelectItem value="confirmed">Confirmed</SelectItem>
               <SelectItem value="shipped">Shipped</SelectItem>
               <SelectItem value="delivered">Delivered</SelectItem>
               <SelectItem value="cancelled">Cancelled</SelectItem>
@@ -312,15 +325,15 @@ export default function AdminOrders() {
                                 <h3 className="font-semibold">Delivery Address</h3>
                               </div>
                               <div className="space-y-1 text-sm">
-                                <p className="font-medium">{expandedOrders[order.id].address.full_name}</p>
-                                <p>{expandedOrders[order.id].address.address_line1}</p>
-                                {expandedOrders[order.id].address.address_line2 && (
-                                  <p>{expandedOrders[order.id].address.address_line2}</p>
+                                <p className="font-medium">{expandedOrders[order.id].address?.full_name}</p>
+                                <p>{expandedOrders[order.id].address?.address_line1}</p>
+                                {expandedOrders[order.id].address?.address_line2 && (
+                                  <p>{expandedOrders[order.id].address?.address_line2}</p>
                                 )}
                                 <p>
-                                  {expandedOrders[order.id].address.city}, {expandedOrders[order.id].address.state} - {expandedOrders[order.id].address.pincode}
+                                  {expandedOrders[order.id].address?.city}, {expandedOrders[order.id].address?.state} - {expandedOrders[order.id].address?.pincode}
                                 </p>
-                                <p className="text-muted-foreground">Phone: {expandedOrders[order.id].address.phone}</p>
+                                <p className="text-muted-foreground">Phone: {expandedOrders[order.id].address?.phone}</p>
                               </div>
                             </div>
                           )}
@@ -412,6 +425,7 @@ export default function AdminOrders() {
                       <SelectContent>
                         <SelectItem value="processing">Processing</SelectItem>
                         <SelectItem value="order_placed">Order Placed</SelectItem>
+                        <SelectItem value="confirmed">Confirmed</SelectItem>
                         <SelectItem value="shipped">Shipped</SelectItem>
                         <SelectItem value="delivered">Delivered</SelectItem>
                         <SelectItem value="cancelled">Cancelled</SelectItem>
@@ -435,8 +449,10 @@ export default function AdminOrders() {
                 )}
               />
               <div className="flex gap-3">
-                <Button type="submit" className="flex-1">Update</Button>
-                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                <Button type="submit" className="flex-1" disabled={updating}>
+                  {updating ? 'Updating...' : 'Update'}
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={updating}>
                   Cancel
                 </Button>
               </div>
