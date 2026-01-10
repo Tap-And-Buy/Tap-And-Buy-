@@ -21,22 +21,59 @@ import type {
   WishlistWithProduct,
   FirstOrderDevice,
   Notification,
+  Coupon,
+  CouponUsage,
+  CouponWithUsage,
 } from '@/types';
+
+// Helper function to handle database errors
+async function handleDbError<T>(operation: () => Promise<T>, errorMessage: string): Promise<T> {
+  try {
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Database operation timeout')), 15000);
+    });
+    
+    return await Promise.race([operation(), timeoutPromise]);
+  } catch (error: unknown) {
+    console.error(errorMessage, error);
+    
+    // Check if it's an auth error
+    if (error && typeof error === 'object' && 'code' in error) {
+      const err = error as { code?: string; message?: string };
+      if (err.code === 'PGRST301' || err.message?.includes('JWT')) {
+        // Session expired or invalid
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            throw new Error('Your session has expired. Please log in again.');
+          }
+        } catch {
+          // Ignore session check errors
+        }
+      }
+    }
+    
+    throw error;
+  }
+}
 
 export const db = {
   profiles: {
     async getCurrent(): Promise<Profile | null> {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return null;
+      return handleDbError(async () => {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return null;
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
 
-      if (error) throw error;
-      return data;
+        if (error) throw error;
+        return data;
+      }, 'Error fetching current profile');
     },
 
     async update(id: string, updates: Partial<Profile>): Promise<Profile> {
@@ -49,6 +86,18 @@ export const db = {
 
       if (error) throw error;
       if (!data) throw new Error('Profile not found');
+      return data;
+    },
+
+    async create(profile: Omit<Profile, 'created_at' | 'updated_at'>): Promise<Profile> {
+      const { data, error } = await supabase
+        .from('profiles')
+        .insert(profile)
+        .select()
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) throw new Error('Failed to create profile');
       return data;
     },
 
@@ -350,6 +399,8 @@ export const db = {
       discount: number;
       total: number;
       payment_reference: string;
+      coupon_code?: string | null;
+      discount_type?: string | null;
       items: Array<{ product_id: string; product_name: string; quantity: number; price: number }>;
     }): Promise<Order> {
       const { data: { user } } = await supabase.auth.getUser();
@@ -364,6 +415,8 @@ export const db = {
         discount: orderData.discount,
         total: orderData.total,
         payment_reference: orderData.payment_reference,
+        coupon_code: orderData.coupon_code || null,
+        discount_type: orderData.discount_type || null,
         status: 'processing' as OrderStatus,
       };
 
@@ -510,6 +563,17 @@ export const db = {
 
       if (error) throw error;
       return Array.isArray(data) ? data : [];
+    },
+
+    async getByOrderId(orderId: string): Promise<ReturnRequest | null> {
+      const { data, error } = await supabase
+        .from('return_requests')
+        .select('*')
+        .eq('order_id', orderId)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
     },
 
     async create(request: Omit<ReturnRequest, 'id' | 'created_at' | 'updated_at'>): Promise<ReturnRequest> {
@@ -1125,4 +1189,217 @@ export const db = {
       if (error) throw error;
     },
   },
+
+  coupons: {
+    async getAll(): Promise<Coupon[]> {
+      const { data, error } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return Array.isArray(data) ? data : [];
+    },
+
+    async getAllForAdmin(): Promise<Coupon[]> {
+      const { data, error } = await supabase
+        .from('coupons')
+        .select('*')
+        .order('created_at', { ascending: false});
+
+      if (error) throw error;
+      return Array.isArray(data) ? data : [];
+    },
+
+    async getById(id: string): Promise<Coupon | null> {
+      const { data, error } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+
+    async getByCode(code: string): Promise<Coupon | null> {
+      const { data, error } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('code', code.toUpperCase())
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+
+    async getEligibleCoupons(cartTotal: number, itemCount: number): Promise<CouponWithUsage[]> {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return [];
+
+      const { data: coupons, error } = await supabase
+        .from('coupons')
+        .select('*')
+        .eq('is_active', true)
+        .lte('min_order_value', cartTotal)
+        .lte('min_items', itemCount)
+        .order('discount_value', { ascending: false });
+
+      if (error) throw error;
+      if (!coupons) return [];
+
+      // Check usage for each coupon
+      const couponsWithUsage: CouponWithUsage[] = await Promise.all(
+        coupons.map(async (coupon) => {
+          const { data: usageData } = await supabase
+            .from('coupon_usage')
+            .select('id')
+            .eq('coupon_id', coupon.id)
+            .eq('user_id', user.id);
+
+          const userUsageCount = usageData?.length || 0;
+          const isEligible = 
+            (!coupon.max_uses || coupon.used_count < coupon.max_uses) &&
+            (!coupon.valid_until || new Date(coupon.valid_until) > new Date()) &&
+            new Date(coupon.valid_from) <= new Date();
+
+          let ineligibleReason = '';
+          if (coupon.max_uses && coupon.used_count >= coupon.max_uses) {
+            ineligibleReason = 'Coupon usage limit reached';
+          } else if (coupon.valid_until && new Date(coupon.valid_until) < new Date()) {
+            ineligibleReason = 'Coupon expired';
+          } else if (new Date(coupon.valid_from) > new Date()) {
+            ineligibleReason = 'Coupon not yet valid';
+          }
+
+          return {
+            ...coupon,
+            user_usage_count: userUsageCount,
+            is_eligible: isEligible,
+            ineligible_reason: ineligibleReason,
+          };
+        })
+      );
+
+      return couponsWithUsage;
+    },
+
+    async validateCoupon(code: string, cartTotal: number, itemCount: number): Promise<{
+      valid: boolean;
+      coupon?: Coupon;
+      discount?: number;
+      message?: string;
+    }> {
+      const coupon = await this.getByCode(code);
+
+      if (!coupon) {
+        return { valid: false, message: 'Invalid coupon code' };
+      }
+
+      if (!coupon.is_active) {
+        return { valid: false, message: 'This coupon is no longer active' };
+      }
+
+      if (coupon.valid_until && new Date(coupon.valid_until) < new Date()) {
+        return { valid: false, message: 'This coupon has expired' };
+      }
+
+      if (new Date(coupon.valid_from) > new Date()) {
+        return { valid: false, message: 'This coupon is not yet valid' };
+      }
+
+      if (coupon.max_uses && coupon.used_count >= coupon.max_uses) {
+        return { valid: false, message: 'This coupon has reached its usage limit' };
+      }
+
+      if (cartTotal < coupon.min_order_value) {
+        return { 
+          valid: false, 
+          message: `Minimum order value of ₹${coupon.min_order_value} required` 
+        };
+      }
+
+      if (itemCount < coupon.min_items) {
+        return { 
+          valid: false, 
+          message: `Minimum ${coupon.min_items} items required` 
+        };
+      }
+
+      let discount = 0;
+      if (coupon.discount_type === 'percentage') {
+        discount = (cartTotal * coupon.discount_value) / 100;
+      } else {
+        discount = coupon.discount_value;
+      }
+
+      return {
+        valid: true,
+        coupon,
+        discount: Math.min(discount, cartTotal),
+        message: 'Coupon applied successfully',
+      };
+    },
+
+    async create(couponData: Omit<Coupon, 'id' | 'used_count' | 'created_at' | 'updated_at'>): Promise<Coupon> {
+      const { data, error } = await supabase
+        .from('coupons')
+        .insert({
+          ...couponData,
+          code: couponData.code.toUpperCase(),
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+
+    async update(id: string, updates: Partial<Coupon>): Promise<Coupon> {
+      const { data, error } = await supabase
+        .from('coupons')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+
+    async delete(id: string): Promise<void> {
+      const { error } = await supabase
+        .from('coupons')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+
+    async recordUsage(couponId: string, orderId: string, discountAmount: number): Promise<void> {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      // Record usage
+      const { error: usageError } = await supabase
+        .from('coupon_usage')
+        .insert({
+          coupon_id: couponId,
+          user_id: user.id,
+          order_id: orderId,
+          discount_amount: discountAmount,
+        });
+
+      if (usageError) throw usageError;
+
+      // Increment used_count
+      const { error: updateError } = await supabase
+        .rpc('increment_coupon_usage', { coupon_id: couponId });
+
+      if (updateError) throw updateError;
+    },
+  },
 };
+
