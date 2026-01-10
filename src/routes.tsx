@@ -3,6 +3,7 @@ import Welcome from './pages/Welcome';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import EmailConfirmation from './pages/EmailConfirmation';
+import EmailVerified from './pages/EmailVerified';
 import AuthCallback from './pages/AuthCallback';
 import AdminLogin from './pages/admin/AdminLogin';
 import Home from './pages/Home';
@@ -19,12 +20,15 @@ import Addresses from './pages/Addresses';
 import Wishlist from './pages/Wishlist';
 import Support from './pages/Support';
 import Policies from './pages/Policies';
+import Diagnostics from './pages/Diagnostics';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/Products';
 import AdminCategories from './pages/admin/Categories';
 import AdminOrders from './pages/admin/Orders';
 import AdminReturns from './pages/admin/Returns';
 import AdminPromotions from './pages/admin/Promotions';
+import AdminCoupons from './pages/admin/Coupons';
+import AdminUsers from './pages/admin/Users';
 import NotFound from './pages/NotFound';
 
 export interface RouteConfig {
@@ -57,6 +61,12 @@ const routes: RouteConfig[] = [
     name: 'Email Confirmation',
     path: '/email-confirmation',
     element: <EmailConfirmation />,
+    visible: false,
+  },
+  {
+    name: 'Email Verified',
+    path: '/email-verified',
+    element: <EmailVerified />,
     visible: false,
   },
   {
@@ -154,6 +164,12 @@ const routes: RouteConfig[] = [
     visible: false,
   },
   {
+    name: 'Diagnostics',
+    path: '/diagnostics',
+    element: <Diagnostics />,
+    visible: false,
+  },
+  {
     name: 'Admin Dashboard',
     path: '/admin/dashboard',
     element: <AdminDashboard />,
@@ -187,6 +203,18 @@ const routes: RouteConfig[] = [
     name: 'Admin Promotions',
     path: '/admin/promotions',
     element: <AdminPromotions />,
+    visible: false,
+  },
+  {
+    name: 'Admin Coupons',
+    path: '/admin/coupons',
+    element: <AdminCoupons />,
+    visible: false,
+  },
+  {
+    name: 'Admin Users',
+    path: '/admin/users',
+    element: <AdminUsers />,
     visible: false,
   },
   {
