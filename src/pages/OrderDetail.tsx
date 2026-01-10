@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { db } from '@/db/api';
-import type { OrderWithDetails } from '@/types';
+import type { OrderWithDetails, ReturnRequest } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Package, MapPin, CreditCard, Truck, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Package, MapPin, CreditCard, Truck, AlertCircle, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useScrollToTop } from '@/hooks/useScrollToTop';
@@ -33,6 +33,7 @@ export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const [order, setOrder] = useState<OrderWithDetails | null>(null);
+  const [returnRequest, setReturnRequest] = useState<ReturnRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
@@ -70,6 +71,10 @@ export default function OrderDetail() {
         return;
       }
       setOrder(data);
+      
+      // Load return request if exists
+      const returnReq = await db.returnRequests.getByOrderId(data.id);
+      setReturnRequest(returnReq);
     } catch (error) {
       console.error('Error loading order:', error);
       toast.error('Failed to load order details');
@@ -140,6 +145,8 @@ export default function OrderDetail() {
 
   const canRequestReturn = () => {
     if (!order) return false;
+    // Cannot request return if already requested
+    if (returnRequest) return false;
     // Can only return if order is delivered
     if (order.status !== 'delivered') return false;
     // Cannot return orders below ₹200
@@ -229,6 +236,50 @@ export default function OrderDetail() {
                   {order.cancellation_reason && (
                     <p className="text-sm text-muted-foreground mt-2">
                       Reason: {order.cancellation_reason}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {returnRequest && (
+          <Card className={returnRequest.status === 'approved' ? 'border-green-500' : returnRequest.status === 'rejected' ? 'border-red-500' : 'border-blue-500'}>
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <RotateCcw className={`h-5 w-5 mt-0.5 ${returnRequest.status === 'approved' ? 'text-green-600' : returnRequest.status === 'rejected' ? 'text-red-600' : 'text-blue-600'}`} />
+                <div className="flex-1">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className={`font-semibold ${returnRequest.status === 'approved' ? 'text-green-900' : returnRequest.status === 'rejected' ? 'text-red-900' : 'text-blue-900'}`}>
+                        Return Request {returnRequest.status === 'pending' ? 'Pending' : returnRequest.status === 'approved' ? 'Approved' : 'Rejected'}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Requested on {new Date(returnRequest.created_at).toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </p>
+                    </div>
+                    <Badge variant={returnRequest.status === 'approved' ? 'default' : returnRequest.status === 'rejected' ? 'destructive' : 'secondary'}>
+                      {returnRequest.status.charAt(0).toUpperCase() + returnRequest.status.slice(1)}
+                    </Badge>
+                  </div>
+                  <p className={`text-sm mt-2 ${returnRequest.status === 'approved' ? 'text-green-800' : returnRequest.status === 'rejected' ? 'text-red-800' : 'text-blue-800'}`}>
+                    {returnRequest.status === 'pending' && 'Your return request is being reviewed by our team. We will update you within 36 hours.'}
+                    {returnRequest.status === 'approved' && 'Your return request has been approved. Please follow the return instructions sent to your email.'}
+                    {returnRequest.status === 'rejected' && 'Your return request has been rejected.'}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    <strong>Reason:</strong> {returnRequest.reason}
+                  </p>
+                  {returnRequest.admin_notes && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      <strong>Admin Notes:</strong> {returnRequest.admin_notes}
                     </p>
                   )}
                 </div>
