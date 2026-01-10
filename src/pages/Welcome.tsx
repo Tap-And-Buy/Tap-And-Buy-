@@ -1,7 +1,7 @@
 import { Link } from 'react-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShieldCheck, UserPlus, LogIn } from 'lucide-react';
+import { UserPlus, LogIn } from 'lucide-react';
 import logoImg from '/logo.png';
 
 export default function Welcome() {
@@ -18,25 +18,7 @@ export default function Welcome() {
           <p className="text-muted-foreground text-lg">Your one-stop shop for online shopping</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader className="text-center">
-              <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <ShieldCheck className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle>Admin Login</CardTitle>
-              <CardDescription>Access admin dashboard and manage your store</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Link to="/admin/login">
-                <Button className="w-full" variant="default">
-                  <ShieldCheck className="mr-2 h-4 w-4" />
-                  Admin Login
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-
+        <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader className="text-center">
               <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
