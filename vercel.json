@@ -13,8 +13,5 @@
     "env": {
       "NODE_ENV": "production"
     }
-  },
-  "functions": {
-    "maxDuration": 60
   }
 }
