@@ -32,20 +32,30 @@ export default function Policies() {
             <div>
               <h3 className="font-semibold mb-2">Return Eligibility</h3>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                <li>Products can be returned within 7 days of delivery</li>
-                <li>Items must be unused, unwashed, and in original packaging</li>
-                <li>Tags and labels must be intact</li>
+                <li>Return requests must be raised within 12 hours after delivery</li>
+                <li>Items must be unused and in original packaging with all tags intact</li>
+                <li>Return requests will be reviewed and managed within 36 hours</li>
                 <li>Return request must be initiated through your account</li>
               </ul>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">Non-Returnable Items</h3>
+              <h3 className="font-semibold mb-2">Damaged or Missing Products</h3>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                <li>Perishable goods (food, flowers, etc.)</li>
-                <li>Personal care items (cosmetics, undergarments)</li>
-                <li>Custom or personalized products</li>
-                <li>Items marked as "non-returnable" on product page</li>
+                <li>Share an unboxing video to tapandbuy.in@gmail.com</li>
+                <li>Include your order ID in the email subject</li>
+                <li>Video must clearly show the package condition and contents</li>
+                <li>Claims will be processed after video verification</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-2">Rejected Parcels</h3>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                <li>If you deny delivery at the time of arrival</li>
+                <li>We will deduct 2x shipping cost + 10% packing fee</li>
+                <li>Remaining amount will be refunded to original payment method</li>
+                <li>Please ensure you want the order before it arrives</li>
               </ul>
             </div>
 
@@ -53,21 +63,20 @@ export default function Policies() {
               <h3 className="font-semibold mb-2">Return Process</h3>
               <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
                 <li>Go to "My Orders" and select the order you want to return</li>
-                <li>Click "Request Return" and provide reason with images</li>
-                <li>Our team will review your request within 24-48 hours</li>
-                <li>Once approved, you'll receive pickup instructions</li>
-                <li>Refund will be processed within 5-7 business days after pickup</li>
+                <li>Click "Request Return" within 12 hours of delivery</li>
+                <li>Provide reason with images (unboxing video for damaged items)</li>
+                <li>Our team will review your request within 36 hours</li>
+                <li>Once approved, you'll receive pickup/return instructions</li>
               </ol>
             </div>
 
             <div>
               <h3 className="font-semibold mb-2">Refund Policy</h3>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                <li>Refunds are processed to the original payment method</li>
-                <li>Delivery charges are non-refundable (except for defective items)</li>
-                <li>Platform fee is non-refundable</li>
-                <li>Refund amount = Product price - Platform fee - Delivery charges</li>
-                <li>Bank processing may take 5-7 business days</li>
+                <li>Refunds (if approved) go to your original payment method</li>
+                <li>Processing time: Within 7 business days after inspection</li>
+                <li>Products must be unused and in original packaging</li>
+                <li>Bank processing may take additional 3-5 business days</li>
               </ul>
             </div>
           </CardContent>
