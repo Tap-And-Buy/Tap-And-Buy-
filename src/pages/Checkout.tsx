@@ -1,13 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { db } from '@/db/api';
-import type { CartItemWithProduct, Address } from '@/types';
+import type { CartItemWithProduct, Address, CouponWithUsage, Coupon } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, MapPin, Plus } from 'lucide-react';
+import { ArrowLeft, MapPin, Plus, Tag, X, Ticket } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useScrollToTop } from '@/hooks/useScrollToTop';
@@ -24,6 +33,17 @@ export default function Checkout() {
   const [loading, setLoading] = useState(true);
   const [isFirstOrder, setIsFirstOrder] = useState(false);
   const [checkingFirstOrder, setCheckingFirstOrder] = useState(true);
+  
+  // Coupon states
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [availableCoupons, setAvailableCoupons] = useState<CouponWithUsage[]>([]);
+  const [couponsDialogOpen, setCouponsDialogOpen] = useState(false);
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
+  
+  // Discount type: 'coupon', 'offer', or 'none'
+  const [discountType, setDiscountType] = useState<'coupon' | 'offer' | 'none'>('none');
 
   useEffect(() => {
     if (user) {
@@ -90,10 +110,11 @@ export default function Checkout() {
     return cartItems.reduce((sum, item) => sum + item.quantity, 0);
   };
 
-  const calculateQuantityDiscount = (totalQty: number) => {
-    if (totalQty >= 35) return 150;
-    if (totalQty >= 20) return 80;
-    if (totalQty >= 10) return 40;
+  // New offer system: requires both quantity AND minimum order value
+  const calculateQuantityDiscount = (totalQty: number, subtotal: number) => {
+    if (totalQty >= 35 && subtotal >= 1500) return 150;
+    if (totalQty >= 20 && subtotal >= 1000) return 80;
+    if (totalQty >= 10 && subtotal >= 500) return 40;
     return 0;
   };
 
@@ -102,15 +123,110 @@ export default function Checkout() {
   const platformFee = 10;
   const deliveryFee = 60;
 
+  // Calculate offer discount
+  const offerDiscount = calculateQuantityDiscount(totalQuantity, subtotal);
+  
+  // Determine which discount to apply
   let discount = 0;
-  if (applyDiscount) {
-    discount = calculateQuantityDiscount(totalQuantity);
+  if (discountType === 'coupon' && appliedCoupon) {
+    discount = couponDiscount;
+  } else if (discountType === 'offer' && applyDiscount) {
+    discount = offerDiscount;
   }
 
   const firstOrderDiscount = isFirstOrder ? Math.round(subtotal * 0.02) : 0;
   const totalDiscount = discount + firstOrderDiscount;
 
   const total = subtotal + platformFee + deliveryFee - totalDiscount;
+
+  // Load available coupons when cart changes
+  useEffect(() => {
+    if (user && cartItems.length > 0) {
+      loadAvailableCoupons();
+    }
+  }, [cartItems, user]);
+
+  const loadAvailableCoupons = async () => {
+    try {
+      const coupons = await db.coupons.getEligibleCoupons(subtotal, totalQuantity);
+      setAvailableCoupons(coupons);
+    } catch (error) {
+      console.error('Error loading coupons:', error);
+    }
+  };
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast.error('Please enter a coupon code');
+      return;
+    }
+
+    try {
+      setValidatingCoupon(true);
+      const result = await db.coupons.validateCoupon(couponCode.trim(), subtotal, totalQuantity);
+
+      if (result.valid && result.coupon && result.discount !== undefined) {
+        setAppliedCoupon(result.coupon);
+        setCouponDiscount(result.discount);
+        setDiscountType('coupon');
+        setApplyDiscount(false); // Disable offer if coupon is applied
+        toast.success(result.message || 'Coupon applied successfully');
+      } else {
+        toast.error(result.message || 'Invalid coupon code');
+      }
+    } catch (error) {
+      console.error('Error applying coupon:', error);
+      toast.error('Failed to apply coupon');
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponDiscount(0);
+    setCouponCode('');
+    setDiscountType('none');
+    toast.success('Coupon removed');
+  };
+
+  const handleSelectCoupon = async (coupon: CouponWithUsage) => {
+    if (!coupon.is_eligible) {
+      toast.error(coupon.ineligible_reason || 'This coupon is not eligible');
+      return;
+    }
+
+    setCouponCode(coupon.code);
+    setCouponsDialogOpen(false);
+    
+    // Auto-apply the selected coupon
+    try {
+      setValidatingCoupon(true);
+      const result = await db.coupons.validateCoupon(coupon.code, subtotal, totalQuantity);
+
+      if (result.valid && result.coupon && result.discount !== undefined) {
+        setAppliedCoupon(result.coupon);
+        setCouponDiscount(result.discount);
+        setDiscountType('coupon');
+        setApplyDiscount(false);
+        toast.success('Coupon applied successfully');
+      }
+    } catch (error) {
+      console.error('Error applying coupon:', error);
+      toast.error('Failed to apply coupon');
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+
+  const handleToggleOffer = (checked: boolean) => {
+    if (checked && appliedCoupon) {
+      toast.error('Please remove the coupon first to use the offer');
+      return;
+    }
+    setApplyDiscount(checked);
+    setDiscountType(checked ? 'offer' : 'none');
+  };
 
   const handleProceedToPayment = () => {
     if (!selectedAddressId) {
@@ -134,6 +250,8 @@ export default function Checkout() {
         discount,
         firstOrderDiscount,
         total,
+        couponCode: appliedCoupon?.code || null,
+        discountType,
       },
     });
   };
@@ -290,7 +408,11 @@ export default function Checkout() {
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-primary">
-                      <span>Quantity Discount ({totalQuantity}+ items)</span>
+                      <span>
+                        {discountType === 'coupon' 
+                          ? `Coupon Discount (${appliedCoupon?.code})`
+                          : `Offer Discount (${totalQuantity}+ items)`}
+                      </span>
                       <span>-₹{discount}</span>
                     </div>
                   )}
@@ -311,25 +433,155 @@ export default function Checkout() {
                   </div>
                 )}
 
-                {totalQuantity >= 10 && (
+                {/* Coupon Code Section */}
+                <div className="border rounded-lg p-4 bg-muted/30 space-y-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Tag className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-semibold">Have a Coupon Code?</span>
+                  </div>
+                  
+                  {appliedCoupon ? (
+                    <div className="flex items-center justify-between p-3 bg-primary/10 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Ticket className="h-5 w-5 text-primary" />
+                        <div>
+                          <p className="font-mono font-semibold text-sm">{appliedCoupon.code}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {appliedCoupon.description || 'Coupon applied'}
+                          </p>
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleRemoveCoupon}
+                        className="h-8 w-8"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter coupon code"
+                          value={couponCode}
+                          onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                          className="flex-1 uppercase"
+                          disabled={validatingCoupon}
+                        />
+                        <Button
+                          onClick={handleApplyCoupon}
+                          disabled={validatingCoupon || !couponCode.trim()}
+                        >
+                          {validatingCoupon ? 'Applying...' : 'Apply'}
+                        </Button>
+                      </div>
+                      
+                      <Dialog open={couponsDialogOpen} onOpenChange={setCouponsDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="link" className="p-0 h-auto text-xs">
+                            View all available coupons
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                          <DialogHeader>
+                            <DialogTitle>Available Coupons</DialogTitle>
+                          </DialogHeader>
+                          <div className="space-y-3">
+                            {availableCoupons.length === 0 ? (
+                              <div className="text-center py-8">
+                                <Tag className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+                                <p className="text-sm text-muted-foreground">
+                                  No coupons available for your current cart
+                                </p>
+                              </div>
+                            ) : (
+                              availableCoupons.map((coupon) => (
+                                <div
+                                  key={coupon.id}
+                                  className={`border rounded-lg p-4 ${
+                                    coupon.is_eligible
+                                      ? 'bg-background hover:bg-muted/50 cursor-pointer'
+                                      : 'bg-muted/30 opacity-60'
+                                  }`}
+                                  onClick={() => coupon.is_eligible && handleSelectCoupon(coupon)}
+                                >
+                                  <div className="flex items-start justify-between mb-2">
+                                    <div className="flex items-center gap-2">
+                                      <Badge variant={coupon.is_eligible ? 'default' : 'secondary'}>
+                                        {coupon.code}
+                                      </Badge>
+                                      {!coupon.is_eligible && (
+                                        <Badge variant="outline" className="text-xs">
+                                          Not Eligible
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <span className="font-semibold text-primary">
+                                      {coupon.discount_type === 'percentage'
+                                        ? `${coupon.discount_value}% OFF`
+                                        : `₹${coupon.discount_value} OFF`}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm mb-2">{coupon.description}</p>
+                                  <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                                    {coupon.min_order_value > 0 && (
+                                      <span>• Min order: ₹{coupon.min_order_value}</span>
+                                    )}
+                                    {coupon.min_items > 0 && (
+                                      <span>• Min items: {coupon.min_items}</span>
+                                    )}
+                                    {coupon.valid_until && (
+                                      <span>
+                                        • Valid until:{' '}
+                                        {new Date(coupon.valid_until).toLocaleDateString()}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {!coupon.is_eligible && coupon.ineligible_reason && (
+                                    <p className="text-xs text-destructive mt-2">
+                                      {coupon.ineligible_reason}
+                                    </p>
+                                  )}
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </>
+                  )}
+                </div>
+
+                {/* All-Time Offer Section */}
+                {offerDiscount > 0 && (
                   <div className="border rounded-lg p-3 bg-muted/50">
                     <div className="flex items-start gap-2">
                       <Checkbox
                         id="discount"
                         checked={applyDiscount}
-                        onCheckedChange={(checked) => setApplyDiscount(checked as boolean)}
+                        onCheckedChange={handleToggleOffer}
+                        disabled={!!appliedCoupon}
                       />
                       <div className="flex-1">
                         <Label htmlFor="discount" className="text-sm font-medium cursor-pointer">
-                          Apply Quantity Discount
+                          Apply All-Time Offer
                         </Label>
                         <p className="text-xs text-muted-foreground mt-1">
-                          {totalQuantity >= 35
-                            ? 'Get ₹150 off on orders with 35+ products'
-                            : totalQuantity >= 20
-                            ? 'Get ₹80 off on orders with 20+ products'
-                            : 'Get ₹40 off on orders with 10+ products'}
+                          {totalQuantity >= 35 && subtotal >= 1500
+                            ? '✨ Get ₹150 off on 35+ products & ₹1500+ order'
+                            : totalQuantity >= 20 && subtotal >= 1000
+                            ? '✨ Get ₹80 off on 20+ products & ₹1000+ order'
+                            : totalQuantity >= 10 && subtotal >= 500
+                            ? '✨ Get ₹40 off on 10+ products & ₹500+ order'
+                            : 'Offer not applicable'}
                         </p>
+                        {appliedCoupon && (
+                          <p className="text-xs text-destructive mt-1">
+                            Remove coupon to use this offer
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
