@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '@/db/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Package, ShoppingCart, RotateCcw, TrendingUp, Users, Grid3x3 } from 'lucide-react';
+import { Package, ShoppingCart, RotateCcw, TrendingUp, Users, Grid3x3, Tag, UserCog } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { AdminHeader } from '@/components/common/AdminHeader';
@@ -198,6 +198,22 @@ export default function AdminDashboard() {
               >
                 <TrendingUp className="h-8 w-8" />
                 <span className="text-base font-semibold">Manage Promotions</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-24 flex flex-col gap-2"
+                onClick={() => navigate('/admin/coupons')}
+              >
+                <Tag className="h-8 w-8" />
+                <span className="text-base font-semibold">Manage Coupons</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-24 flex flex-col gap-2"
+                onClick={() => navigate('/admin/users')}
+              >
+                <UserCog className="h-8 w-8" />
+                <span className="text-base font-semibold">Manage Users</span>
               </Button>
               <Button
                 variant="outline"
