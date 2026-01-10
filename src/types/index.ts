@@ -75,6 +75,8 @@ export interface Order {
   cancellation_requested: boolean;
   cancellation_reason: string | null;
   delivered_at: string | null;
+  coupon_code: string | null;
+  discount_type: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -190,4 +192,38 @@ export interface Notification {
   related_id: string | null;
   is_read: boolean;
   created_at: string;
+}
+
+export type DiscountType = 'percentage' | 'fixed';
+
+export interface Coupon {
+  id: string;
+  code: string;
+  description: string | null;
+  discount_type: DiscountType;
+  discount_value: number;
+  min_order_value: number;
+  min_items: number;
+  max_uses: number | null;
+  used_count: number;
+  valid_from: string;
+  valid_until: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CouponUsage {
+  id: string;
+  coupon_id: string;
+  user_id: string;
+  order_id: string | null;
+  discount_amount: number;
+  used_at: string;
+}
+
+export interface CouponWithUsage extends Coupon {
+  user_usage_count?: number;
+  is_eligible?: boolean;
+  ineligible_reason?: string;
 }
