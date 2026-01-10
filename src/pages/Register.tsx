@@ -40,7 +40,7 @@ export default function Register() {
           data: {
             full_name: data.fullName,
           },
-          emailRedirectTo: `${window.location.origin}/login`,
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 
