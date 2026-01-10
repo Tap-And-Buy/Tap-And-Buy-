@@ -18,7 +18,7 @@ export default function Payment() {
   const [paymentReference, setPaymentReference] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { cartItems, address, subtotal, platformFee, deliveryFee, discount, firstOrderDiscount, total } =
+  const { cartItems, address, subtotal, platformFee, deliveryFee, discount, firstOrderDiscount, total, couponCode, discountType } =
     location.state || {};
 
   if (!cartItems || !address) {
@@ -54,6 +54,8 @@ export default function Payment() {
         discount,
         total,
         payment_reference: paymentReference.trim(),
+        coupon_code: couponCode || null,
+        discount_type: discountType || null,
         items: cartItems.map((item: { product_id: string; quantity: number; product: { price: number; name: string } }) => ({
           product_id: item.product_id,
           product_name: item.product.name,
@@ -63,6 +65,19 @@ export default function Payment() {
       };
 
       const order = await db.orders.create(orderData);
+
+      // Record coupon usage if a coupon was applied
+      if (couponCode && discountType === 'coupon' && discount > 0) {
+        try {
+          const coupon = await db.coupons.getByCode(couponCode);
+          if (coupon) {
+            await db.coupons.recordUsage(coupon.id, order.id, discount);
+          }
+        } catch (error) {
+          console.error('Error recording coupon usage:', error);
+          // Don't fail the order if coupon recording fails
+        }
+      }
 
       if (firstOrderDiscount && firstOrderDiscount > 0) {
         try {
