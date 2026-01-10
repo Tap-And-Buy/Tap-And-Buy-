@@ -24,11 +24,13 @@ export default function AuthCallback() {
         }
 
         if (data.session) {
+          // Sign out the user after verification so they can login properly
+          await supabase.auth.signOut();
           setStatus('success');
-          setMessage('Email verified successfully! Redirecting to home...');
+          setMessage('Email verified successfully! Redirecting...');
           setTimeout(() => {
-            navigate('/');
-          }, 2000);
+            navigate('/email-verified');
+          }, 1500);
         } else {
           setStatus('error');
           setMessage('Verification link may have expired. Please try registering again.');
