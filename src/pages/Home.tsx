@@ -295,29 +295,54 @@ export default function Home() {
             <TrendingUp className="h-6 w-6 text-primary" />
             <h2 className="text-2xl font-bold">All Time Offers</h2>
           </div>
+          <p className="text-sm text-muted-foreground mb-6">
+            Save more when you buy more! These offers are automatically applied at checkout.
+          </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="border-primary/20 bg-background/50">
+            <Card className="border-primary/20 bg-background/50 hover:shadow-lg transition-shadow">
               <CardContent className="p-4 text-center">
-                <Tag className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <p className="font-semibold text-lg">₹40 OFF</p>
-                <p className="text-sm text-muted-foreground">On orders with 10+ products</p>
+                <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                  <Tag className="h-8 w-8 text-primary" />
+                </div>
+                <p className="font-bold text-2xl text-primary mb-1">₹40 OFF</p>
+                <p className="text-sm font-semibold mb-2">10+ Products</p>
+                <p className="text-xs text-muted-foreground">Min. order value: ₹500</p>
               </CardContent>
             </Card>
-            <Card className="border-primary/20 bg-background/50">
+            <Card className="border-primary/20 bg-background/50 hover:shadow-lg transition-shadow">
               <CardContent className="p-4 text-center">
-                <Tag className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <p className="font-semibold text-lg">₹80 OFF</p>
-                <p className="text-sm text-muted-foreground">On orders with 20+ products</p>
+                <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                  <Tag className="h-8 w-8 text-primary" />
+                </div>
+                <p className="font-bold text-2xl text-primary mb-1">₹80 OFF</p>
+                <p className="text-sm font-semibold mb-2">20+ Products</p>
+                <p className="text-xs text-muted-foreground">Min. order value: ₹1000</p>
               </CardContent>
             </Card>
-            <Card className="border-primary/20 bg-background/50">
+            <Card className="border-primary/20 bg-background/50 hover:shadow-lg transition-shadow">
               <CardContent className="p-4 text-center">
-                <Tag className="h-8 w-8 mx-auto mb-2 text-primary" />
-                <p className="font-semibold text-lg">₹150 OFF</p>
-                <p className="text-sm text-muted-foreground">On orders with 35+ products</p>
+                <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                  <Tag className="h-8 w-8 text-primary" />
+                </div>
+                <p className="font-bold text-2xl text-primary mb-1">₹150 OFF</p>
+                <p className="text-sm font-semibold mb-2">35+ Products</p>
+                <p className="text-xs text-muted-foreground">Min. order value: ₹1500</p>
+              </CardContent>
+            </Card>
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/20 to-primary/10 hover:shadow-lg transition-shadow">
+              <CardContent className="p-4 text-center">
+                <div className="bg-primary/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
+                  <Tag className="h-8 w-8 text-primary" />
+                </div>
+                <p className="font-bold text-2xl text-primary mb-1">2% OFF</p>
+                <p className="text-sm font-semibold mb-2">First Order</p>
+                <p className="text-xs text-muted-foreground">For new customers</p>
               </CardContent>
             </Card>
           </div>
+          <p className="text-xs text-muted-foreground mt-4 text-center">
+            * Only one discount (coupon OR offer) can be applied per order
+          </p>
         </section>
 
         {priceRangeProducts.under20.length > 0 && (
