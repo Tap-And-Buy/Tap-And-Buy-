@@ -3,7 +3,6 @@
   "installCommand": "pnpm install",
   "outputDirectory": "dist",
   "framework": "vite",
-  "nodeVersion": "18.x",
   "rewrites": [
     {
       "source": "/(.*)",
