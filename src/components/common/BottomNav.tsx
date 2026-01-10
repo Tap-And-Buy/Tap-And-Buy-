@@ -1,33 +1,21 @@
 import { Link, useLocation, useNavigate } from 'react-router';
-import { Home, Grid3x3, ShoppingCart, User, Bell } from 'lucide-react';
+import { Home, Grid3x3, ShoppingCart, User, Headphones } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useState } from 'react';
 import { db } from '@/db/api';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { NotificationPanel } from './NotificationPanel';
 
 export function BottomNav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [cartCount, setCartCount] = useState(0);
-  const [notificationCount, setNotificationCount] = useState(0);
-  const [notificationOpen, setNotificationOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
       db.cart.getItems().then(items => {
         setCartCount(items.reduce((sum, item) => sum + item.quantity, 0));
       }).catch(() => setCartCount(0));
-
-      db.notifications.getUnreadCount().then(count => {
-        setNotificationCount(count);
-      }).catch(() => setNotificationCount(0));
     }
   }, [user, location.pathname]);
 
@@ -43,6 +31,7 @@ export function BottomNav() {
     { path: '/categories', icon: Grid3x3, label: 'Categories', requiresAuth: false },
     { path: '/cart', icon: ShoppingCart, label: 'Cart', badge: cartCount, requiresAuth: true },
     { path: '/account', icon: User, label: 'Account', requiresAuth: true },
+    { path: '/support', icon: Headphones, label: 'Support', requiresAuth: false },
   ];
 
   return (
@@ -75,34 +64,6 @@ export function BottomNav() {
             </Link>
           );
         })}
-
-        <Popover open={notificationOpen} onOpenChange={setNotificationOpen}>
-          <PopoverTrigger asChild>
-            <button
-              className={cn(
-                'flex flex-col items-center justify-center flex-1 h-full relative',
-                'transition-colors',
-                'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              <div className="relative">
-                <Bell className="h-5 w-5" />
-                {notificationCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                    {notificationCount > 9 ? '9+' : notificationCount}
-                  </span>
-                )}
-              </div>
-              <span className="text-xs mt-1">Alerts</span>
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-96 p-0 mb-2" align="end" side="top">
-            <NotificationPanel
-              onClose={() => setNotificationOpen(false)}
-              onCountChange={setNotificationCount}
-            />
-          </PopoverContent>
-        </Popover>
       </div>
     </nav>
   );
