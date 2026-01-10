@@ -4,7 +4,6 @@
   "type": "module",
   "engines": {
     "node": "20.x",
-    "pnpm": "8.x"
   },
   "scripts": {
     "dev": "echo 'Do not use this command, only use lint to check'",
