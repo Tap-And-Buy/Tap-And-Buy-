@@ -104,7 +104,7 @@ export function NotificationBell() {
 
     if (notification.related_id && notification.type === 'order') {
       setOpen(false);
-      navigate(`/order-detail/${notification.related_id}`);
+      navigate(`/order/${notification.related_id}`);
     }
   };
 
