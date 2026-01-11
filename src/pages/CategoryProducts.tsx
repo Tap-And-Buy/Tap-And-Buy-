@@ -134,8 +134,31 @@ export default function CategoryProducts() {
 
     setFilteredProducts(filtered);
 
-    // Show recommended products based on search similarity
-    if (searchQuery && searchQuery.length >= 2) {
+    // Show recommended products when no exact matches found
+    if (filtered.length === 0 && (searchQuery || searchParam)) {
+      const searchTerm = (searchQuery || searchParam || '').toLowerCase();
+      const words = searchTerm.split(' ').filter(w => w.length > 2);
+      
+      // Fuzzy search: find products that match any word in the search term
+      const recommended = products
+        .filter(p => {
+          const productText = `${p.name} ${p.description || ''}`.toLowerCase();
+          return words.some(word => productText.includes(word));
+        })
+        .slice(0, 12);
+      
+      // If still no matches, show random popular products
+      if (recommended.length === 0) {
+        const popularProducts = products
+          .filter(p => p.stock_quantity > 0)
+          .sort((a, b) => b.price - a.price)
+          .slice(0, 12);
+        setRecommendedProducts(popularProducts);
+      } else {
+        setRecommendedProducts(recommended);
+      }
+    } else if (searchQuery && searchQuery.length >= 2) {
+      // Show recommended products based on search similarity
       const recommended = products
         .filter(p => {
           const nameMatch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -215,16 +238,24 @@ export default function CategoryProducts() {
             <Card>
               <CardContent className="p-12 text-center">
                 <Grid3x3 className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                <h2 className="text-xl font-semibold mb-2">No products found</h2>
+                <h2 className="text-xl font-semibold mb-2">
+                  {recommendedProducts.length > 0 ? 'No exact matches found' : 'No products found'}
+                </h2>
                 <p className="text-muted-foreground">
-                  {searchQuery ? 'Try a different search term' : 'No products available in this category'}
+                  {recommendedProducts.length > 0 
+                    ? 'But we found some related products you might like' 
+                    : searchQuery 
+                      ? 'Try a different search term or browse our categories' 
+                      : 'No products available in this category'}
                 </p>
               </CardContent>
             </Card>
 
             {recommendedProducts.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold mb-4">Recommended Products</h2>
+                <h2 className="text-xl font-bold mb-4">
+                  {searchQuery || searchParam ? 'Related Products' : 'Recommended Products'}
+                </h2>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                   {recommendedProducts.map(product => (
                     <ProductCard
