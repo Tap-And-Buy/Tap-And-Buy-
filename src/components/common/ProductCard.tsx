@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,7 +14,7 @@ interface ProductCardProps {
   onWishlistChange?: () => void;
 }
 
-export function ProductCard({ product, isInWishlist = false, onWishlistChange }: ProductCardProps) {
+export const ProductCard = memo(function ProductCard({ product, isInWishlist = false, onWishlistChange }: ProductCardProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [isWishlisted, setIsWishlisted] = useState(isInWishlist);
@@ -123,4 +123,4 @@ export function ProductCard({ product, isInWishlist = false, onWishlistChange }:
       </CardContent>
     </Card>
   );
-}
+});
