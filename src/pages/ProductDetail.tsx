@@ -75,20 +75,35 @@ export default function ProductDetail() {
       
       if (!currentProduct) return;
 
+      // First, get products from the same category
       let related = allProducts.filter(p => 
         p.id !== id && 
-        p.category_id === currentProduct.category_id
-      ).slice(0, 8);
+        p.category_id === currentProduct.category_id &&
+        p.stock_quantity > 0 // Prioritize in-stock products
+      ).slice(0, 12);
 
-      if (related.length < 8) {
-        const priceRange = currentProduct.price * 0.3;
+      // If we need more products, add similar price range products
+      if (related.length < 12) {
+        const priceRange = currentProduct.price * 0.5; // 50% price range
         const additionalProducts = allProducts.filter(p => 
           p.id !== id && 
           !related.find(r => r.id === p.id) &&
-          Math.abs(p.price - currentProduct.price) <= priceRange
-        ).slice(0, 8 - related.length);
+          Math.abs(p.price - currentProduct.price) <= priceRange &&
+          p.stock_quantity > 0
+        ).slice(0, 12 - related.length);
         
         related = [...related, ...additionalProducts];
+      }
+
+      // If still need more, add any other products
+      if (related.length < 12) {
+        const moreProducts = allProducts.filter(p => 
+          p.id !== id && 
+          !related.find(r => r.id === p.id) &&
+          p.stock_quantity > 0
+        ).slice(0, 12 - related.length);
+        
+        related = [...related, ...moreProducts];
       }
 
       setRelatedProducts(related);
@@ -438,14 +453,15 @@ export default function ProductDetail() {
         {relatedProducts.length > 0 && (
           <div className="max-w-screen-xl mx-auto px-4 py-8">
             <h2 className="text-2xl font-bold mb-6">Related Products</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
               {relatedProducts.map(relatedProduct => (
-                <ProductCard
-                  key={relatedProduct.id}
-                  product={relatedProduct}
-                  isInWishlist={wishlistProductIds.includes(relatedProduct.id)}
-                  onWishlistChange={loadRelatedProducts}
-                />
+                <div key={relatedProduct.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
+                  <ProductCard
+                    product={relatedProduct}
+                    isInWishlist={wishlistProductIds.includes(relatedProduct.id)}
+                    onWishlistChange={loadRelatedProducts}
+                  />
+                </div>
               ))}
             </div>
           </div>
