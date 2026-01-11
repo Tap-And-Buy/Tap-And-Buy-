@@ -1,4 +1,7 @@
 {
-  "installCommand": "npm i -g pnpm@8 && pnpm install",
-  "buildCommand": "pnpm run build"
+"build": {
+"env": {
+"PNPM_VERSION": "8"
+}
+}
 }
