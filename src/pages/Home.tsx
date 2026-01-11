@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Search, Tag, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Tag, TrendingUp, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProductCard } from '@/components/common/ProductCard';
@@ -147,6 +147,18 @@ export default function Home() {
     navigate(`/category-products?search=${encodeURIComponent(searchTerm)}`);
   };
 
+  const handleDeleteSearchHistory = async (term: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await db.searchHistory.delete(term);
+      setSearchHistory(prev => prev.filter(t => t !== term));
+      toast.success('Search history item removed');
+    } catch (error) {
+      console.error('Error deleting search history:', error);
+      toast.error('Failed to delete search history');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -225,9 +237,13 @@ export default function Home() {
                     setSearchTerm(term);
                     handleSearch();
                   }}
-                  className="text-xs bg-primary-foreground/20 hover:bg-primary-foreground/30 px-2 py-1 rounded"
+                  className="text-xs bg-primary-foreground/20 hover:bg-primary-foreground/30 px-2 py-1 rounded flex items-center gap-1 group"
                 >
-                  {term}
+                  <span>{term}</span>
+                  <X 
+                    className="h-3 w-3 opacity-60 group-hover:opacity-100 transition-opacity" 
+                    onClick={(e) => handleDeleteSearchHistory(term, e)}
+                  />
                 </button>
               ))}
             </div>
@@ -298,8 +314,8 @@ export default function Home() {
           <p className="text-sm text-muted-foreground mb-6">
             Save more when you buy more! These offers are automatically applied at checkout.
           </p>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="border-primary/20 bg-background/50 hover:shadow-lg transition-shadow">
+          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+            <Card className="border-primary/20 bg-background/50 hover:shadow-lg transition-shadow flex-shrink-0 w-[280px] snap-start">
               <CardContent className="p-4 text-center">
                 <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
                   <Tag className="h-8 w-8 text-primary" />
@@ -309,7 +325,7 @@ export default function Home() {
                 <p className="text-xs text-muted-foreground">Min. order value: ₹500</p>
               </CardContent>
             </Card>
-            <Card className="border-primary/20 bg-background/50 hover:shadow-lg transition-shadow">
+            <Card className="border-primary/20 bg-background/50 hover:shadow-lg transition-shadow flex-shrink-0 w-[280px] snap-start">
               <CardContent className="p-4 text-center">
                 <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
                   <Tag className="h-8 w-8 text-primary" />
@@ -319,7 +335,7 @@ export default function Home() {
                 <p className="text-xs text-muted-foreground">Min. order value: ₹1000</p>
               </CardContent>
             </Card>
-            <Card className="border-primary/20 bg-background/50 hover:shadow-lg transition-shadow">
+            <Card className="border-primary/20 bg-background/50 hover:shadow-lg transition-shadow flex-shrink-0 w-[280px] snap-start">
               <CardContent className="p-4 text-center">
                 <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
                   <Tag className="h-8 w-8 text-primary" />
@@ -329,7 +345,7 @@ export default function Home() {
                 <p className="text-xs text-muted-foreground">Min. order value: ₹1500</p>
               </CardContent>
             </Card>
-            <Card className="border-primary/20 bg-gradient-to-br from-primary/20 to-primary/10 hover:shadow-lg transition-shadow">
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/20 to-primary/10 hover:shadow-lg transition-shadow flex-shrink-0 w-[280px] snap-start">
               <CardContent className="p-4 text-center">
                 <div className="bg-primary/20 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
                   <Tag className="h-8 w-8 text-primary" />
