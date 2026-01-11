@@ -3,6 +3,13 @@
   "installCommand": "pnpm install",
   "outputDirectory": "dist",
   "framework": "vite",
+
+  "build": {
+    "env": {
+      "PNPM_VERSION": "8.15.5"
+    }
+  }
+  
   "rewrites": [
     {
       "source": "/(.*)",
