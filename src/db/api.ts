@@ -629,6 +629,19 @@ export const db = {
       if (error) throw error;
     },
 
+    async delete(searchTerm: string): Promise<void> {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('search_history')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('search_term', searchTerm);
+
+      if (error) throw error;
+    },
+
     async clear(): Promise<void> {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
