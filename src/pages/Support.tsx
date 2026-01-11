@@ -44,11 +44,11 @@ export default function Support() {
     const lower = message.toLowerCase();
 
     if (lower.includes('return') || lower.includes('refund')) {
-      return 'Returns/Refunds Policy: Raise a request within 12 hours after delivery. It will be reviewed and managed within 36 hours after return request. Refunds (if approved) go to your original payment method within 7 business days after inspection. Products must be unused, in original packaging.';
+      return 'Returns/Refunds Policy: Only damaged products are eligible for return/refund. Raise a request within 12 hours after delivery. It will be reviewed within 36 hours. Important: Delivery charges will NOT be refunded. Share an unboxing video to tapandbuy.in@gmail.com with order ID if product is damaged. If approved, our team will contact you. Refunds go to your original payment method within 7 business days.';
     }
 
     if (lower.includes('damaged') || lower.includes('missing') || lower.includes('defect')) {
-      return 'Damaged/Missing Products: Share an unboxing video to our Gmail account (tapandbuy.in@gmail.com) with the order ID. This helps us process your claim quickly and accurately.';
+      return 'Damaged/Missing Products: Share an unboxing video to our Gmail account (tapandbuy.in@gmail.com) with the order ID. This is required if the product is found damaged when taken from the package. Our team will review and contact you if the return/refund is approved.';
     }
 
     if (lower.includes('reject') || lower.includes('denied') || lower.includes('refuse')) {
@@ -64,7 +64,7 @@ export default function Support() {
     }
 
     if (lower.includes('delivery') || lower.includes('shipping') || lower.includes('days')) {
-      return 'Orders will be delivered within 6 to 8 days after order confirmation. If not delivered within 8 days, it may take an extra 1 to 3 days to be delivered.';
+      return 'Orders will be delivered within 6 to 8 days after order confirmation. If not delivered within 8 days, it may take an extra 1 to 3 days. Good news: FREE delivery on orders above ₹999!';
     }
 
     if (lower.includes('cancel')) {
@@ -72,7 +72,7 @@ export default function Support() {
     }
 
     if (lower.includes('payment') || lower.includes('pay')) {
-      return 'We accept prepaid payments only via UPI, Paytm, GPay, Debit Card, and Credit Card. After payment, please enter the payment reference number to confirm your order.';
+      return 'We accept prepaid payments via: UPI (GPay, Paytm, PhonePe, and other UPI apps), Net Banking (all major banks), Debit Cards (Visa, Mastercard, RuPay), and Credit Cards (Visa, Mastercard, Amex). After payment, enter the payment reference number to confirm your order.';
     }
 
     if (lower.includes('coupon') || lower.includes('code')) {
@@ -83,15 +83,15 @@ export default function Support() {
       return 'All-Time Offers: ₹40 off on 10+ products & ₹500+ order, ₹80 off on 20+ products & ₹1000+ order, ₹150 off on 35+ products & ₹1500+ order. First order discount: 2% off! Note: Only one discount applies (coupon OR offer).';
     }
 
-    if (lower.includes('fee') || lower.includes('charge')) {
-      return 'Platform fee: ₹10 (applied to all orders). Delivery fee: ₹60 (applied to all orders).';
+    if (lower.includes('fee') || lower.includes('charge') || lower.includes('free')) {
+      return 'Platform fee: ₹10 (applied to all orders). Delivery fee: ₹60 (standard). 🎉 FREE delivery on orders above ₹999! The delivery fee is automatically waived when your order exceeds ₹999.';
     }
 
     if (lower.includes('contact') || lower.includes('email') || lower.includes('help')) {
       return 'For further assistance, please contact us at: tapandbuy.in@gmail.com';
     }
 
-    return 'I can help you with: order tracking, returns/refunds, damaged/missing products, rejected parcels, password reset, delivery timeline, cancellations, payment methods, coupons, discounts, and fees. For other queries, please contact us at tapandbuy.in@gmail.com';
+    return 'I can help you with: order tracking, returns/refunds, damaged/missing products, rejected parcels, password reset, delivery timeline, cancellations, payment methods, coupons, discounts, fees, and free delivery. For other queries, please contact us at tapandbuy.in@gmail.com';
   };
 
   const handleSendMessage = () => {
@@ -243,7 +243,14 @@ export default function Support() {
                   <AccordionItem value="item-2">
                     <AccordionTrigger>What is the return/refund policy?</AccordionTrigger>
                     <AccordionContent>
-                      You can raise a return request within 12 hours after delivery. It will be reviewed and managed within 36 hours after the return request. Refunds (if approved) go to your original payment method within 7 business days after inspection. Products must be unused and in original packaging.
+                      <div className="space-y-2 text-sm">
+                        <p><strong>Eligibility:</strong> Only damaged products are eligible for return/refund.</p>
+                        <p><strong>Timeline:</strong> Raise a return request within 12 hours after delivery. It will be reviewed and managed within 36 hours.</p>
+                        <p><strong>Important:</strong> Delivery charges will NOT be refunded, only the product amount.</p>
+                        <p><strong>Damaged Products:</strong> Share an unboxing video of the package to tapandbuy.in@gmail.com with your order ID. This is required if the product is found damaged when taken from the package.</p>
+                        <p><strong>Contact:</strong> If your return/refund is approved, the Tap And Buy team will contact you. Please check your inbox for our response.</p>
+                        <p><strong>Refund Processing:</strong> Approved refunds go to your original payment method within 7 business days after inspection.</p>
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
 
@@ -257,7 +264,16 @@ export default function Support() {
                   <AccordionItem value="item-4">
                     <AccordionTrigger>What payment methods do you accept?</AccordionTrigger>
                     <AccordionContent>
-                      We accept prepaid payments only via UPI, Paytm, GPay, Debit Card, and Credit Card. After payment, please enter the payment reference number to confirm your order.
+                      <div className="space-y-2 text-sm">
+                        <p>We accept prepaid payments only through the following methods:</p>
+                        <ul className="list-disc list-inside space-y-1 ml-2">
+                          <li><strong>UPI:</strong> Google Pay (GPay), Paytm, PhonePe, and other UPI payment applications</li>
+                          <li><strong>Net Banking:</strong> All major banks</li>
+                          <li><strong>Debit Cards:</strong> Visa, Mastercard, RuPay</li>
+                          <li><strong>Credit Cards:</strong> Visa, Mastercard, American Express</li>
+                        </ul>
+                        <p className="mt-2">After payment, please enter the payment reference number to confirm your order.</p>
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
 
@@ -296,8 +312,12 @@ export default function Support() {
                   <AccordionItem value="item-9">
                     <AccordionTrigger>What are the platform and delivery fees?</AccordionTrigger>
                     <AccordionContent>
-                      Platform fee: ₹10 (applied to all orders)<br />
-                      Delivery fee: ₹60 (applied to all orders)
+                      <div className="space-y-2 text-sm">
+                        <p><strong>Platform Fee:</strong> ₹10 (applied to all orders)</p>
+                        <p><strong>Delivery Fee:</strong> ₹60 (standard delivery)</p>
+                        <p className="text-primary font-semibold mt-3">🎉 Free Delivery Available!</p>
+                        <p>Enjoy FREE delivery on orders above ₹999. The delivery fee will be automatically waived at checkout when your order value exceeds ₹999.</p>
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
 
