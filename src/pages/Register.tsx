@@ -33,28 +33,33 @@ export default function Register() {
   const handleRegister = async (data: RegisterData) => {
     setLoading(true);
     try {
-      const { data: authData, error } = await supabase.auth.signUp({
-        email: data.email,
-        password: data.password,
-        options: {
-          data: {
-            full_name: data.fullName,
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+      // Call custom registration edge function
+      const { data: result, error } = await supabase.functions.invoke('register-user', {
+        body: {
+          email: data.email,
+          password: data.password,
+          fullName: data.fullName,
         },
       });
 
       if (error) throw error;
 
-      if (authData?.user?.identities?.length === 0) {
-        toast.error('This email is already registered. Please login instead.');
-        return;
+      if (result?.error) {
+        throw new Error(result.error);
       }
 
+      toast.success('Registration successful! Please check your email to verify your account.');
       navigate('/email-confirmation');
     } catch (error: unknown) {
       const err = error as Error;
-      toast.error(err.message || 'Registration failed');
+      console.error('Registration error:', err);
+      
+      // Check if it's a duplicate email error
+      if (err.message?.includes('already registered') || err.message?.includes('duplicate')) {
+        toast.error('This email is already registered. Please login instead.');
+      } else {
+        toast.error(err.message || 'Registration failed. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
