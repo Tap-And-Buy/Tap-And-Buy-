@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import EmailConfirmation from './pages/EmailConfirmation';
 import EmailVerified from './pages/EmailVerified';
+import VerifyEmail from './pages/VerifyEmail';
 import AuthCallback from './pages/AuthCallback';
 import AdminLogin from './pages/admin/AdminLogin';
 import Home from './pages/Home';
@@ -67,6 +68,12 @@ const routes: RouteConfig[] = [
     name: 'Email Verified',
     path: '/email-verified',
     element: <EmailVerified />,
+    visible: false,
+  },
+  {
+    name: 'Verify Email',
+    path: '/verify-email',
+    element: <VerifyEmail />,
     visible: false,
   },
   {
