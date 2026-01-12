@@ -323,4 +323,3 @@ export default function AdminUsers() {
     </div>
   );
 }
-Connection error. Please check your network or refresh the page.
