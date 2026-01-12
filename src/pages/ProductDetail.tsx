@@ -321,23 +321,20 @@ export default function ProductDetail() {
           </div>
 
           {/* Desktop Layout Skeleton */}
-          <div className="hidden xl:grid xl:grid-cols-2 gap-8">
-            <div className="space-y-6">
+          <div className="hidden xl:block">
+            <div className="grid xl:grid-cols-2 gap-8 mb-8">
               <Skeleton className="aspect-square w-full rounded-lg bg-muted" />
-            </div>
-            <div className="space-y-6">
-              <Skeleton className="h-10 w-3/4 bg-muted" />
-              <Skeleton className="h-8 w-32 bg-muted" />
-              <div className="space-y-4">
-                <Skeleton className="h-4 w-full bg-muted" />
-                <Skeleton className="h-4 w-full bg-muted" />
-                <Skeleton className="h-4 w-3/4 bg-muted" />
-              </div>
-              <div className="space-y-2">
-                <Skeleton className="h-12 w-full bg-muted" />
-                <Skeleton className="h-12 w-full bg-muted" />
+              <div className="space-y-6">
+                <Skeleton className="h-10 w-3/4 bg-muted" />
+                <Skeleton className="h-8 w-32 bg-muted" />
+                <div className="space-y-2">
+                  <Skeleton className="h-12 w-full bg-muted" />
+                  <Skeleton className="h-12 w-full bg-muted" />
+                </div>
+                <Skeleton className="h-32 w-full bg-muted" />
               </div>
             </div>
+            <Skeleton className="h-48 w-full bg-muted" />
           </div>
         </div>
       </div>
@@ -561,197 +558,200 @@ export default function ProductDetail() {
           )}
         </div>
 
-        {/* Desktop/Tablet Layout: Left (Title + Description) | Right (Image + Actions) */}
-        <div className="hidden xl:grid xl:grid-cols-2 gap-8">
-          {/* Left Column: Title and Description */}
-          <div className="space-y-6">
+        {/* Desktop/Tablet Layout: Image Left | Title + Actions Right, Description Full Width Below */}
+        <div className="hidden xl:block">
+          <div className="grid xl:grid-cols-2 gap-8 mb-8">
+            {/* Left Column: Image */}
             <div>
-              <div className="flex items-start justify-between gap-4 mb-2">
-                <h1 className="text-4xl font-bold flex-1">{product.name}</h1>
-                <div className="flex gap-2">
-                  <Button
-                    size="icon"
-                    variant="outline"
-                    onClick={handleShare}
+              {product.image_urls && product.image_urls.length > 0 ? (
+                <div className="relative">
+                  <div 
+                    className="aspect-square bg-muted rounded-lg overflow-hidden relative"
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
                   >
-                    <Share2 className="h-5 w-5" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="outline"
-                    onClick={handleWishlist}
-                    disabled={isTogglingWishlist}
-                  >
-                    <Heart 
-                      className={`h-5 w-5 transition-colors ${
-                        isInWishlist ? 'fill-red-500 text-red-500' : ''
-                      }`}
+                    {!imagesLoaded.has(currentImageIndex) && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+                      </div>
+                    )}
+                    <img
+                      src={product.image_urls[currentImageIndex]}
+                      alt={`${product.name} - Image ${currentImageIndex + 1}`}
+                      className="w-full h-full object-cover transition-opacity duration-200"
+                      style={{ opacity: imagesLoaded.has(currentImageIndex) ? 1 : 0 }}
                     />
-                  </Button>
-                </div>
-              </div>
-              <p className="text-4xl font-bold text-primary mt-4">₹{product.price}</p>
-            </div>
-
-            {product.description && (
-              <Card>
-                <CardContent className="p-6">
-                  <h3 className="font-semibold text-lg mb-3">Description</h3>
-                  <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                    {isDescriptionExpanded ? product.description : truncatedDescription}
-                  </p>
-                  {shouldShowToggle && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="mt-3 p-0 h-auto font-semibold text-primary"
-                      onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                    >
-                      {isDescriptionExpanded ? (
-                        <>
-                          Show Less <ChevronUp className="ml-1 h-4 w-4" />
-                        </>
-                      ) : (
-                        <>
-                          Show More <ChevronDown className="ml-1 h-4 w-4" />
-                        </>
+                  </div>
+                  
+                  {product.image_urls.length > 1 && (
+                    <>
+                      {currentImageIndex > 0 && (
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full shadow-lg"
+                          onClick={handlePreviousImage}
+                        >
+                          <ChevronLeft className="h-6 w-6" />
+                        </Button>
                       )}
-                    </Button>
+                      
+                      {currentImageIndex < product.image_urls.length - 1 && (
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full shadow-lg"
+                          onClick={handleNextImage}
+                        >
+                          <ChevronRight className="h-6 w-6" />
+                        </Button>
+                      )}
+                    </>
                   )}
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Right Column: Image and Actions */}
-          <div className="space-y-6">
-            {/* Image Section */}
-            {product.image_urls && product.image_urls.length > 0 ? (
-              <div className="relative">
-                <div 
-                  className="aspect-square bg-muted rounded-lg overflow-hidden relative"
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
-                >
-                  {!imagesLoaded.has(currentImageIndex) && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+                  
+                  {product.image_urls.length > 1 && (
+                    <div className="flex justify-center gap-2 mt-4">
+                      {product.image_urls.map((_, index) => (
+                        <button
+                          key={index}
+                          className={`h-2 rounded-full transition-all ${
+                            index === currentImageIndex 
+                              ? 'w-8 bg-primary' 
+                              : 'w-2 bg-muted-foreground/30'
+                          }`}
+                          onClick={() => setCurrentImageIndex(index)}
+                        />
+                      ))}
                     </div>
                   )}
-                  <img
-                    src={product.image_urls[currentImageIndex]}
-                    alt={`${product.name} - Image ${currentImageIndex + 1}`}
-                    className="w-full h-full object-cover transition-opacity duration-200"
-                    style={{ opacity: imagesLoaded.has(currentImageIndex) ? 1 : 0 }}
-                  />
                 </div>
-                
-                {product.image_urls.length > 1 && (
-                  <>
-                    {currentImageIndex > 0 && (
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full shadow-lg"
-                        onClick={handlePreviousImage}
-                      >
-                        <ChevronLeft className="h-6 w-6" />
-                      </Button>
-                    )}
-                    
-                    {currentImageIndex < product.image_urls.length - 1 && (
-                      <Button
-                        variant="secondary"
-                        size="icon"
-                        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full shadow-lg"
-                        onClick={handleNextImage}
-                      >
-                        <ChevronRight className="h-6 w-6" />
-                      </Button>
-                    )}
-                  </>
-                )}
-                
-                {product.image_urls.length > 1 && (
-                  <div className="flex justify-center gap-2 mt-4">
-                    {product.image_urls.map((_, index) => (
-                      <button
-                        key={index}
-                        className={`h-2 rounded-full transition-all ${
-                          index === currentImageIndex 
-                            ? 'w-8 bg-primary' 
-                            : 'w-2 bg-muted-foreground/30'
+              ) : (
+                <div className="aspect-square bg-muted rounded-lg flex items-center justify-center">
+                  <p className="text-muted-foreground">No Image Available</p>
+                </div>
+              )}
+            </div>
+
+            {/* Right Column: Title and Actions */}
+            <div className="space-y-6">
+              {/* Title and Price */}
+              <div>
+                <div className="flex items-start justify-between gap-4 mb-2">
+                  <h1 className="text-4xl font-bold flex-1">{product.name}</h1>
+                  <div className="flex gap-2">
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={handleShare}
+                    >
+                      <Share2 className="h-5 w-5" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={handleWishlist}
+                      disabled={isTogglingWishlist}
+                    >
+                      <Heart 
+                        className={`h-5 w-5 transition-colors ${
+                          isInWishlist ? 'fill-red-500 text-red-500' : ''
                         }`}
-                        onClick={() => setCurrentImageIndex(index)}
                       />
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="aspect-square bg-muted rounded-lg flex items-center justify-center">
-                <p className="text-muted-foreground">No Image Available</p>
-              </div>
-            )}
-
-            {/* Actions Section */}
-            <Card>
-              <CardContent className="p-6 space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Quantity</label>
-                  <div className="flex items-center gap-4">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    >
-                      -
-                    </Button>
-                    <span className="text-xl font-semibold w-12 text-center">{quantity}</span>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setQuantity(Math.min(product.stock_quantity || 99, quantity + 1))}
-                    >
-                      +
                     </Button>
                   </div>
                 </div>
+                <p className="text-4xl font-bold text-primary mt-4">₹{product.price}</p>
+              </div>
 
-                <div className="flex flex-col gap-3">
-                  <Button
-                    size="lg"
-                    className="w-full"
-                    onClick={handleBuyNow}
-                  >
-                    <Zap className="mr-2 h-5 w-5" />
-                    Buy Now
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full"
-                    onClick={handleAddToCart}
-                  >
-                    <ShoppingCart className="mr-2 h-5 w-5" />
-                    Add to Cart
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+              {/* Quantity and Actions */}
+              <Card>
+                <CardContent className="p-6 space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Quantity</label>
+                    <div className="flex items-center gap-4">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      >
+                        -
+                      </Button>
+                      <span className="text-xl font-semibold w-12 text-center">{quantity}</span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setQuantity(Math.min(product.stock_quantity || 99, quantity + 1))}
+                      >
+                        +
+                      </Button>
+                    </div>
+                  </div>
 
-            {/* Delivery Information */}
-            <Card>
-              <CardContent className="p-6 space-y-2 text-sm">
-                <h3 className="font-semibold mb-3">Delivery Information</h3>
-                <p>• Delivery within 6-8 days</p>
-                <p>• Delivery charge: ₹60</p>
-                <p>• Prepaid payment only</p>
-                <p>• Return available for damaged items (within 12 hours)</p>
-              </CardContent>
-            </Card>
+                  <div className="flex flex-col gap-3">
+                    <Button
+                      size="lg"
+                      className="w-full"
+                      onClick={handleBuyNow}
+                    >
+                      <Zap className="mr-2 h-5 w-5" />
+                      Buy Now
+                    </Button>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="w-full"
+                      onClick={handleAddToCart}
+                    >
+                      <ShoppingCart className="mr-2 h-5 w-5" />
+                      Add to Cart
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Delivery Information */}
+              <Card>
+                <CardContent className="p-6 space-y-2 text-sm">
+                  <h3 className="font-semibold mb-3">Delivery Information</h3>
+                  <p>• Delivery within 6-8 days</p>
+                  <p>• Delivery charge: ₹60</p>
+                  <p>• Prepaid payment only</p>
+                  <p>• Return available for damaged items (within 12 hours)</p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
+
+          {/* Description - Full Width Below */}
+          {product.description && (
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-lg mb-3">Description</h3>
+                <p className="text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                  {isDescriptionExpanded ? product.description : truncatedDescription}
+                </p>
+                {shouldShowToggle && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="mt-3 p-0 h-auto font-semibold text-primary"
+                    onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                  >
+                    {isDescriptionExpanded ? (
+                      <>
+                        Show Less <ChevronUp className="ml-1 h-4 w-4" />
+                      </>
+                    ) : (
+                      <>
+                        Show More <ChevronDown className="ml-1 h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {relatedProducts.length > 0 && (
