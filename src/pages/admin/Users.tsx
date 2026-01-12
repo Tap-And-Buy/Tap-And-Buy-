@@ -20,9 +20,10 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Users, Search, Key, ArrowLeft } from 'lucide-react';
+import { Users, Search, Eye, Lock, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { decryptPassword, verifyAdminPin } from '@/utils/encryption';
 
 interface UserData {
   id: string;
@@ -31,6 +32,7 @@ interface UserData {
   full_name: string | null;
   role: string;
   created_at: string;
+  encrypted_password: string | null;
 }
 
 export default function AdminUsers() {
@@ -39,10 +41,11 @@ export default function AdminUsers() {
   const [filteredUsers, setFilteredUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [pinDialogOpen, setPinDialogOpen] = useState(false);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [pin, setPin] = useState('');
+  const [revealedPassword, setRevealedPassword] = useState('');
 
   useEffect(() => {
     loadUsers();
@@ -68,7 +71,7 @@ export default function AdminUsers() {
     try {
       setLoading(true);
       
-      // Get all profiles
+      // Get all profiles with encrypted passwords
       const { data: profiles, error } = await supabase
         .from('profiles')
         .select('*')
@@ -86,50 +89,50 @@ export default function AdminUsers() {
     }
   };
 
-  const handleChangePassword = (user: UserData) => {
+  const handleViewPassword = (user: UserData) => {
     setSelectedUser(user);
-    setNewPassword('');
-    setConfirmPassword('');
-    setDialogOpen(true);
+    
+    // If admin account, require PIN
+    if (user.role === 'admin') {
+      setPin('');
+      setPinDialogOpen(true);
+    } else {
+      // For regular users, show password directly
+      showPassword(user);
+    }
   };
 
-  const handleSubmitPasswordChange = async () => {
+  const handlePinSubmit = () => {
     if (!selectedUser) return;
 
-    if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters');
-      return;
+    if (verifyAdminPin(pin)) {
+      setPinDialogOpen(false);
+      showPassword(selectedUser);
+      setPin('');
+    } else {
+      toast.error('Incorrect PIN');
     }
+  };
 
-    if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match');
+  const showPassword = (user: UserData) => {
+    if (!user.encrypted_password) {
+      toast.error('Password not available for this user');
       return;
     }
 
     try {
-      // Use Supabase Admin API to update user password
-      const { error } = await supabase.auth.admin.updateUserById(
-        selectedUser.id,
-        { password: newPassword }
-      );
-
-      if (error) throw error;
-
-      toast.success('Password updated successfully. Please inform the user of their new password.');
-      setDialogOpen(false);
-      setSelectedUser(null);
-      setNewPassword('');
-      setConfirmPassword('');
-    } catch (error: any) {
-      console.error('Error updating password:', error);
-      
-      // If admin API is not available, show instructions
-      if (error.message?.includes('admin') || error.status === 403) {
-        toast.error('Admin password reset not available. Please use Supabase Dashboard to reset user password.');
-      } else {
-        toast.error('Failed to update password');
-      }
+      const decrypted = decryptPassword(user.encrypted_password);
+      setRevealedPassword(decrypted);
+      setPasswordDialogOpen(true);
+    } catch (error) {
+      console.error('Error decrypting password:', error);
+      toast.error('Failed to decrypt password');
     }
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(revealedPassword);
+    toast.success('Password copied to clipboard');
   };
 
   return (
@@ -144,7 +147,7 @@ export default function AdminUsers() {
           Back to Dashboard
         </Button>
         <h1 className="text-3xl font-bold">User Management</h1>
-        <p className="text-muted-foreground mt-1">View all users and manage their accounts</p>
+        <p className="text-muted-foreground mt-1">View all users and their passwords</p>
       </div>
 
       <Card className="mb-6">
@@ -191,7 +194,7 @@ export default function AdminUsers() {
                   <TableHead>Phone</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Registered</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead className="text-right">Password</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -209,14 +212,27 @@ export default function AdminUsers() {
                       {format(new Date(user.created_at), 'MMM dd, yyyy')}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleChangePassword(user)}
-                      >
-                        <Key className="h-4 w-4 mr-2" />
-                        Reset Password
-                      </Button>
+                      {user.encrypted_password ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewPassword(user)}
+                        >
+                          {user.role === 'admin' ? (
+                            <>
+                              <Lock className="h-4 w-4 mr-2" />
+                              View (PIN Required)
+                            </>
+                          ) : (
+                            <>
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Password
+                            </>
+                          )}
+                        </Button>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">Not available</span>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -226,45 +242,80 @@ export default function AdminUsers() {
         </Card>
       )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      {/* PIN Entry Dialog */}
+      <Dialog open={pinDialogOpen} onOpenChange={setPinDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reset Password for {selectedUser?.email}</DialogTitle>
+            <DialogTitle>Admin Password Access</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="new-password">New Password</Label>
-              <Input
-                id="new-password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter new password (min 6 characters)"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Confirm Password</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm new password"
-              />
-            </div>
-            <div className="bg-muted p-3 rounded-md">
-              <p className="text-sm text-muted-foreground">
-                ⚠️ <strong>Important:</strong> After resetting the password, please inform the user of their new password. 
-                They can change it after logging in.
+            <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-md p-4">
+              <p className="text-sm text-amber-800 dark:text-amber-400">
+                🔒 This is an admin account. Please enter the security PIN to view the password.
               </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="pin">Security PIN</Label>
+              <Input
+                id="pin"
+                type="password"
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                placeholder="Enter 4-digit PIN"
+                maxLength={4}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handlePinSubmit();
+                  }
+                }}
+              />
             </div>
           </div>
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setPinDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSubmitPasswordChange}>
-              Reset Password
+            <Button onClick={handlePinSubmit}>
+              Verify PIN
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Display Dialog */}
+      <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>User Password</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <p className="text-sm font-medium">{selectedUser?.email}</p>
+            </div>
+            <div className="space-y-2">
+              <Label>Password</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={revealedPassword}
+                  readOnly
+                  className="font-mono"
+                />
+                <Button onClick={copyToClipboard} variant="outline">
+                  Copy
+                </Button>
+              </div>
+            </div>
+            <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
+              <p className="text-sm text-blue-800 dark:text-blue-400">
+                💡 <strong>Tip:</strong> You can share this password with the user if they forgot it. 
+                Advise them to keep it secure.
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={() => setPasswordDialogOpen(false)}>
+              Close
             </Button>
           </div>
         </DialogContent>
@@ -272,3 +323,4 @@ export default function AdminUsers() {
     </div>
   );
 }
+Connection error. Please check your network or refresh the page.
