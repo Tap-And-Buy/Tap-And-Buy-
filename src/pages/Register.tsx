@@ -49,7 +49,13 @@ export default function Register() {
       }
 
       toast.success('Registration successful! Please check your email to verify your account.');
-      navigate('/email-confirmation');
+      
+      // Pass verification URL to confirmation page if available
+      if (result?.verificationUrl) {
+        navigate('/email-confirmation', { state: { verificationUrl: result.verificationUrl } });
+      } else {
+        navigate('/email-confirmation');
+      }
     } catch (error: unknown) {
       const err = error as Error;
       console.error('Registration error:', err);
