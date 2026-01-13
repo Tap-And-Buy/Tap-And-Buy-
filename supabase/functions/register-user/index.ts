@@ -35,11 +35,22 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Check if user already exists
+    const { data: existingUser } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (existingUser) {
+      throw new Error('This email is already registered. Please login instead.');
+    }
+
     // Create user with Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
-      email_confirm: false, // We'll send custom verification email
+      email_confirm: false, // We'll verify manually
       user_metadata: {
         full_name: fullName,
       },
@@ -47,24 +58,28 @@ serve(async (req) => {
 
     if (authError) throw authError;
 
-    // Encrypt and store password in profiles
+    // Encrypt password
     const encryptedPassword = encryptPassword(password);
     
-    // Wait a moment for the trigger to create the profile
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Update profile with encrypted password
-    const { error: updateError } = await supabase
+    // Manually create profile with encrypted password
+    const { error: profileError } = await supabase
       .from('profiles')
-      .update({ encrypted_password: encryptedPassword })
-      .eq('id', authData.user.id);
+      .insert({
+        id: authData.user.id,
+        email: email,
+        full_name: fullName,
+        role: 'customer',
+        encrypted_password: encryptedPassword,
+      });
 
-    if (updateError) {
-      console.error('Error updating profile:', updateError);
+    if (profileError) {
+      console.error('Error creating profile:', profileError);
+      // Don't throw - user is created, just log the error
     }
 
-    // Send custom verification email
-    const verificationUrl = `${Deno.env.get('SITE_URL')}/verify-email?token=${authData.user.id}`;
+    // Generate verification URL
+    const siteUrl = Deno.env.get('SITE_URL') || 'http://localhost:5173';
+    const verificationUrl = `${siteUrl}/verify-email?token=${authData.user.id}`;
     
     // Call send-verification-email function
     const { error: emailError } = await supabase.functions.invoke('send-verification-email', {
@@ -73,6 +88,7 @@ serve(async (req) => {
 
     if (emailError) {
       console.error('Error sending verification email:', emailError);
+      // Don't throw - user is created, just log the error
     }
 
     return new Response(
