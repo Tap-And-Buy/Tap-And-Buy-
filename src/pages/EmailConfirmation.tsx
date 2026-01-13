@@ -1,11 +1,21 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import logoImg from '/logo.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, CheckCircle2 } from 'lucide-react';
+import { Mail, CheckCircle2, ExternalLink } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function EmailConfirmation() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const verificationUrl = location.state?.verificationUrl;
+
+  const copyVerificationLink = () => {
+    if (verificationUrl) {
+      navigator.clipboard.writeText(verificationUrl);
+      toast.success('Verification link copied to clipboard!');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-accent/20 flex items-center justify-center p-4">
@@ -28,6 +38,35 @@ export default function EmailConfirmation() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {verificationUrl && (
+            <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 p-4 rounded-lg space-y-3">
+              <h3 className="font-semibold text-sm text-blue-900 dark:text-blue-100">
+                📧 Verification Link (For Testing)
+              </h3>
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                Click the link below to verify your email:
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => window.open(verificationUrl, '_blank')}
+                  variant="outline"
+                  size="sm"
+                  className="flex-1"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Open Verification Link
+                </Button>
+                <Button
+                  onClick={copyVerificationLink}
+                  variant="outline"
+                  size="sm"
+                >
+                  Copy
+                </Button>
+              </div>
+            </div>
+          )}
+
           <div className="bg-accent/50 p-4 rounded-lg space-y-2">
             <h3 className="font-semibold text-sm">Next Steps:</h3>
             <ol className="text-sm space-y-2 list-decimal list-inside">
