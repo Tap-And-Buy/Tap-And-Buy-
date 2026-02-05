@@ -57,9 +57,19 @@ export default function Checkout() {
   const checkFirstOrder = async () => {
     try {
       setCheckingFirstOrder(true);
+      
+      // Check both device fingerprint AND user profile
       const deviceId = await getDeviceFingerprint();
-      const existingOrder = await db.firstOrderDevices.checkDevice(deviceId);
-      setIsFirstOrder(!existingOrder);
+      const [existingDeviceOrder, profile] = await Promise.all([
+        db.firstOrderDevices.checkDevice(deviceId),
+        db.profiles.getCurrent()
+      ]);
+      
+      // User is eligible for first order discount only if:
+      // 1. Device hasn't been used for first order discount
+      // 2. User profile hasn't used first order coupon
+      const isEligible: boolean = !existingDeviceOrder && !!profile && !Boolean(profile.first_order_coupon_used);
+      setIsFirstOrder(isEligible);
     } catch (error) {
       console.error('Error checking first order:', error);
       setIsFirstOrder(false);
@@ -121,7 +131,10 @@ export default function Checkout() {
   const subtotal = calculateSubtotal();
   const totalQuantity = calculateTotalQuantity();
   const platformFee = 10;
-  const deliveryFee = 60;
+  
+  // Free delivery if order is above 999 rupees AND has 7+ products
+  const isFreeDelivery = subtotal > 999 && totalQuantity >= 7;
+  const deliveryFee = isFreeDelivery ? 0 : 60;
 
   // Calculate offer discount
   const offerDiscount = calculateQuantityDiscount(totalQuantity, subtotal);
@@ -404,8 +417,15 @@ export default function Checkout() {
                   </div>
                   <div className="flex justify-between">
                     <span>Delivery Fee</span>
-                    <span>₹{deliveryFee}</span>
+                    <span className={isFreeDelivery ? 'text-primary font-semibold' : ''}>
+                      {isFreeDelivery ? 'FREE 🎉' : `₹${deliveryFee}`}
+                    </span>
                   </div>
+                  {isFreeDelivery && (
+                    <div className="text-xs text-primary">
+                      ✓ Free delivery applied (₹999+ & 7+ products)
+                    </div>
+                  )}
                   {discount > 0 && (
                     <div className="flex justify-between text-primary">
                       <span>
