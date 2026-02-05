@@ -5,8 +5,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { db } from '@/db/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { ArrowLeft, Copy, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getDeviceFingerprint } from '@/utils/deviceFingerprint';
@@ -15,8 +13,8 @@ export default function Payment() {
   useScrollToTop();
   const navigate = useNavigate();
   const location = useLocation();
-  const [paymentReference, setPaymentReference] = useState('');
   const [loading, setLoading] = useState(false);
+  const [paymentCompleted, setPaymentCompleted] = useState(false);
 
   const { cartItems, address, subtotal, platformFee, deliveryFee, discount, firstOrderDiscount, total, couponCode, discountType } =
     location.state || {};
@@ -32,15 +30,8 @@ export default function Payment() {
   };
 
   const handleConfirmPayment = async () => {
-    if (!paymentReference.trim()) {
-      toast.error('Please enter payment reference number');
-      return;
-    }
-
-    // Validate exactly 12 digits
-    const referenceRegex = /^\d{12}$/;
-    if (!referenceRegex.test(paymentReference.trim())) {
-      toast.error('Reference number must be exactly 12 digits');
+    if (!paymentCompleted) {
+      toast.error('Please complete the payment first');
       return;
     }
 
@@ -53,7 +44,7 @@ export default function Payment() {
         delivery_fee: deliveryFee,
         discount,
         total,
-        payment_reference: paymentReference.trim(),
+        payment_reference: `AUTO-${Date.now()}`, // Auto-generated reference
         coupon_code: couponCode || null,
         discount_type: discountType || null,
         items: cartItems.map((item: { product_id: string; quantity: number; product: { price: number; name: string } }) => ({
@@ -82,7 +73,10 @@ export default function Payment() {
       if (firstOrderDiscount && firstOrderDiscount > 0) {
         try {
           const deviceId = await getDeviceFingerprint();
-          await db.firstOrderDevices.create(deviceId, order.id, firstOrderDiscount);
+          await Promise.all([
+            db.firstOrderDevices.create(deviceId, order.id, firstOrderDiscount),
+            db.profiles.markFirstOrderCouponUsed()
+          ]);
         } catch (error) {
           console.error('Error recording first order device:', error);
         }
@@ -144,11 +138,7 @@ export default function Payment() {
                 </li>
                 <li className="flex gap-2">
                   <span className="font-semibold text-primary">4.</span>
-                  <span>Copy the payment reference number from your app</span>
-                </li>
-                <li className="flex gap-2">
-                  <span className="font-semibold text-primary">5.</span>
-                  <span>Paste the reference number below and confirm</span>
+                  <span>After successful payment, click "I Have Completed Payment" below</span>
                 </li>
               </ol>
             </div>
@@ -182,27 +172,24 @@ export default function Payment() {
             </div>
 
             <div className="border-t pt-6 space-y-4">
-              <div>
-                <Label htmlFor="reference">Payment Reference Number *</Label>
-                <Input
-                  id="reference"
-                  type="text"
-                  placeholder="Enter 12-digit reference number"
-                  value={paymentReference}
-                  onChange={e => setPaymentReference(e.target.value)}
-                  className="mt-2"
-                  maxLength={12}
+              <div className="flex items-center gap-3 p-4 bg-muted rounded-lg">
+                <input
+                  type="checkbox"
+                  id="payment-completed"
+                  checked={paymentCompleted}
+                  onChange={(e) => setPaymentCompleted(e.target.checked)}
+                  className="h-5 w-5 rounded border-gray-300"
                 />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Enter exactly 12 digits from your payment app (e.g., 123456789012)
-                </p>
+                <label htmlFor="payment-completed" className="text-sm font-medium cursor-pointer">
+                  I have completed the payment of ₹{total.toFixed(2)}
+                </label>
               </div>
 
               <Button
                 size="lg"
                 className="w-full"
                 onClick={handleConfirmPayment}
-                disabled={loading || !paymentReference.trim()}
+                disabled={loading || !paymentCompleted}
               >
                 {loading ? (
                   <>
@@ -212,7 +199,7 @@ export default function Payment() {
                 ) : (
                   <>
                     <CheckCircle2 className="mr-2 h-5 w-5" />
-                    Confirm Payment
+                    Confirm Order
                   </>
                 )}
               </Button>
@@ -224,10 +211,9 @@ export default function Payment() {
           <CardContent className="p-4 text-sm space-y-2">
             <h3 className="font-semibold text-red-900 dark:text-red-100">⚠️ Payment Rules - Please Read Carefully:</h3>
             <ul className="space-y-1 text-red-800 dark:text-red-200">
-              <li>• Reference number must be exactly 12 digits</li>
-              <li>• Wrong reference number will result in order rejection</li>
-              <li>• Wrong amount paid will result in order rejection</li>
               <li>• Ensure you pay the exact amount: ₹{total.toFixed(2)}</li>
+              <li>• Wrong amount paid will result in order rejection</li>
+              <li>• Only confirm after completing the payment</li>
               <li>• If payment is made but order fails, contact support immediately</li>
               <li>• Support Email: <strong>tapandbuy.in@gmail.com</strong></li>
             </ul>
@@ -239,7 +225,7 @@ export default function Payment() {
             <h3 className="font-semibold">Important Notes:</h3>
             <ul className="space-y-1 text-muted-foreground">
               <li>• Do not refresh or close this page after payment</li>
-              <li>• Your order will be confirmed only after entering the reference number</li>
+              <li>• Your order will be confirmed after you click "Confirm Order"</li>
               <li>• Keep your payment receipt for future reference</li>
               <li>• Contact support if you face any issues</li>
             </ul>
