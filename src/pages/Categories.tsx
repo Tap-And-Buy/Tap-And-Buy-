@@ -21,7 +21,40 @@ export default function Categories() {
     try {
       setLoading(true);
       const data = await db.categories.getAll();
-      setCategories(data);
+      
+      // Define category popularity order (most popular first)
+      const popularityOrder = [
+        'Health and Personal Care',
+        'Home and Kitchen',
+        'Electronics',
+        'Fashion',
+        'Beauty',
+        'Sports and Fitness',
+        'Books and Stationery',
+        'Toys and Games',
+        'Automotive',
+        'Pet Supplies',
+        'Gifts'
+      ];
+      
+      // Sort categories by popularity
+      const sortedCategories = data.sort((a, b) => {
+        const indexA = popularityOrder.indexOf(a.name);
+        const indexB = popularityOrder.indexOf(b.name);
+        
+        // If both are in the list, sort by their position
+        if (indexA !== -1 && indexB !== -1) {
+          return indexA - indexB;
+        }
+        // If only A is in the list, it comes first
+        if (indexA !== -1) return -1;
+        // If only B is in the list, it comes first
+        if (indexB !== -1) return 1;
+        // If neither is in the list, maintain alphabetical order
+        return a.name.localeCompare(b.name);
+      });
+      
+      setCategories(sortedCategories);
     } catch (error) {
       console.error('Error loading categories:', error);
       toast.error('Failed to load categories');
