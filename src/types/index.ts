@@ -17,6 +17,7 @@ export interface Profile {
   phone: string | null;
   full_name: string | null;
   role: UserRole;
+  first_order_coupon_used?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -33,6 +34,8 @@ export interface Category {
 export interface Product {
   id: string;
   category_id: string | null;
+  category_id_2?: string | null;
+  category_id_3?: string | null;
   name: string;
   description: string | null;
   price: number;
