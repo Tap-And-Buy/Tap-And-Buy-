@@ -72,7 +72,7 @@ export default function Support() {
     }
 
     if (lower.includes('payment') || lower.includes('pay')) {
-      return 'We accept prepaid payments via: UPI (GPay, Paytm, PhonePe, and other UPI apps), Net Banking (all major banks), Debit Cards (Visa, Mastercard, RuPay), and Credit Cards (Visa, Mastercard, Amex). After payment, enter the payment reference number to confirm your order.';
+      return 'We accept prepaid payments via: UPI (GPay, Paytm, PhonePe, and other UPI apps), Net Banking (all major banks), Debit Cards (Visa, Mastercard, RuPay), and Credit Cards (Visa, Mastercard, Amex). Your order will be confirmed automatically after successful payment.';
     }
 
     if (lower.includes('coupon') || lower.includes('code')) {
@@ -84,7 +84,7 @@ export default function Support() {
     }
 
     if (lower.includes('fee') || lower.includes('charge') || lower.includes('free')) {
-      return 'Platform fee: ₹10 (applied to all orders). Delivery fee: ₹60 (standard). 🎉 FREE delivery on orders above ₹999! The delivery fee is automatically waived when your order exceeds ₹999.';
+      return 'Platform fee: ₹10 (applied to all orders). Delivery fee: ₹60 (standard). 🎉 FREE delivery on orders above ₹999 rupees and 7+ products! The delivery fee is automatically waived when your order meets both conditions.';
     }
 
     if (lower.includes('contact') || lower.includes('email') || lower.includes('help')) {
@@ -272,7 +272,7 @@ export default function Support() {
                           <li><strong>Debit Cards:</strong> Visa, Mastercard, RuPay</li>
                           <li><strong>Credit Cards:</strong> Visa, Mastercard, American Express</li>
                         </ul>
-                        <p className="mt-2">After payment, please enter the payment reference number to confirm your order.</p>
+                        <p className="mt-2">Your order will be confirmed automatically after successful payment.</p>
                       </div>
                     </AccordionContent>
                   </AccordionItem>
@@ -316,7 +316,7 @@ export default function Support() {
                         <p><strong>Platform Fee:</strong> ₹10 (applied to all orders)</p>
                         <p><strong>Delivery Fee:</strong> ₹60 (standard delivery)</p>
                         <p className="text-primary font-semibold mt-3">🎉 Free Delivery Available!</p>
-                        <p>Enjoy FREE delivery on orders above ₹999. The delivery fee will be automatically waived at checkout when your order value exceeds ₹999.</p>
+                        <p>Enjoy FREE delivery on orders above ₹999 rupees and 7+ products. The delivery fee will be automatically waived at checkout when your order meets both conditions.</p>
                       </div>
                     </AccordionContent>
                   </AccordionItem>
