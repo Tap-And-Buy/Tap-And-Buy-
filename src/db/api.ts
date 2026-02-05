@@ -110,6 +110,18 @@ export const db = {
       if (error) throw error;
       return Array.isArray(data) ? data : [];
     },
+
+    async markFirstOrderCouponUsed(): Promise<void> {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ first_order_coupon_used: true })
+        .eq('id', user.id);
+
+      if (error) throw error;
+    },
   },
 
   categories: {
@@ -178,7 +190,8 @@ export const db = {
         .order('created_at', { ascending: false });
 
       if (categoryId) {
-        query = query.eq('category_id', categoryId);
+        // Support multi-category: show products if they belong to any of the 3 category slots
+        query = query.or(`category_id.eq.${categoryId},category_id_2.eq.${categoryId},category_id_3.eq.${categoryId}`);
       }
 
       const { data, error } = await query;
