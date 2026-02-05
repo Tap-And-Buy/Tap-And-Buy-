@@ -72,7 +72,7 @@ export default function Support() {
     }
 
     if (lower.includes('payment') || lower.includes('pay')) {
-      return 'We accept prepaid payments via: UPI (GPay, Paytm, PhonePe, and other UPI apps), Net Banking (all major banks), Debit Cards (Visa, Mastercard, RuPay), and Credit Cards (Visa, Mastercard, Amex). Your order will be confirmed automatically after successful payment.';
+      return 'We accept prepaid payments via UPI only: Google Pay (GPay), Paytm, PhonePe, and other UPI payment applications. Your order will be confirmed automatically after successful payment.';
     }
 
     if (lower.includes('coupon') || lower.includes('code')) {
@@ -265,12 +265,9 @@ export default function Support() {
                     <AccordionTrigger>What payment methods do you accept?</AccordionTrigger>
                     <AccordionContent>
                       <div className="space-y-2 text-sm">
-                        <p>We accept prepaid payments only through the following methods:</p>
+                        <p>We accept prepaid payments via UPI only:</p>
                         <ul className="list-disc list-inside space-y-1 ml-2">
                           <li><strong>UPI:</strong> Google Pay (GPay), Paytm, PhonePe, and other UPI payment applications</li>
-                          <li><strong>Net Banking:</strong> All major banks</li>
-                          <li><strong>Debit Cards:</strong> Visa, Mastercard, RuPay</li>
-                          <li><strong>Credit Cards:</strong> Visa, Mastercard, American Express</li>
                         </ul>
                         <p className="mt-2">Your order will be confirmed automatically after successful payment.</p>
                       </div>
