@@ -24,17 +24,19 @@ export default function Categories() {
       
       // Define category popularity order (most popular first)
       const popularityOrder = [
-        'Health and Personal Care',
-        'Home and Kitchen',
-        'Electronics',
-        'Fashion',
-        'Beauty',
-        'Sports and Fitness',
-        'Books and Stationery',
-        'Toys and Games',
-        'Automotive',
-        'Pet Supplies',
-        'Gifts'
+        'Viral Gadgets',
+        'Electronic Gadgets',
+        'Health & Personal Care',
+        'Home Upgrade',
+        'Kitchen',
+        'Fashion & Accessories',
+        'Fitness & Yoga',
+        'Gifts',
+        'Kids Toys & Essentials',
+        'Pet Care',
+        'Gardening',
+        'Traveling',
+        'Vehicles'
       ];
       
       // Sort categories by popularity
