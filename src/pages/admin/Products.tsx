@@ -22,7 +22,9 @@ const productSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   price: z.string().min(1, 'Price is required'),
-  category_id: z.string().min(1, 'Category is required'),
+  category_id: z.string().min(1, 'Primary category is required'),
+  category_id_2: z.string().optional(),
+  category_id_3: z.string().optional(),
   stock_quantity: z.enum(['in_stock', 'out_of_stock'], {
     required_error: 'Stock status is required',
   }),
@@ -53,6 +55,8 @@ export default function AdminProducts() {
       description: '',
       price: '',
       category_id: '',
+      category_id_2: '',
+      category_id_3: '',
       stock_quantity: 'in_stock' as const,
     },
   });
@@ -77,15 +81,27 @@ export default function AdminProducts() {
   const checkAdminAndLoadData = async () => {
     try {
       const profile = await db.profiles.getCurrent();
-      if (profile?.role !== 'admin') {
+      if (!profile) {
+        toast.error('Unable to verify your session. Please log in again.');
+        navigate('/admin/login');
+        return;
+      }
+      if (profile.role !== 'admin') {
         navigate('/');
         toast.error('Access denied');
         return;
       }
       await loadData();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error checking admin:', error);
-      navigate('/');
+      const err = error as Error;
+      if (err.message?.includes('session has expired')) {
+        toast.error('Your session has expired. Please log in again.');
+        navigate('/admin/login');
+      } else {
+        toast.error('Unable to verify access. Please try logging in again.');
+        navigate('/admin/login');
+      }
     }
   };
 
@@ -98,9 +114,15 @@ export default function AdminProducts() {
       ]);
       setProducts(productsData);
       setCategories(categoriesData);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error loading data:', error);
-      toast.error('Failed to load data');
+      const err = error as Error;
+      if (err.message?.includes('session has expired')) {
+        toast.error('Your session has expired. Please log in again.');
+        navigate('/admin/login');
+      } else {
+        toast.error('Failed to load data. Please refresh the page or try logging in again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -225,6 +247,8 @@ export default function AdminProducts() {
         description: data.description || null,
         price: parseFloat(data.price),
         category_id: data.category_id || null,
+        category_id_2: data.category_id_2 || null,
+        category_id_3: data.category_id_3 || null,
         image_urls: imageUrls.length > 0 ? imageUrls : null,
         stock_quantity: data.stock_quantity === 'in_stock' ? 100 : 0,
         is_active: true,
@@ -267,6 +291,8 @@ export default function AdminProducts() {
       description: product.description || '',
       price: product.price.toString(),
       category_id: product.category_id || '',
+      category_id_2: (product as any).category_id_2 || '',
+      category_id_3: (product as any).category_id_3 || '',
       stock_quantity: product.stock_quantity > 0 ? 'in_stock' as const : 'out_of_stock' as const,
     });
     if (product.image_urls && product.image_urls.length > 0) {
@@ -421,30 +447,82 @@ export default function AdminProducts() {
                       )}
                     />
                   </div>
-                  <FormField
-                    control={form.control}
-                    name="category_id"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Category *</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a category" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {categories.map((cat) => (
-                              <SelectItem key={cat.id} value={cat.id}>
-                                {cat.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="category_id"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Primary Category *</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select primary category" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {categories.map((cat) => (
+                                <SelectItem key={cat.id} value={cat.id}>
+                                  {cat.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="category_id_2"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Secondary Category (Optional)</FormLabel>
+                          <Select onValueChange={(value) => field.onChange(value === 'none' ? '' : value)} value={field.value || 'none'}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select secondary category" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="none">None</SelectItem>
+                              {categories.map((cat) => (
+                                <SelectItem key={cat.id} value={cat.id}>
+                                  {cat.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="category_id_3"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tertiary Category (Optional)</FormLabel>
+                          <Select onValueChange={(value) => field.onChange(value === 'none' ? '' : value)} value={field.value || 'none'}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select tertiary category" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="none">None</SelectItem>
+                              {categories.map((cat) => (
+                                <SelectItem key={cat.id} value={cat.id}>
+                                  {cat.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Product Images (Max 5)</label>
                     <div className="flex flex-col gap-3">
