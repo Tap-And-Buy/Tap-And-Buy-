@@ -73,14 +73,33 @@ export default function Home() {
 
   const loadData = async () => {
     try {
+      console.log('Loading home page data...');
+      
       const [promoData, productData, recentData, historyData, wishlistIds] = await Promise.all([
-        db.promotionalImages.getActive(),
-        db.products.getAll(),
-        user ? db.recentlyViewed.getRecent(10) : Promise.resolve([]),
-        user ? db.searchHistory.getRecent(5) : Promise.resolve([]),
-        user ? db.wishlist.getProductIds() : Promise.resolve([]),
+        db.promotionalImages.getActive().catch(err => {
+          console.error('Error loading promotions:', err);
+          return [];
+        }),
+        db.products.getAll().catch(err => {
+          console.error('Error loading products:', err);
+          throw err; // Re-throw to show user
+        }),
+        user ? db.recentlyViewed.getRecent(10).catch(err => {
+          console.error('Error loading recently viewed:', err);
+          return [];
+        }) : Promise.resolve([]),
+        user ? db.searchHistory.getRecent(5).catch(err => {
+          console.error('Error loading search history:', err);
+          return [];
+        }) : Promise.resolve([]),
+        user ? db.wishlist.getProductIds().catch(err => {
+          console.error('Error loading wishlist:', err);
+          return [];
+        }) : Promise.resolve([]),
       ]);
 
+      console.log('Loaded products:', productData.length);
+      
       setPromotions(promoData);
       setAllProducts(productData);
       setProducts(productData.slice(0, 30));
@@ -108,7 +127,8 @@ export default function Home() {
       setPriceRangeProducts(categorizedProducts);
     } catch (error) {
       console.error('Error loading data:', error);
-      toast.error('Failed to load data');
+      const err = error as Error;
+      toast.error(err.message || 'Failed to load data. Please try refreshing the page.');
     } finally {
       setLoading(false);
     }
@@ -314,7 +334,7 @@ export default function Home() {
           <p className="text-sm text-muted-foreground mb-6">
             Save more when you buy more! These offers are automatically applied at checkout.
           </p>
-          <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+          <div className="flex gap-4 overflow-x-auto pb-4 horizontal-scroll snap-x snap-mandatory">
             <Card className="border-primary/20 bg-background/50 hover:shadow-lg transition-shadow flex-shrink-0 w-[280px] snap-start">
               <CardContent className="p-4 text-center">
                 <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-3">
@@ -369,7 +389,7 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+            <div className="flex gap-4 overflow-x-auto pb-4 horizontal-scroll snap-x snap-mandatory">
               {priceRangeProducts.under20.map(product => (
                 <div key={product.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
                   <ProductCard
@@ -391,7 +411,7 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+            <div className="flex gap-4 overflow-x-auto pb-4 horizontal-scroll snap-x snap-mandatory">
               {priceRangeProducts.range20to50.map(product => (
                 <div key={product.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
                   <ProductCard
@@ -413,7 +433,7 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+            <div className="flex gap-4 overflow-x-auto pb-4 horizontal-scroll snap-x snap-mandatory">
               {priceRangeProducts.range50to100.map(product => (
                 <div key={product.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
                   <ProductCard
@@ -435,7 +455,7 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+            <div className="flex gap-4 overflow-x-auto pb-4 horizontal-scroll snap-x snap-mandatory">
               {priceRangeProducts.range100to200.map(product => (
                 <div key={product.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
                   <ProductCard
@@ -457,7 +477,7 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+            <div className="flex gap-4 overflow-x-auto pb-4 horizontal-scroll snap-x snap-mandatory">
               {priceRangeProducts.range200to500.map(product => (
                 <div key={product.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
                   <ProductCard
@@ -479,7 +499,7 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+            <div className="flex gap-4 overflow-x-auto pb-4 horizontal-scroll snap-x snap-mandatory">
               {priceRangeProducts.range500to800.map(product => (
                 <div key={product.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
                   <ProductCard
@@ -501,7 +521,7 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+            <div className="flex gap-4 overflow-x-auto pb-4 horizontal-scroll snap-x snap-mandatory">
               {priceRangeProducts.range800to1000.map(product => (
                 <div key={product.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
                   <ProductCard
@@ -523,7 +543,7 @@ export default function Home() {
                 <Button variant="link" className="text-primary">View All →</Button>
               </Link>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory">
+            <div className="flex gap-4 overflow-x-auto pb-4 horizontal-scroll snap-x snap-mandatory">
               {priceRangeProducts.above1000.map(product => (
                 <div key={product.id} className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start">
                   <ProductCard
