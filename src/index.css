@@ -101,4 +101,40 @@ All colors MUST be HSL.
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
+
+  /* Custom scrollbar for horizontal product sections on desktop */
+  .horizontal-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--primary)) hsl(var(--muted));
+  }
+
+  .horizontal-scroll::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .horizontal-scroll::-webkit-scrollbar-track {
+    background: hsl(var(--muted));
+    border-radius: 4px;
+  }
+
+  .horizontal-scroll::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary));
+    border-radius: 4px;
+  }
+
+  .horizontal-scroll::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.8);
+  }
+
+  /* Hide scrollbar on mobile, show on desktop */
+  @media (max-width: 767px) {
+    .horizontal-scroll {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .horizontal-scroll::-webkit-scrollbar {
+      display: none;
+    }
+  }
 }
