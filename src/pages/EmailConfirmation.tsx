@@ -1,19 +1,51 @@
+import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logoImg from '/logo.png';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, CheckCircle2, ExternalLink } from 'lucide-react';
+import { Mail, CheckCircle2, ExternalLink, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
+import { supabase } from '@/db/supabase';
 
 export default function EmailConfirmation() {
   const navigate = useNavigate();
   const location = useLocation();
   const verificationUrl = location.state?.verificationUrl;
+  const userEmail = location.state?.email;
+  const [resendLoading, setResendLoading] = useState(false);
 
   const copyVerificationLink = () => {
     if (verificationUrl) {
       navigator.clipboard.writeText(verificationUrl);
       toast.success('Verification link copied to clipboard!');
+    }
+  };
+
+  const handleResendEmail = async () => {
+    if (!userEmail) {
+      toast.error('Email address not found. Please try registering again.');
+      return;
+    }
+
+    setResendLoading(true);
+    try {
+      const { data: result, error } = await supabase.functions.invoke('resend-verification-email', {
+        body: { email: userEmail },
+      });
+
+      if (error) throw error;
+
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+
+      toast.success('Verification email sent! Please check your inbox.');
+    } catch (error: unknown) {
+      const err = error as Error;
+      console.error('Resend verification error:', err);
+      toast.error(err.message || 'Failed to resend verification email. Please try again.');
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -92,16 +124,30 @@ export default function EmailConfirmation() {
             Go to Login Page
           </Button>
 
-          <p className="text-center text-sm text-muted-foreground">
-            Didn't receive the email?{' '}
-            <Button 
-              variant="link" 
-              className="p-0 h-auto"
-              onClick={() => navigate('/register')}
-            >
-              Try registering again
-            </Button>
-          </p>
+          <div className="text-center space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Didn't receive the email?
+            </p>
+            {userEmail ? (
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={handleResendEmail}
+                disabled={resendLoading}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${resendLoading ? 'animate-spin' : ''}`} />
+                {resendLoading ? 'Sending...' : 'Resend Verification Email'}
+              </Button>
+            ) : (
+              <Button 
+                variant="link" 
+                className="p-0 h-auto"
+                onClick={() => navigate('/register')}
+              >
+                Try registering again
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
