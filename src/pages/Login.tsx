@@ -9,16 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { toast } from 'sonner';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import logoImg from '/logo.png';
@@ -34,7 +24,6 @@ export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [showVerifiedMessage, setShowVerifiedMessage] = useState(false);
 
   const form = useForm<LoginFormData>({
@@ -161,7 +150,7 @@ export default function Login() {
                     type="button"
                     variant="link"
                     className="px-0 text-sm"
-                    onClick={() => setShowForgotPassword(true)}
+                    onClick={() => navigate('/forgot-password')}
                   >
                     Forgot Password?
                   </Button>
@@ -181,24 +170,6 @@ export default function Login() {
           </CardContent>
         </Card>
       </div>
-
-      <AlertDialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Forgot Password?</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <p>To reset your password, please contact us at:</p>
-              <p className="font-semibold text-primary">tapandbuy.in@gmail.com</p>
-              <p className="text-sm">Include your registered email address in your message.</p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setShowForgotPassword(false)}>
-              Got it
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }
