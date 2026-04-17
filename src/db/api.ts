@@ -1427,5 +1427,6 @@ export const db = {
       if (updateError) throw updateError;
     },
   },
+  supabase, // Export supabase for direct access when needed
 };
 
