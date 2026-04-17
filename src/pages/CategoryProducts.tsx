@@ -33,11 +33,14 @@ export default function CategoryProducts() {
   const loadProducts = useCallback(async (catId: string) => {
     try {
       setLoading(true);
+      console.log('Loading products for category:', catId);
       const data = await db.products.getAll(catId);
+      console.log('Loaded products:', data.length);
       setProducts(data);
     } catch (error) {
       console.error('Error loading products:', error);
-      toast.error('Failed to load products');
+      const err = error as Error;
+      toast.error(err.message || 'Failed to load products. Please try refreshing the page.');
     } finally {
       setLoading(false);
     }
@@ -46,11 +49,14 @@ export default function CategoryProducts() {
   const loadSearchResults = useCallback(async (searchTerm: string) => {
     try {
       setLoading(true);
+      console.log('Searching products:', searchTerm);
       const data = await db.products.search(searchTerm);
+      console.log('Found products:', data.length);
       setProducts(data);
     } catch (error) {
       console.error('Error searching products:', error);
-      toast.error('Failed to search products');
+      const err = error as Error;
+      toast.error(err.message || 'Failed to search products. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -59,11 +65,14 @@ export default function CategoryProducts() {
   const loadAllProducts = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('Loading all products...');
       const data = await db.products.getAll();
+      console.log('Loaded all products:', data.length);
       setProducts(data);
     } catch (error) {
       console.error('Error loading products:', error);
-      toast.error('Failed to load products');
+      const err = error as Error;
+      toast.error(err.message || 'Failed to load products. Please try refreshing the page.');
     } finally {
       setLoading(false);
     }
