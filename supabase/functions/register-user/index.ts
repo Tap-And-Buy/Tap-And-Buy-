@@ -1,5 +1,4 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
-import { crypto } from 'jsr:@std/crypto@1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -76,14 +75,8 @@ Deno.serve(async (req) => {
       // Don't fail registration if profile creation fails
     }
 
-    // Generate verification token
-    const tokenData = new TextEncoder().encode(`${email}-${Date.now()}-${crypto.randomUUID()}`);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', tokenData);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const token = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-
     // Send verification email (OTP will be generated in send-verification-email function)
-    const { error: emailError } = await supabase.functions.invoke('send-verification-email', {
+    const { data: emailData, error: emailError } = await supabase.functions.invoke('send-verification-email', {
       body: {
         email,
       },
@@ -91,14 +84,32 @@ Deno.serve(async (req) => {
 
     if (emailError) {
       console.error('Email sending error:', emailError);
-      // Don't fail registration if email fails
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to send verification email. Please try again.',
+          details: emailError.message 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check if email function returned an error
+    if (emailData && emailData.error) {
+      console.error('Email function error:', emailData.error);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Failed to send verification email. Please try again.',
+          details: emailData.error 
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     return new Response(
       JSON.stringify({
         success: true,
         message: 'Registration successful! Please check your email to verify your account.',
-        verificationUrl: `${verificationUrl}?token=${token}&email=${encodeURIComponent(email)}`,
+        userId: authData.user.id,
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
