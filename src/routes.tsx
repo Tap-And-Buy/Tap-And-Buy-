@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import Welcome from './pages/Welcome';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import VerifyOTP from './pages/VerifyOTP';
 import EmailConfirmation from './pages/EmailConfirmation';
 import EmailVerified from './pages/EmailVerified';
 import VerifyEmail from './pages/VerifyEmail';
@@ -56,6 +57,12 @@ const routes: RouteConfig[] = [
     name: 'Register',
     path: '/register',
     element: <Register />,
+    visible: false,
+  },
+  {
+    name: 'Verify OTP',
+    path: '/verify-otp',
+    element: <VerifyOTP />,
     visible: false,
   },
   {
