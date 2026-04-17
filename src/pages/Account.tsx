@@ -303,7 +303,20 @@ export default function Account() {
                 </DialogHeader>
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="current-password">Current Password</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="current-password">Current Password</Label>
+                      <Button
+                        type="button"
+                        variant="link"
+                        className="px-0 h-auto text-xs text-primary"
+                        onClick={() => {
+                          setPasswordDialogOpen(false);
+                          navigate('/forgot-password', { state: { email: user?.email } });
+                        }}
+                      >
+                        Forgot Password?
+                      </Button>
+                    </div>
                     <Input
                       id="current-password"
                       type="password"
