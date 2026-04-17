@@ -59,7 +59,8 @@ export default function Categories() {
       setCategories(sortedCategories);
     } catch (error) {
       console.error('Error loading categories:', error);
-      toast.error('Failed to load categories');
+      const err = error as Error;
+      toast.error(err.message || 'Failed to load categories. Please try refreshing the page.');
     } finally {
       setLoading(false);
     }
