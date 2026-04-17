@@ -48,14 +48,14 @@ export default function Register() {
         throw new Error(result.error);
       }
 
-      toast.success('Registration successful! Please check your email to verify your account.');
+      toast.success('Registration successful! Please check your email for the verification code.');
       
-      // Pass verification URL to confirmation page if available
-      if (result?.verificationUrl) {
-        navigate('/email-confirmation', { state: { verificationUrl: result.verificationUrl } });
-      } else {
-        navigate('/email-confirmation');
-      }
+      // Navigate to OTP verification page
+      navigate('/verify-otp', { 
+        state: { 
+          email: data.email 
+        } 
+      });
     } catch (error: unknown) {
       const err = error as Error;
       console.error('Registration error:', err);
