@@ -82,6 +82,41 @@ export default function Payment() {
         }
       }
 
+      // Send order confirmation email
+      try {
+        const { data: { user } } = await db.supabase.auth.getUser();
+        if (user?.email) {
+          const { data: profile } = await db.supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', user.id)
+            .maybeSingle();
+
+          await db.supabase.functions.invoke('send-order-confirmation-email', {
+            body: {
+              email: user.email,
+              orderId: order.id,
+              orderNumber: order.order_id,
+              items: cartItems.map((item: { product: { name: string; price: number }; quantity: number }) => ({
+                product_name: item.product.name,
+                product_price: item.product.price,
+                quantity: item.quantity,
+                subtotal: item.product.price * item.quantity,
+              })),
+              subtotal,
+              platformFee,
+              deliveryFee,
+              discount,
+              total,
+              customerName: profile?.full_name || undefined,
+            },
+          });
+        }
+      } catch (emailError) {
+        console.error('Error sending order confirmation email:', emailError);
+        // Don't fail the order if email fails
+      }
+
       await db.cart.clear();
 
       toast.success('Order placed successfully!');
