@@ -19,16 +19,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { ArrowLeft, CheckCircle2, Mail } from 'lucide-react';
+import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import logoImg from '/logo.png';
 
 const loginSchema = z.object({
@@ -36,30 +28,18 @@ const loginSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
-const resendEmailSchema = z.object({
-  email: z.string().email('Invalid email address'),
-});
-
 type LoginFormData = z.infer<typeof loginSchema>;
-type ResendEmailFormData = z.infer<typeof resendEmailSchema>;
 
 export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [showResendVerification, setShowResendVerification] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
   const [showVerifiedMessage, setShowVerifiedMessage] = useState(false);
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
-  });
-
-  const resendForm = useForm<ResendEmailFormData>({
-    resolver: zodResolver(resendEmailSchema),
-    defaultValues: { email: '' },
   });
 
   useEffect(() => {
@@ -70,36 +50,6 @@ export default function Login() {
       toast.success('Your account has been verified! You can now log in.');
     }
     }, [searchParams]);
-
-  const handleResendVerification = async (data: ResendEmailFormData) => {
-    setResendLoading(true);
-    try {
-      const { data: result, error } = await supabase.functions.invoke('resend-verification-email', {
-        body: { email: data.email },
-      });
-
-      if (error) throw error;
-
-      if (result?.error) {
-        throw new Error(result.error);
-      }
-
-      toast.success('Verification code sent! Redirecting to verification page...');
-      setShowResendVerification(false);
-      resendForm.reset();
-      
-      // Navigate to OTP verification page
-      setTimeout(() => {
-        navigate('/verify-otp', { state: { email: data.email } });
-      }, 1000);
-    } catch (error: unknown) {
-      const err = error as Error;
-      console.error('Resend verification error:', err);
-      toast.error(err.message || 'Failed to resend verification code. Please try again.');
-    } finally {
-      setResendLoading(false);
-    }
-  };
 
   const handleLogin = async (data: LoginFormData) => {
     setLoading(true);
@@ -222,25 +172,11 @@ export default function Login() {
               </form>
             </Form>
 
-            <div className="mt-6 space-y-3">
-              <div className="text-center text-sm">
-                <span className="text-muted-foreground">Didn't receive verification code? </span>
-                <Button
-                  type="button"
-                  variant="link"
-                  className="px-0 text-primary hover:underline font-medium h-auto"
-                  onClick={() => setShowResendVerification(true)}
-                >
-                  Resend Verification Code
-                </Button>
-              </div>
-              
-              <div className="text-center text-sm">
-                <span className="text-muted-foreground">Don't have an account? </span>
-                <Link to="/register" className="text-primary hover:underline font-medium">
-                  Register here
-                </Link>
-              </div>
+            <div className="mt-6 text-center text-sm">
+              <span className="text-muted-foreground">Don't have an account? </span>
+              <Link to="/register" className="text-primary hover:underline font-medium">
+                Register here
+              </Link>
             </div>
           </CardContent>
         </Card>
@@ -263,59 +199,6 @@ export default function Login() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <Dialog open={showResendVerification} onOpenChange={setShowResendVerification}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Mail className="h-5 w-5 text-primary" />
-              Resend Verification Code
-            </DialogTitle>
-            <DialogDescription>
-              Enter your email address and we'll send you a new verification code.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Form {...resendForm}>
-            <form onSubmit={resendForm.handleSubmit(handleResendVerification)} className="space-y-4">
-              <FormField
-                control={resendForm.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email Address *</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="email" 
-                        placeholder="Enter your registered email" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setShowResendVerification(false);
-                    resendForm.reset();
-                  }}
-                  disabled={resendLoading}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={resendLoading}>
-                  {resendLoading ? 'Sending...' : 'Send Verification Code'}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
