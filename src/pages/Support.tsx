@@ -55,8 +55,8 @@ export default function Support() {
       return 'Rejected Parcels: If you deny delivery, we deduct 2x shipping + 10% packing fee before refund. Please ensure you want to receive the order before it arrives.';
     }
 
-    if (lower.includes('password') || lower.includes('forgot') || lower.includes('reset')) {
-      return 'Forgot Password: Please contact our support team at tapandbuy.in@gmail.com with your registered email. Admin will reset your password and provide you with a new one.';
+    if (lower.includes('password') || lower.includes('forgot') || lower.includes('reset') || lower.includes('change')) {
+      return 'Password Management: You can change your password anytime from your Account page. Click "Change Password" and enter your current password. If you forgot your password, click "Forgot Password?" on the login page. You\'ll receive a 4-digit OTP code via email (valid for 10 minutes). Enter the OTP and set your new password. You can also use "Forgot Password?" option inside the Change Password dialog in your Account settings.';
     }
 
     if (lower.includes('track') || lower.includes('order')) {
@@ -319,9 +319,61 @@ export default function Support() {
                   </AccordionItem>
 
                   <AccordionItem value="item-10">
+                    <AccordionTrigger>How do I change my password?</AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-2 text-sm">
+                        <p><strong>From Account Page:</strong></p>
+                        <ol className="list-decimal list-inside space-y-1 ml-2">
+                          <li>Go to your Account page from the bottom navigation</li>
+                          <li>Scroll to the Security section</li>
+                          <li>Click "Change Password" button</li>
+                          <li>Enter your current password</li>
+                          <li>Enter and confirm your new password</li>
+                          <li>Click "Change Password" to save</li>
+                        </ol>
+                        <p className="mt-3"><strong>Note:</strong> Your new password must be at least 6 characters long.</p>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="item-11">
                     <AccordionTrigger>I forgot my password. How do I reset it?</AccordionTrigger>
                     <AccordionContent>
-                      Please contact our support team at tapandbuy.in@gmail.com with your registered email. Admin will reset your password and provide you with a new one.
+                      <div className="space-y-2 text-sm">
+                        <p><strong>Password Reset Process:</strong></p>
+                        <ol className="list-decimal list-inside space-y-1 ml-2">
+                          <li>Click "Forgot Password?" on the login page</li>
+                          <li>Enter your registered email address</li>
+                          <li>Check your email for a 4-digit OTP code</li>
+                          <li>Enter the OTP code (valid for 10 minutes)</li>
+                          <li>Set your new password</li>
+                          <li>Confirm your new password</li>
+                          <li>Click "Reset Password" to complete</li>
+                        </ol>
+                        <p className="mt-3"><strong>Alternative:</strong> You can also access "Forgot Password?" from the Change Password dialog in your Account settings if you're already logged in but forgot your current password.</p>
+                        <p className="mt-2"><strong>Tip:</strong> If you don't receive the OTP email, check your spam/junk folder or click "Resend Code" to request a new one.</p>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+
+                  <AccordionItem value="item-12">
+                    <AccordionTrigger>What is OTP and how does it work?</AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-2 text-sm">
+                        <p><strong>OTP (One-Time Password):</strong> A 4-digit security code sent to your email for verification purposes.</p>
+                        <p className="mt-2"><strong>When you'll receive OTP:</strong></p>
+                        <ul className="list-disc list-inside space-y-1 ml-2">
+                          <li>During account registration (to verify your email)</li>
+                          <li>When resetting your forgotten password</li>
+                        </ul>
+                        <p className="mt-2"><strong>Important:</strong></p>
+                        <ul className="list-disc list-inside space-y-1 ml-2">
+                          <li>OTP codes expire after 10 minutes</li>
+                          <li>Each OTP can only be used once</li>
+                          <li>You can request a new OTP if the previous one expired</li>
+                          <li>OTP emails are sent from tapandbuy.in@gmail.com</li>
+                        </ul>
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
