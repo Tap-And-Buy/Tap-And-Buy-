@@ -200,7 +200,7 @@ export default function AdminOrders() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AdminHeader title="Manage Orders" />
+      <AdminHeader title="Manage Orders" backTo="/account" />
 
       <div className="max-w-screen-xl mx-auto p-4">
         <div className="flex flex-col sm:flex-row gap-3 mb-4">
@@ -348,16 +348,23 @@ export default function AdminOrders() {
                                 {expandedOrders[order.id].items.map((item) => (
                                   <div 
                                     key={item.id} 
-                                    className="flex justify-between items-start p-3 bg-background rounded border cursor-pointer hover:shadow-md transition-shadow"
+                                    className="flex items-center gap-3 p-3 bg-background rounded border cursor-pointer hover:shadow-md transition-shadow"
                                     onClick={() => item.product_id && navigate(`/product/${item.product_id}`)}
                                   >
-                                    <div className="flex-1">
-                                      <p className="font-medium hover:text-primary transition-colors">{item.product_name}</p>
+                                    {item.product?.image_urls && item.product.image_urls.length > 0 && (
+                                      <img
+                                        src={item.product.image_urls[0]}
+                                        alt={item.product_name}
+                                        className="h-16 w-16 object-cover rounded border flex-shrink-0"
+                                      />
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-medium hover:text-primary transition-colors truncate">{item.product_name}</p>
                                       <p className="text-sm text-muted-foreground">
                                         Quantity: {item.quantity} × ₹{item.product_price.toFixed(2)}
                                       </p>
                                     </div>
-                                    <p className="font-semibold">₹{item.subtotal.toFixed(2)}</p>
+                                    <p className="font-semibold flex-shrink-0">₹{item.subtotal.toFixed(2)}</p>
                                   </div>
                                 ))}
                                 <div className="pt-3 border-t space-y-2">
