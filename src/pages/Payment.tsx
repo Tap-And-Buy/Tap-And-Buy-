@@ -92,21 +92,13 @@ export default function Payment() {
             .eq('id', user.id)
             .maybeSingle();
 
-          await db.supabase.functions.invoke('send-order-notification', {
-            body: {
-              email: user.email,
-              userName: profile?.full_name || 'Customer',
-              orderId: order.order_id,
-              type: 'order_placed',
-              orderTotal: total.toFixed(2),
-            },
-          });
-          
-          console.log('Order confirmation email sent successfully');
+          // Email notification removed as per user request
+          // Only registration OTP and forgot password OTP emails are sent
+          console.log('Order placed successfully for user:', profile?.full_name || user.email);
         }
       } catch (emailError) {
-        console.error('Error sending order confirmation email:', emailError);
-        // Don't fail the order if email fails
+        console.error('Error logging order:', emailError);
+        // Don't fail the order
       }
 
       await db.cart.clear();
