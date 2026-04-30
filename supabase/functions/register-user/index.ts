@@ -35,11 +35,11 @@ Deno.serve(async (req) => {
       },
     });
 
-    // Create user with Supabase Auth (email confirmation enabled for our custom flow)
+    // Create user with Supabase Auth (email NOT confirmed until OTP verification)
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // Set to true so users can login immediately after verification
+      email_confirm: false, // User must verify OTP before they can login
       user_metadata: {
         full_name: fullName,
         email_verified: false, // Custom flag to track our verification
