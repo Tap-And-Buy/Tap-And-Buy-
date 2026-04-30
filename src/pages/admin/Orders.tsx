@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '@/db/api';
+import { supabase } from '@/db/supabase';
 import type { Order, OrderStatus, OrderWithDetails } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -119,6 +120,39 @@ export default function AdminOrders() {
         status: data.status as OrderStatus,
       });
       
+      // Send email notification if order is delivered
+      if (data.status === 'delivered') {
+        try {
+          // Fetch user profile to get email
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('email, full_name')
+            .eq('id', selectedOrder.user_id)
+            .maybeSingle();
+          
+          if (profile?.email) {
+            const { error: emailError } = await supabase.functions.invoke('send-order-notification', {
+              body: {
+                email: profile.email,
+                userName: profile.full_name || 'Customer',
+                orderId: selectedOrder.order_id,
+                type: 'order_delivered',
+                trackingInfo: data.tracking_info,
+              },
+            });
+            
+            if (emailError) {
+              console.error('Failed to send delivery email:', emailError);
+              toast.warning('Order updated but email notification failed');
+            } else {
+              console.log('Delivery email sent successfully');
+            }
+          }
+        } catch (emailError) {
+          console.error('Email notification error:', emailError);
+        }
+      }
+      
       toast.success(`Order updated successfully to ${data.status.replace('_', ' ')}`);
       setDialogOpen(false);
       form.reset();
@@ -146,6 +180,44 @@ export default function AdminOrders() {
     try {
       if (action === 'approve') {
         await db.orders.approveCancellation(orderId);
+        
+        // Send email notification for cancellation approval
+        try {
+          const { data: order } = await supabase
+            .from('orders')
+            .select('order_id, user_id, total')
+            .eq('id', orderId)
+            .maybeSingle();
+          
+          if (order) {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('email, full_name')
+              .eq('id', order.user_id)
+              .maybeSingle();
+            
+            if (profile?.email) {
+              const { error: emailError } = await supabase.functions.invoke('send-order-notification', {
+                body: {
+                  email: profile.email,
+                  userName: profile.full_name || 'Customer',
+                  orderId: order.order_id,
+                  type: 'cancellation_approved',
+                  refundAmount: order.total.toFixed(2),
+                },
+              });
+              
+              if (emailError) {
+                console.error('Failed to send cancellation email:', emailError);
+              } else {
+                console.log('Cancellation approval email sent successfully');
+              }
+            }
+          }
+        } catch (emailError) {
+          console.error('Email notification error:', emailError);
+        }
+        
         toast.success('Order cancelled successfully');
       } else {
         await db.orders.rejectCancellation(orderId);
