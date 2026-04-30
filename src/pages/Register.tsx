@@ -47,14 +47,12 @@ export default function Register() {
         throw new Error(result.error);
       }
 
-      toast.success('Registration successful! You can now login with your credentials.');
+      toast.success('Registration successful! Please check your email for the verification code.');
       
-      // Navigate to login page
-      navigate('/login', { 
-        replace: true,
+      // Navigate to OTP verification page
+      navigate('/verify-otp', { 
         state: { 
-          email: data.email,
-          message: 'Registration successful! Please login to continue.'
+          email: data.email 
         } 
       });
     } catch (error: unknown) {
