@@ -49,13 +49,6 @@ export default function Login() {
       });
 
       if (error) {
-        if (error.message.includes('Email not confirmed')) {
-          toast.error('Please verify your email address before logging in.', {
-            description: 'Check your email for the verification code.',
-            duration: 5000,
-          });
-          return;
-        }
         throw error;
       }
 
@@ -70,13 +63,13 @@ export default function Login() {
 
         if (profile?.role === 'admin') {
           toast.success('Welcome back, Admin!');
-          navigate('/admin/dashboard');
+          navigate('/admin/dashboard', { replace: true });
           return;
         }
       }
 
       toast.success('Login successful!');
-      navigate('/');
+      navigate('/', { replace: true });
     } catch (error: unknown) {
       const err = error as Error;
       toast.error(err.message || 'Login failed');
