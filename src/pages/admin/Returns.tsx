@@ -83,6 +83,8 @@ export default function AdminReturns() {
       approved: 'default',
       rejected: 'destructive',
       refunded: 'outline',
+      return_initiated: 'secondary',
+      returned: 'default',
     };
     return <Badge variant={variants[status]}>{status}</Badge>;
   };
@@ -106,7 +108,7 @@ export default function AdminReturns() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AdminHeader title="Manage Returns" />
+      <AdminHeader title="Manage Returns" backTo="/account" />
 
       <div className="max-w-screen-xl mx-auto p-4">
         <div className="mb-6 relative">
@@ -199,18 +201,32 @@ export default function AdminReturns() {
                 rows={3}
               />
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-2">
               <Button
                 onClick={() => handleUpdateStatus('approved')}
-                className="flex-1"
+                className="w-full"
               >
                 <CheckCircle className="mr-2 h-4 w-4" />
                 Approve
               </Button>
               <Button
+                onClick={() => handleUpdateStatus('return_initiated')}
+                variant="secondary"
+                className="w-full"
+              >
+                Return Initiated
+              </Button>
+              <Button
+                onClick={() => handleUpdateStatus('returned')}
+                variant="outline"
+                className="w-full"
+              >
+                Returned
+              </Button>
+              <Button
                 onClick={() => handleUpdateStatus('rejected')}
                 variant="destructive"
-                className="flex-1"
+                className="w-full"
               >
                 <XCircle className="mr-2 h-4 w-4" />
                 Reject
