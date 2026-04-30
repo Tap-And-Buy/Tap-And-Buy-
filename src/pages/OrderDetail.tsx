@@ -299,6 +299,13 @@ export default function OrderDetail() {
             <div className="space-y-4">
               {order.items?.map((item) => (
                 <div key={item.id} className="flex items-center gap-4 pb-4 border-b last:border-0">
+                  {item.product?.image_urls && item.product.image_urls.length > 0 && (
+                    <img
+                      src={item.product.image_urls[0]}
+                      alt={item.product_name}
+                      className="h-16 w-16 object-cover rounded border"
+                    />
+                  )}
                   <div className="flex-1">
                     <h4 className="font-semibold">{item.product_name}</h4>
                     <p className="text-sm text-muted-foreground">
