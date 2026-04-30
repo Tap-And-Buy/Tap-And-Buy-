@@ -73,43 +73,24 @@ Deno.serve(async (req) => {
 
     if (profileError) {
       console.error('Profile creation error:', profileError);
-      // Don't fail registration if profile creation fails
+      throw new Error('Failed to create user profile');
     }
 
-    // Send verification email (OTP will be generated in send-verification-email function)
-    const { data: emailData, error: emailError } = await supabase.functions.invoke('send-verification-email', {
-      body: {
-        email,
-      },
-    });
-
-    if (emailError) {
-      console.error('Email sending error:', emailError);
-      return new Response(
-        JSON.stringify({ 
-          error: 'Failed to send verification email. Please try again.',
-          details: emailError.message 
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Check if email function returned an error
-    if (emailData && emailData.error) {
-      console.error('Email function error:', emailData.error);
-      return new Response(
-        JSON.stringify({ 
-          error: 'Failed to send verification email. Please try again.',
-          details: emailData.error 
-        }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Optional: Try to send welcome email (don't fail registration if it fails)
+    try {
+      await supabase.functions.invoke('send-verification-email', {
+        body: { email },
+      });
+      console.log('Welcome email sent to:', email);
+    } catch (emailError) {
+      console.error('Email sending failed (non-critical):', emailError);
+      // Continue with registration even if email fails
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: 'Registration successful! Please check your email to verify your account.',
+        message: 'Registration successful! You can now login with your credentials.',
         userId: authData.user.id,
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
