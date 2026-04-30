@@ -117,15 +117,10 @@ export default function Categories() {
                     </div>
                   )}
                   <div className="p-4">
-                    <h3 className="text-lg font-semibold mb-1 flex items-center justify-between">
+                    <h3 className="text-lg font-semibold flex items-center justify-between">
                       {category.name}
                       <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                     </h3>
-                    {category.description && (
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {category.description}
-                      </p>
-                    )}
                   </div>
                 </CardContent>
               </Card>
