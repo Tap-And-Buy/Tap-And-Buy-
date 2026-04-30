@@ -120,37 +120,10 @@ export default function AdminOrders() {
         status: data.status as OrderStatus,
       });
       
-      // Send email notification if order is delivered
+      // Email notification removed as per user request
+      // Only registration OTP and forgot password OTP emails are sent
       if (data.status === 'delivered') {
-        try {
-          // Fetch user profile to get email
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('email, full_name')
-            .eq('id', selectedOrder.user_id)
-            .maybeSingle();
-          
-          if (profile?.email) {
-            const { error: emailError } = await supabase.functions.invoke('send-order-notification', {
-              body: {
-                email: profile.email,
-                userName: profile.full_name || 'Customer',
-                orderId: selectedOrder.order_id,
-                type: 'order_delivered',
-                trackingInfo: data.tracking_info,
-              },
-            });
-            
-            if (emailError) {
-              console.error('Failed to send delivery email:', emailError);
-              toast.warning('Order updated but email notification failed');
-            } else {
-              console.log('Delivery email sent successfully');
-            }
-          }
-        } catch (emailError) {
-          console.error('Email notification error:', emailError);
-        }
+        console.log('Order marked as delivered:', selectedOrder.order_id);
       }
       
       toast.success(`Order updated successfully to ${data.status.replace('_', ' ')}`);
@@ -181,42 +154,9 @@ export default function AdminOrders() {
       if (action === 'approve') {
         await db.orders.approveCancellation(orderId);
         
-        // Send email notification for cancellation approval
-        try {
-          const { data: order } = await supabase
-            .from('orders')
-            .select('order_id, user_id, total')
-            .eq('id', orderId)
-            .maybeSingle();
-          
-          if (order) {
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('email, full_name')
-              .eq('id', order.user_id)
-              .maybeSingle();
-            
-            if (profile?.email) {
-              const { error: emailError } = await supabase.functions.invoke('send-order-notification', {
-                body: {
-                  email: profile.email,
-                  userName: profile.full_name || 'Customer',
-                  orderId: order.order_id,
-                  type: 'cancellation_approved',
-                  refundAmount: order.total.toFixed(2),
-                },
-              });
-              
-              if (emailError) {
-                console.error('Failed to send cancellation email:', emailError);
-              } else {
-                console.log('Cancellation approval email sent successfully');
-              }
-            }
-          }
-        } catch (emailError) {
-          console.error('Email notification error:', emailError);
-        }
+        // Email notification removed as per user request
+        // Only registration OTP and forgot password OTP emails are sent
+        console.log('Order cancellation approved:', orderId);
         
         toast.success('Order cancelled successfully');
       } else {
