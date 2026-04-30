@@ -92,25 +92,17 @@ export default function Payment() {
             .eq('id', user.id)
             .maybeSingle();
 
-          await db.supabase.functions.invoke('send-order-confirmation-email', {
+          await db.supabase.functions.invoke('send-order-notification', {
             body: {
               email: user.email,
-              orderId: order.id,
-              orderNumber: order.order_id,
-              items: cartItems.map((item: { product: { name: string; price: number }; quantity: number }) => ({
-                product_name: item.product.name,
-                product_price: item.product.price,
-                quantity: item.quantity,
-                subtotal: item.product.price * item.quantity,
-              })),
-              subtotal,
-              platformFee,
-              deliveryFee,
-              discount,
-              total,
-              customerName: profile?.full_name || undefined,
+              userName: profile?.full_name || 'Customer',
+              orderId: order.order_id,
+              type: 'order_placed',
+              orderTotal: total.toFixed(2),
             },
           });
+          
+          console.log('Order confirmation email sent successfully');
         }
       } catch (emailError) {
         console.error('Error sending order confirmation email:', emailError);
