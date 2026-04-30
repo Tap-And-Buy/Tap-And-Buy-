@@ -20,10 +20,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Users, Search, Eye, Lock, ArrowLeft } from 'lucide-react';
+import { Users, Search, Eye, Lock } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { decryptPassword, verifyAdminPin } from '@/utils/encryption';
+import { AdminHeader } from '@/components/common/AdminHeader';
 
 interface UserData {
   id: string;
@@ -136,21 +137,10 @@ export default function AdminUsers() {
   };
 
   return (
-    <div className="p-6 max-w-screen-2xl mx-auto">
-      <div className="mb-6">
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/admin/dashboard')}
-          className="mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Dashboard
-        </Button>
-        <h1 className="text-3xl font-bold">User Management</h1>
-        <p className="text-muted-foreground mt-1">View all users and their passwords</p>
-      </div>
-
-      <Card className="mb-6">
+    <>
+      <AdminHeader title="User Management" subtitle="View all users and their passwords" backTo="/account" />
+      <div className="p-6 max-w-screen-2xl mx-auto">
+        <Card className="mb-6">
         <CardContent className="pt-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -321,5 +311,6 @@ export default function AdminUsers() {
         </DialogContent>
       </Dialog>
     </div>
+    </>
   );
 }
