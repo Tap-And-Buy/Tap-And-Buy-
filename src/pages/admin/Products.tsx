@@ -322,7 +322,7 @@ export default function AdminProducts() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AdminHeader title="Manage Products" />
+      <AdminHeader title="Manage Products" backTo="/account" />
 
       <div className="max-w-screen-xl mx-auto p-4">
         <div className="flex flex-col sm:flex-row gap-4 mb-4">
