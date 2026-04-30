@@ -125,7 +125,7 @@ export default function AdminPromotions() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AdminHeader title="Manage Promotions" subtitle="Homepage promotional images" />
+      <AdminHeader title="Manage Promotions" subtitle="Homepage promotional images" backTo="/account" />
 
       <div className="max-w-screen-xl mx-auto p-4">
         <div className="flex justify-end mb-4">
