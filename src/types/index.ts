@@ -7,7 +7,7 @@ export interface Option {
 
 export type UserRole = 'customer' | 'admin';
 export type OrderStatus = 'pending' | 'processing' | 'order_placed' | 'shipped' | 'delivered' | 'cancelled' | 'confirmed';
-export type ReturnStatus = 'pending' | 'approved' | 'rejected' | 'refunded';
+export type ReturnStatus = 'pending' | 'approved' | 'rejected' | 'refunded' | 'return_initiated' | 'returned';
 export type SupportStatus = 'open' | 'responded' | 'closed';
 export type NotificationType = 'order' | 'system' | 'promotion';
 
@@ -93,6 +93,9 @@ export interface OrderItem {
   quantity: number;
   subtotal: number;
   created_at: string;
+  product?: {
+    image_urls: string[] | null;
+  } | null;
 }
 
 export interface ReturnRequest {
