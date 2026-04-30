@@ -1,80 +1,34 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '@/db/api';
-import type { Order, OrderStatus, OrderWithDetails } from '@/types';
+import type { Order } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ShoppingCart, Search, Package, ChevronDown, MapPin, ShoppingBag } from 'lucide-react';
+import { ArrowLeft, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { AdminHeader } from '@/components/common/AdminHeader';
+import { useScrollToTop } from '@/hooks/useScrollToTop';
 
-const trackingSchema = z.object({
-  tracking_info: z.string().min(5, 'Tracking info must be at least 5 characters'),
-  status: z.enum(['pending', 'processing', 'order_placed', 'confirmed', 'shipped', 'delivered', 'cancelled']),
-});
-
-type TrackingFormData = z.infer<typeof trackingSchema>;
-
-export default function AdminOrders() {
+export default function Orders() {
+  useScrollToTop();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [expandedOrders, setExpandedOrders] = useState<Record<string, OrderWithDetails>>({});
-  const [loadingDetails, setLoadingDetails] = useState<Record<string, boolean>>({});
-  const [updating, setUpdating] = useState(false);
-
-  const form = useForm<TrackingFormData>({
-    resolver: zodResolver(trackingSchema),
-    defaultValues: {
-      tracking_info: '',
-      status: 'processing',
-    },
-  });
 
   useEffect(() => {
-    checkAdminAndLoadData();
-  }, [user]);
-
-  useEffect(() => {
-    filterOrders();
-  }, [orders, searchQuery, filterStatus]);
-
-  const checkAdminAndLoadData = async () => {
-    try {
-      const profile = await db.profiles.getCurrent();
-      if (profile?.role !== 'admin') {
-        navigate('/');
-        toast.error('Access denied');
-        return;
-      }
-      await loadOrders();
-    } catch (error) {
-      console.error('Error checking admin:', error);
-      navigate('/');
+    if (user) {
+      loadOrders();
+    } else {
+      navigate('/login');
     }
-  };
+  }, [user]);
 
   const loadOrders = async () => {
     try {
       setLoading(true);
-      const data = await db.orders.getAll();
+      const data = await db.orders.getMyOrders();
       setOrders(data);
     } catch (error) {
       console.error('Error loading orders:', error);
@@ -84,110 +38,19 @@ export default function AdminOrders() {
     }
   };
 
-  const filterOrders = () => {
-    let filtered = [...orders];
-
-    if (searchQuery) {
-      filtered = filtered.filter(order =>
-        order.order_id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.payment_reference?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'processing':
+        return 'bg-blue-500';
+      case 'shipped':
+        return 'bg-yellow-500';
+      case 'delivered':
+        return 'bg-green-500';
+      case 'cancelled':
+        return 'bg-red-500';
+      default:
+        return 'bg-muted';
     }
-
-    if (filterStatus === 'cancellation_requested') {
-      filtered = filtered.filter(order => order.cancellation_requested === true);
-    } else if (filterStatus !== 'all') {
-      filtered = filtered.filter(order => order.status === filterStatus);
-    }
-
-    setFilteredOrders(filtered);
-  };
-
-  const handleUpdateTracking = async (data: TrackingFormData) => {
-    if (!selectedOrder) return;
-
-    try {
-      setUpdating(true);
-      console.log('Updating order with data:', { 
-        orderId: selectedOrder.id, 
-        tracking_info: data.tracking_info, 
-        status: data.status 
-      });
-      
-      await db.orders.update(selectedOrder.id, {
-        tracking_info: data.tracking_info,
-        status: data.status as OrderStatus,
-      });
-      
-      toast.success(`Order updated successfully to ${data.status.replace('_', ' ')}`);
-      setDialogOpen(false);
-      form.reset();
-      setSelectedOrder(null);
-      await loadOrders();
-    } catch (error) {
-      console.error('Error updating order:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to update order';
-      toast.error(`Update failed: ${errorMessage}`);
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const openTrackingDialog = (order: Order) => {
-    setSelectedOrder(order);
-    form.reset({
-      tracking_info: order.tracking_info || '',
-      status: order.status,
-    });
-    setDialogOpen(true);
-  };
-
-  const handleCancellationAction = async (orderId: string, action: 'approve' | 'reject') => {
-    try {
-      if (action === 'approve') {
-        await db.orders.approveCancellation(orderId);
-        toast.success('Order cancelled successfully');
-      } else {
-        await db.orders.rejectCancellation(orderId);
-        toast.success('Cancellation request rejected');
-      }
-      loadOrders();
-    } catch (error) {
-      console.error('Error handling cancellation:', error);
-      toast.error(`Failed to ${action} cancellation request`);
-    }
-  };
-
-  const loadOrderDetails = async (orderId: string) => {
-    if (expandedOrders[orderId]) {
-      return;
-    }
-
-    try {
-      setLoadingDetails(prev => ({ ...prev, [orderId]: true }));
-      const details = await db.orders.getById(orderId);
-      if (details) {
-        setExpandedOrders(prev => ({ ...prev, [orderId]: details }));
-      }
-    } catch (error) {
-      console.error('Error loading order details:', error);
-      toast.error('Failed to load order details');
-    } finally {
-      setLoadingDetails(prev => ({ ...prev, [orderId]: false }));
-    }
-  };
-
-  const getStatusBadge = (status: OrderStatus) => {
-    const variants: Record<OrderStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-      pending: 'secondary',
-      processing: 'secondary',
-      order_placed: 'default',
-      confirmed: 'default',
-      shipped: 'default',
-      delivered: 'outline',
-      cancelled: 'destructive',
-    };
-    return <Badge variant={variants[status]}>{status}</Badge>;
   };
 
   if (loading) {
@@ -200,273 +63,79 @@ export default function AdminOrders() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <AdminHeader title="Manage Orders" backTo="/account" />
+      <div className="bg-primary text-primary-foreground p-4">
+        <div className="max-w-screen-xl mx-auto flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/account')}
+            className="text-primary-foreground hover:bg-primary-foreground/20"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-xl font-bold">My Orders</h1>
+        </div>
+      </div>
 
       <div className="max-w-screen-xl mx-auto p-4">
-        <div className="flex flex-col sm:flex-row gap-3 mb-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by Order ID or Reference..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-full sm:w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Orders</SelectItem>
-              <SelectItem value="cancellation_requested">Cancellation Requests</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="order_placed">Order Placed</SelectItem>
-              <SelectItem value="confirmed">Confirmed</SelectItem>
-              <SelectItem value="shipped">Shipped</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="text-sm text-muted-foreground mb-4">
-          Showing {filteredOrders.length} {filteredOrders.length === 1 ? 'order' : 'orders'}
-          {filterStatus !== 'all' && ` (filtered by ${filterStatus.replace('_', ' ')})`}
-        </div>
-
-        {filteredOrders.length === 0 ? (
+        {orders.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
-              <ShoppingCart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-              <h2 className="text-xl font-semibold mb-2">No orders found</h2>
-              <p className="text-muted-foreground">
-                {searchQuery || filterStatus !== 'all' ? 'Try adjusting your filters' : 'Orders will appear here'}
-              </p>
+              <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+              <h2 className="text-xl font-semibold mb-2">No orders yet</h2>
+              <p className="text-muted-foreground mb-6">Start shopping to see your orders here</p>
+              <Button onClick={() => navigate('/')}>
+                Browse Products
+              </Button>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-4">
-            {filteredOrders.map((order) => (
-              <Card key={order.id} className={order.cancellation_requested ? 'border-yellow-500 border-2' : ''}>
-                <CardHeader>
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            {orders.map(order => (
+              <Card key={order.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate(`/order/${order.id}`)}>
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-4">
                     <div>
-                      <CardTitle className="text-base sm:text-lg">Order #{order.order_id || order.id.slice(0, 8)}</CardTitle>
-                      {order.cancellation_requested && (
-                        <Badge variant="destructive" className="mt-1">Cancellation Requested</Badge>
-                      )}
-                    </div>
-                    {getStatusBadge(order.status)}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {order.cancellation_requested && (
-                    <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                      <p className="text-sm font-semibold text-yellow-900 mb-2">Cancellation Reason:</p>
-                      <p className="text-sm text-yellow-800">{order.cancellation_reason || 'No reason provided'}</p>
-                      <div className="flex gap-2 mt-3">
-                        <Button 
-                          size="sm" 
-                          variant="destructive"
-                          onClick={() => handleCancellationAction(order.id, 'approve')}
-                        >
-                          Approve Cancellation
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleCancellationAction(order.id, 'reject')}
-                        >
-                          Reject Request
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Total Amount</p>
-                      <p className="font-semibold">₹{order.total.toFixed(2)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Payment Reference</p>
-                      <p className="font-semibold text-sm">{order.payment_reference || 'N/A'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Tracking Info</p>
-                      <p className="font-semibold text-sm">{order.tracking_info || 'Not assigned'}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Order Date</p>
-                      <p className="font-semibold text-sm">
-                        {new Date(order.created_at).toLocaleDateString()}
+                      <h3 className="font-semibold text-lg">Order #{order.order_id}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(order.created_at).toLocaleDateString('en-IN', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })}
                       </p>
                     </div>
+                    <Badge className={getStatusColor(order.status)}>
+                      {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                    </Badge>
                   </div>
 
-                  <Collapsible onOpenChange={(open) => open && loadOrderDetails(order.id)}>
-                    <CollapsibleTrigger asChild>
-                      <Button variant="outline" className="w-full mb-3">
-                        <ChevronDown className="mr-2 h-4 w-4" />
-                        View Order Details
-                      </Button>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="space-y-4 pt-4 border-t">
-                      {loadingDetails[order.id] ? (
-                        <div className="flex justify-center py-8">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-                        </div>
-                      ) : expandedOrders[order.id] ? (
-                        <>
-                          {expandedOrders[order.id].address && (
-                            <div className="bg-muted/50 p-4 rounded-lg">
-                              <div className="flex items-center gap-2 mb-3">
-                                <MapPin className="h-5 w-5 text-primary" />
-                                <h3 className="font-semibold">Delivery Address</h3>
-                              </div>
-                              <div className="space-y-1 text-sm">
-                                <p className="font-medium">{expandedOrders[order.id].address?.full_name}</p>
-                                <p>{expandedOrders[order.id].address?.address_line1}</p>
-                                {expandedOrders[order.id].address?.address_line2 && (
-                                  <p>{expandedOrders[order.id].address?.address_line2}</p>
-                                )}
-                                <p>
-                                  {expandedOrders[order.id].address?.city}, {expandedOrders[order.id].address?.state} - {expandedOrders[order.id].address?.pincode}
-                                </p>
-                                <p className="text-muted-foreground">Phone: {expandedOrders[order.id].address?.phone}</p>
-                              </div>
-                            </div>
-                          )}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-2xl font-bold text-primary">₹{order.total.toFixed(2)}</p>
+                      <p className="text-sm text-muted-foreground">Total Amount</p>
+                    </div>
+                    <Button variant="outline" onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/order/${order.id}`);
+                    }}>
+                      View Details
+                    </Button>
+                  </div>
 
-                          {expandedOrders[order.id].items && expandedOrders[order.id].items.length > 0 && (
-                            <div className="bg-muted/50 p-4 rounded-lg">
-                              <div className="flex items-center gap-2 mb-3">
-                                <ShoppingBag className="h-5 w-5 text-primary" />
-                                <h3 className="font-semibold">Order Items</h3>
-                              </div>
-                              <div className="space-y-3">
-                                {expandedOrders[order.id].items.map((item) => (
-                                  <div 
-                                    key={item.id} 
-                                    className="flex items-center gap-3 p-3 bg-background rounded border cursor-pointer hover:shadow-md transition-shadow"
-                                    onClick={() => item.product_id && navigate(`/product/${item.product_id}`)}
-                                  >
-                                    {item.product?.image_urls && item.product.image_urls.length > 0 && (
-                                      <img
-                                        src={item.product.image_urls[0]}
-                                        alt={item.product_name}
-                                        className="h-16 w-16 object-cover rounded border flex-shrink-0"
-                                      />
-                                    )}
-                                    <div className="flex-1 min-w-0">
-                                      <p className="font-medium hover:text-primary transition-colors truncate">{item.product_name}</p>
-                                      <p className="text-sm text-muted-foreground">
-                                        Quantity: {item.quantity} × ₹{item.product_price.toFixed(2)}
-                                      </p>
-                                    </div>
-                                    <p className="font-semibold flex-shrink-0">₹{item.subtotal.toFixed(2)}</p>
-                                  </div>
-                                ))}
-                                <div className="pt-3 border-t space-y-2">
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Subtotal</span>
-                                    <span>₹{order.subtotal.toFixed(2)}</span>
-                                  </div>
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Platform Fee</span>
-                                    <span>₹{order.platform_fee.toFixed(2)}</span>
-                                  </div>
-                                  <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Delivery Fee</span>
-                                    <span>₹{order.delivery_fee.toFixed(2)}</span>
-                                  </div>
-                                  {order.discount > 0 && (
-                                    <div className="flex justify-between text-sm text-green-600">
-                                      <span>Discount</span>
-                                      <span>-₹{order.discount.toFixed(2)}</span>
-                                    </div>
-                                  )}
-                                  <div className="flex justify-between font-semibold text-base pt-2 border-t">
-                                    <span>Total</span>
-                                    <span>₹{order.total.toFixed(2)}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </>
-                      ) : null}
-                    </CollapsibleContent>
-                  </Collapsible>
-
-                  <Button onClick={() => openTrackingDialog(order)} className="w-full sm:w-auto">
-                    <Package className="mr-2 h-4 w-4" />
-                    Update Tracking
-                  </Button>
+                  {order.cancellation_requested && (
+                    <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                      <p className="text-sm text-yellow-800">
+                        ⚠️ Cancellation requested - Awaiting admin approval
+                      </p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
       </div>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Update Order Tracking</DialogTitle>
-          </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleUpdateTracking)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Order Status *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="processing">Processing</SelectItem>
-                        <SelectItem value="order_placed">Order Placed</SelectItem>
-                        <SelectItem value="confirmed">Confirmed</SelectItem>
-                        <SelectItem value="shipped">Shipped</SelectItem>
-                        <SelectItem value="delivered">Delivered</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="tracking_info"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tracking Information *</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Enter tracking number and notes..." rows={3} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex gap-3">
-                <Button type="submit" className="flex-1" disabled={updating}>
-                  {updating ? 'Updating...' : 'Update'}
-                </Button>
-                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)} disabled={updating}>
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
