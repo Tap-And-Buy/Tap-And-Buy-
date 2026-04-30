@@ -27,6 +27,9 @@ export function AdminHeader({ title, subtitle, showBackButton = true, backTo = '
     }
   };
 
+  // Determine button text based on backTo destination
+  const backButtonText = backTo === '/account' ? 'Back to My Account' : 'Back to Dashboard';
+
   return (
     <div className="bg-primary text-primary-foreground p-4">
       <div className="max-w-screen-xl mx-auto">
@@ -54,7 +57,7 @@ export function AdminHeader({ title, subtitle, showBackButton = true, backTo = '
           <Link to={backTo}>
             <Button variant="ghost" size="sm" className="mt-2 text-primary-foreground hover:bg-primary-foreground/20">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Dashboard
+              {backButtonText}
             </Button>
           </Link>
         )}
