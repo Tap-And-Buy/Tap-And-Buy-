@@ -30,12 +30,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Pencil, Trash2, Tag, ArrowLeft } from 'lucide-react';
+import { Plus, Pencil, Trash2, Tag } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { AdminHeader } from '@/components/common/AdminHeader';
 
 const couponSchema = z.object({
   code: z.string().min(3, 'Code must be at least 3 characters').max(50),
@@ -160,23 +161,13 @@ export default function AdminCoupons() {
   };
 
   return (
-    <div className="p-6 max-w-screen-2xl mx-auto">
-      <Button
-        variant="ghost"
-        onClick={() => navigate('/admin/dashboard')}
-        className="mb-4"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Dashboard
-      </Button>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Coupon Management</h1>
-          <p className="text-muted-foreground mt-1">Create and manage discount coupons</p>
-        </div>
-        <Dialog open={dialogOpen} onOpenChange={handleDialogClose}>
-          <DialogTrigger asChild>
-            <Button>
+    <>
+      <AdminHeader title="Coupon Management" subtitle="Create and manage discount coupons" backTo="/account" />
+      <div className="p-6 max-w-screen-2xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <Dialog open={dialogOpen} onOpenChange={handleDialogClose}>
+            <DialogTrigger asChild>
+              <Button>
               <Plus className="h-4 w-4 mr-2" />
               Add Coupon
             </Button>
@@ -400,5 +391,6 @@ export default function AdminCoupons() {
         </Card>
       )}
     </div>
+    </>
   );
 }
