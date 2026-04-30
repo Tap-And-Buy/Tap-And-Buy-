@@ -62,42 +62,10 @@ export default function AdminReturns() {
     try {
       await db.returns.updateStatus(selectedReturn.id, status, adminNotes || undefined);
       
-      // Send email notification if return is approved
+      // Email notification removed as per user request
+      // Only registration OTP and forgot password OTP emails are sent
       if (status === 'approved') {
-        try {
-          // Fetch user profile and order details
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('email, full_name')
-            .eq('id', selectedReturn.user_id)
-            .maybeSingle();
-          
-          const { data: order } = await supabase
-            .from('orders')
-            .select('order_id, total')
-            .eq('id', selectedReturn.order_id)
-            .maybeSingle();
-          
-          if (profile?.email && order) {
-            const { error: emailError } = await supabase.functions.invoke('send-order-notification', {
-              body: {
-                email: profile.email,
-                userName: profile.full_name || 'Customer',
-                orderId: order.order_id,
-                type: 'return_approved',
-                refundAmount: order.total.toFixed(2),
-              },
-            });
-            
-            if (emailError) {
-              console.error('Failed to send return approval email:', emailError);
-            } else {
-              console.log('Return approval email sent successfully');
-            }
-          }
-        } catch (emailError) {
-          console.error('Email notification error:', emailError);
-        }
+        console.log('Return approved for order:', selectedReturn.order_id);
       }
       
       toast.success(`Return ${status}`);
