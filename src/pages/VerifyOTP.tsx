@@ -96,8 +96,8 @@ export default function VerifyOTP() {
         throw new Error(result.error);
       }
 
-      toast.success('Email verified successfully! You can now log in.');
-      navigate('/login?verified=true');
+      toast.success('Email verified successfully! Welcome to Tap And Buy!');
+      navigate('/');
     } catch (error: unknown) {
       const err = error as Error;
       console.error('OTP verification error:', err);
