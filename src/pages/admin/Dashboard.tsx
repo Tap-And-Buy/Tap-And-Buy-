@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '@/db/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Package, ShoppingCart, RotateCcw, TrendingUp, Users, Grid3x3, Tag, UserCog } from 'lucide-react';
+import { Package, ShoppingCart, RotateCcw, TrendingUp, Users, Grid3x3, Tag, UserCog, XCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { AdminHeader } from '@/components/common/AdminHeader';
@@ -11,6 +11,8 @@ import { AdminHeader } from '@/components/common/AdminHeader';
 interface Stats {
   totalOrders: number;
   pendingOrders: number;
+  cancelledOrders: number;
+  totalReturns: number;
   totalProducts: number;
   pendingReturns: number;
   totalRevenue: number;
@@ -23,6 +25,8 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats>({
     totalOrders: 0,
     pendingOrders: 0,
+    cancelledOrders: 0,
+    totalReturns: 0,
     totalProducts: 0,
     pendingReturns: 0,
     totalRevenue: 0,
@@ -59,15 +63,29 @@ export default function AdminDashboard() {
         db.profiles.getAll(),
       ]);
 
-      const pendingOrders = orders.filter(o => o.status === 'processing').length;
+      // Total Orders: Only successfully delivered orders
+      const deliveredOrders = orders.filter(o => o.status === 'delivered');
+      
+      // Pending Orders: processing + shipped statuses
+      const pendingOrders = orders.filter(o => o.status === 'processing' || o.status === 'shipped').length;
+      
+      // Cancelled Orders: cancelled status
+      const cancelledOrders = orders.filter(o => o.status === 'cancelled').length;
+      
+      // Total Returns: approved returns (successfully delivered and returned)
+      const totalReturns = returns.filter(r => r.status === 'approved' || r.status === 'returned').length;
+      
+      // Pending Returns
       const pendingReturns = returns.filter(r => r.status === 'pending').length;
-      const totalRevenue = orders
-        .filter(o => o.status !== 'cancelled')
-        .reduce((sum, o) => sum + o.total, 0);
+      
+      // Total Revenue: from delivered orders only
+      const totalRevenue = deliveredOrders.reduce((sum, o) => sum + o.total, 0);
 
       setStats({
-        totalOrders: orders.length,
+        totalOrders: deliveredOrders.length,
         pendingOrders,
+        cancelledOrders,
+        totalReturns,
         totalProducts: products.length,
         pendingReturns,
         totalRevenue,
@@ -103,19 +121,47 @@ export default function AdminDashboard() {
             <CardContent>
               <div className="text-2xl font-bold">{stats.totalOrders}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                {stats.pendingOrders} pending
+                Successfully delivered
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Total Products</CardTitle>
-              <Package className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Pending Orders</CardTitle>
+              <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalProducts}</div>
-              <p className="text-xs text-muted-foreground mt-1">Active products</p>
+              <div className="text-2xl font-bold">{stats.pendingOrders}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Processing & shipped
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Orders Cancelled</CardTitle>
+              <XCircle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.cancelledOrders}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Unsuccessful deliveries
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Total Returns</CardTitle>
+              <RotateCcw className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalReturns}</div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Approved & returned
+              </p>
             </CardContent>
           </Card>
 
@@ -132,12 +178,23 @@ export default function AdminDashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalProducts}</div>
+              <p className="text-xs text-muted-foreground mt-1">Active products</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">₹{stats.totalRevenue.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground mt-1">All time</p>
+              <p className="text-xs text-muted-foreground mt-1">From delivered orders</p>
             </CardContent>
           </Card>
 
