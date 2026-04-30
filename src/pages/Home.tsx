@@ -25,6 +25,7 @@ export default function Home() {
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [searchSuggestions, setSearchSuggestions] = useState<Product[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showSearchHistory, setShowSearchHistory] = useState(false);
   const [loading, setLoading] = useState(true);
   const [wishlistProductIds, setWishlistProductIds] = useState<string[]>([]);
   const [priceRangeProducts, setPriceRangeProducts] = useState<{
@@ -52,12 +53,15 @@ export default function Home() {
   }, [user]);
 
   useEffect(() => {
-    const handleClickOutside = () => setShowSuggestions(false);
-    if (showSuggestions) {
+    const handleClickOutside = () => {
+      setShowSuggestions(false);
+      setShowSearchHistory(false);
+    };
+    if (showSuggestions || showSearchHistory) {
       document.addEventListener('click', handleClickOutside);
     }
     return () => document.removeEventListener('click', handleClickOutside);
-  }, [showSuggestions]);
+  }, [showSuggestions, showSearchHistory]);
 
   useEffect(() => {
     if (promotions.length <= 1) return;
@@ -137,15 +141,25 @@ export default function Home() {
   const handleSearchInput = (value: string) => {
     setSearchTerm(value);
     
-    if (value.trim().length >= 2) {
+    // Show suggestions after typing 1 character
+    if (value.trim().length >= 1) {
       const suggestions = allProducts.filter(product => 
         product.name.toLowerCase().includes(value.toLowerCase()) ||
         product.description?.toLowerCase().includes(value.toLowerCase())
       ).slice(0, 5);
       setSearchSuggestions(suggestions);
       setShowSuggestions(true);
+      setShowSearchHistory(false); // Hide history when typing
     } else {
       setSearchSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSearchFocus = () => {
+    // Show search history only when clicking/focusing on search input
+    if (searchTerm.trim().length === 0 && searchHistory.length > 0) {
+      setShowSearchHistory(true);
       setShowSuggestions(false);
     }
   };
@@ -164,6 +178,7 @@ export default function Home() {
     }
 
     setShowSuggestions(false);
+    setShowSearchHistory(false);
     navigate(`/category-products?search=${encodeURIComponent(searchTerm)}`);
   };
 
@@ -207,7 +222,8 @@ export default function Home() {
               value={searchTerm}
               onChange={e => handleSearchInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSearch()}
-              onFocus={() => searchTerm.length >= 2 && setShowSuggestions(true)}
+              onFocus={handleSearchFocus}
+              onClick={e => e.stopPropagation()}
               className="bg-white text-foreground pr-10"
             />
             <Button
@@ -219,6 +235,7 @@ export default function Home() {
               <Search className="h-4 w-4" />
             </Button>
 
+            {/* Real-time product suggestions */}
             {showSuggestions && searchSuggestions.length > 0 && (
               <Card className="absolute top-full left-0 right-0 mt-1 z-50 max-h-80 overflow-y-auto">
                 <CardContent className="p-2">
@@ -245,29 +262,37 @@ export default function Home() {
                 </CardContent>
               </Card>
             )}
-          </div>
 
-          {searchHistory.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-2">
-              {searchHistory.map((term, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => {
-                    setSearchTerm(term);
-                    handleSearch();
-                  }}
-                  className="text-xs bg-primary-foreground/20 hover:bg-primary-foreground/30 px-2 py-1 rounded flex items-center gap-1 group"
-                >
-                  <span>{term}</span>
-                  <X 
-                    className="h-3 w-3 opacity-60 group-hover:opacity-100 transition-opacity" 
-                    onClick={(e) => handleDeleteSearchHistory(term, e)}
-                  />
-                </button>
-              ))}
-            </div>
-          )}
+            {/* Search history - only shown on focus when input is empty */}
+            {showSearchHistory && searchHistory.length > 0 && (
+              <Card className="absolute top-full left-0 right-0 mt-1 z-50">
+                <CardContent className="p-2">
+                  <p className="text-xs text-muted-foreground px-3 py-1">Recent Searches</p>
+                  {searchHistory.map((term, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      className="w-full text-left px-3 py-2 hover:bg-muted rounded flex items-center justify-between group"
+                      onClick={() => {
+                        setSearchTerm(term);
+                        setShowSearchHistory(false);
+                        navigate(`/category-products?search=${encodeURIComponent(term)}`);
+                      }}
+                    >
+                      <span>{term}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => handleDeleteSearchHistory(term, e)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                      </button>
+                    </button>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       </div>
 
@@ -380,6 +405,22 @@ export default function Home() {
             * Only one discount (coupon OR offer) can be applied per order
           </p>
         </section>
+
+        {recentlyViewed.length > 0 && (
+          <section>
+            <h2 className="text-2xl font-bold mb-4">Recently Viewed</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {recentlyViewed.map(product => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isInWishlist={wishlistProductIds.includes(product.id)}
+                  onWishlistChange={loadData}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
         {priceRangeProducts.under20.length > 0 && (
           <section>
@@ -552,22 +593,6 @@ export default function Home() {
                     onWishlistChange={loadData}
                   />
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {recentlyViewed.length > 0 && (
-          <section>
-            <h2 className="text-2xl font-bold mb-4">Recently Viewed</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {recentlyViewed.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isInWishlist={wishlistProductIds.includes(product.id)}
-                  onWishlistChange={loadData}
-                />
               ))}
             </div>
           </section>
