@@ -114,38 +114,63 @@ export default function ProductDetail() {
       
       if (!currentProduct) return;
 
-      // First, get products from the same category
-      let related = allProducts.filter(p => 
-        p.id !== id && 
-        p.category_id === currentProduct.category_id &&
-        p.stock_quantity > 0 // Prioritize in-stock products
-      ).slice(0, 12);
+      // Extract keywords from product name (e.g., "toothbrush" from "Colgate Toothbrush")
+      const extractKeywords = (name: string): string[] => {
+        const commonWords = ['the', 'a', 'an', 'and', 'or', 'but', 'for', 'with', 'pack', 'of', 'ml', 'gm', 'kg', 'pcs'];
+        return name.toLowerCase()
+          .split(/[\s,\-_]+/)
+          .filter(word => word.length > 2 && !commonWords.includes(word));
+      };
 
-      // If we need more products, add similar price range products
-      if (related.length < 12) {
-        const priceRange = currentProduct.price * 0.5; // 50% price range
-        const additionalProducts = allProducts.filter(p => 
-          p.id !== id && 
-          !related.find(r => r.id === p.id) &&
-          Math.abs(p.price - currentProduct.price) <= priceRange &&
-          p.stock_quantity > 0
-        ).slice(0, 12 - related.length);
+      const currentKeywords = extractKeywords(currentProduct.name);
+
+      // Score products based on relevance
+      const scoredProducts = allProducts
+        .filter(p => p.id !== id && p.stock_quantity > 0)
+        .map(p => {
+          let score = 0;
+          
+          // Same category: highest priority (50 points)
+          if (p.category_id === currentProduct.category_id) {
+            score += 50;
+          }
+          
+          // Keyword matching: check if product name contains any keywords from current product
+          const productKeywords = extractKeywords(p.name);
+          const matchingKeywords = currentKeywords.filter(kw => 
+            productKeywords.some(pk => pk.includes(kw) || kw.includes(pk))
+          );
+          
+          // Each matching keyword adds 20 points
+          score += matchingKeywords.length * 20;
+          
+          // Similar price range (within 50%): 10 points
+          const priceRange = currentProduct.price * 0.5;
+          if (Math.abs(p.price - currentProduct.price) <= priceRange) {
+            score += 10;
+          }
+          
+          return { product: p, score };
+        })
+        .filter(item => item.score > 0) // Only include products with some relevance
+        .sort((a, b) => b.score - a.score) // Sort by score descending
+        .slice(0, 12)
+        .map(item => item.product);
+
+      // If we don't have enough related products, add some random in-stock products
+      if (scoredProducts.length < 12) {
+        const additionalProducts = allProducts
+          .filter(p => 
+            p.id !== id && 
+            p.stock_quantity > 0 &&
+            !scoredProducts.find(sp => sp.id === p.id)
+          )
+          .slice(0, 12 - scoredProducts.length);
         
-        related = [...related, ...additionalProducts];
+        scoredProducts.push(...additionalProducts);
       }
 
-      // If still need more, add any other products
-      if (related.length < 12) {
-        const moreProducts = allProducts.filter(p => 
-          p.id !== id && 
-          !related.find(r => r.id === p.id) &&
-          p.stock_quantity > 0
-        ).slice(0, 12 - related.length);
-        
-        related = [...related, ...moreProducts];
-      }
-
-      setRelatedProducts(related);
+      setRelatedProducts(scoredProducts);
 
       if (user) {
         const wishlistIds = await db.wishlist.getProductIds();
