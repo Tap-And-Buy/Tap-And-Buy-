@@ -385,7 +385,14 @@ export const db = {
     async getById(id: string): Promise<OrderWithDetails | null> {
       const { data, error } = await supabase
         .from('orders')
-        .select('*, items:order_items(*), address:addresses(*)')
+        .select(`
+          *,
+          items:order_items(
+            *,
+            product:products(image_urls)
+          ),
+          address:addresses(*)
+        `)
         .eq('id', id)
         .maybeSingle();
 
@@ -396,7 +403,14 @@ export const db = {
     async getByOrderId(orderId: string): Promise<OrderWithDetails | null> {
       const { data, error } = await supabase
         .from('orders')
-        .select('*, items:order_items(*), address:addresses(*)')
+        .select(`
+          *,
+          items:order_items(
+            *,
+            product:products(image_urls)
+          ),
+          address:addresses(*)
+        `)
         .eq('order_id', orderId)
         .maybeSingle();
 
