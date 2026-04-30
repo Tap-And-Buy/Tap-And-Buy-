@@ -1,8 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
 import { useScrollToTop } from '@/hooks/useScrollToTop';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import {
   Accordion,
   AccordionContent,
@@ -10,137 +8,25 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageCircle, Send, Mail, HelpCircle, Phone } from 'lucide-react';
-
-interface Message {
-  id: string;
-  text: string;
-  sender: 'user' | 'bot';
-  timestamp: Date;
-}
+import { Mail, HelpCircle, Phone } from 'lucide-react';
 
 export default function Support() {
   useScrollToTop();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: 'Hello! Welcome to Tap And Buy Customer Support. How can I help you today?',
-      sender: 'bot',
-      timestamp: new Date(),
-    },
-  ]);
-  const [inputMessage, setInputMessage] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const getChatbotResponse = (message: string): string => {
-    const lower = message.toLowerCase();
-
-    if (lower.includes('return') || lower.includes('refund')) {
-      return 'Returns/Refunds Policy: Only damaged products are eligible for return/refund. Raise a request within 12 hours after delivery. It will be reviewed within 36 hours. Important: Delivery charges will NOT be refunded. Share an unboxing video to tapandbuy.in@gmail.com with order ID if product is damaged. If approved, our team will contact you. Refunds go to your original payment method within 7 business days.';
-    }
-
-    if (lower.includes('damaged') || lower.includes('missing') || lower.includes('defect')) {
-      return 'Damaged/Missing Products: Share an unboxing video to our Gmail account (tapandbuy.in@gmail.com) with the order ID. This is required if the product is found damaged when taken from the package. Our team will review and contact you if the return/refund is approved.';
-    }
-
-    if (lower.includes('reject') || lower.includes('denied') || lower.includes('refuse')) {
-      return 'Rejected Parcels: If you deny delivery, we deduct 2x shipping + 10% packing fee before refund. Please ensure you want to receive the order before it arrives.';
-    }
-
-    if (lower.includes('password') || lower.includes('forgot') || lower.includes('reset') || lower.includes('change')) {
-      return 'Password Management: You can change your password anytime from your Account page. Click "Change Password" and enter your current password. If you forgot your password, click "Forgot Password?" on the login page. You\'ll receive a 4-digit OTP code via email (valid for 10 minutes). Enter the OTP and set your new password. You can also use "Forgot Password?" option inside the Change Password dialog in your Account settings.';
-    }
-
-    if (lower.includes('track') || lower.includes('order')) {
-      return 'To track your order, please go to the Orders page from the bottom navigation. You can view your order status, tracking information, and order placed time there. Each order has a unique Order ID (TAB######).';
-    }
-
-    if (lower.includes('delivery') || lower.includes('shipping') || lower.includes('days')) {
-      return 'Orders will be delivered within 6 to 8 days after order confirmation. If not delivered within 8 days, it may take an extra 1 to 3 days. Good news: FREE delivery on orders above ₹999!';
-    }
-
-    if (lower.includes('cancel')) {
-      return 'You can request order cancellation from the Order Details page. The request will be sent to admin for approval. Cancellation is only available for orders in "processing" status.';
-    }
-
-    if (lower.includes('payment') || lower.includes('pay')) {
-      return 'We accept prepaid payments via UPI only: Google Pay (GPay), Paytm, PhonePe, and other UPI payment applications. Your order will be confirmed automatically after successful payment.';
-    }
-
-    if (lower.includes('coupon') || lower.includes('code')) {
-      return 'Coupon Codes: Check available coupons during checkout! Click "View all available coupons" to see eligible discounts. Only one discount (coupon OR offer) can be applied per order.';
-    }
-
-    if (lower.includes('discount') || lower.includes('offer')) {
-      return 'All-Time Offers: ₹40 off on 10+ products & ₹500+ order, ₹80 off on 20+ products & ₹1000+ order, ₹150 off on 35+ products & ₹1500+ order. First order discount: 2% off! Note: Only one discount applies (coupon OR offer).';
-    }
-
-    if (lower.includes('fee') || lower.includes('charge') || lower.includes('free')) {
-      return 'Platform fee: ₹10 (applied to all orders). Delivery fee: ₹60 (standard). 🎉 FREE delivery on orders above ₹999 rupees and 7+ products! The delivery fee is automatically waived when your order meets both conditions.';
-    }
-
-    if (lower.includes('contact') || lower.includes('email') || lower.includes('help')) {
-      return 'For further assistance, please contact us at: tapandbuy.in@gmail.com';
-    }
-
-    return 'I can help you with: order tracking, returns/refunds, damaged/missing products, rejected parcels, password reset, delivery timeline, cancellations, payment methods, coupons, discounts, fees, and free delivery. For other queries, please contact us at tapandbuy.in@gmail.com';
-  };
-
-  const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      text: inputMessage,
-      sender: 'user',
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-
-    setTimeout(() => {
-      const botResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: getChatbotResponse(inputMessage),
-        sender: 'bot',
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, botResponse]);
-    }, 500);
-
-    setInputMessage('');
-  };
-
-  const handleQuickReply = (text: string) => {
-    setInputMessage(text);
-  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <div className="bg-primary text-primary-foreground p-4">
         <div className="max-w-screen-xl mx-auto">
           <h1 className="text-xl font-bold flex items-center gap-2">
-            <MessageCircle className="h-5 w-5" />
+            <HelpCircle className="h-5 w-5" />
             Customer Support
           </h1>
         </div>
       </div>
 
       <div className="max-w-screen-xl mx-auto p-4">
-        <Tabs defaultValue="chat" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="chat">
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Live Chat
-            </TabsTrigger>
+        <Tabs defaultValue="faq" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="faq">
               <HelpCircle className="h-4 w-4 mr-2" />
               FAQ
@@ -150,81 +36,6 @@ export default function Support() {
               Contact
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="chat" className="mt-4">
-            <Card className="h-[calc(100vh-280px)] flex flex-col">
-              <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div
-                      className={`max-w-[80%] rounded-lg p-3 ${
-                        message.sender === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted'
-                      }`}
-                    >
-                      <p className="text-sm">{message.text}</p>
-                      <p className="text-xs opacity-70 mt-1">
-                        {message.timestamp.toLocaleTimeString('en-IN', {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </CardContent>
-
-              <div className="p-4 border-t space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleQuickReply('How do I track my order?')}
-                  >
-                    Track Order
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleQuickReply('What is the return policy?')}
-                  >
-                    Return Policy
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleQuickReply('Delivery timeline?')}
-                  >
-                    Delivery Time
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleQuickReply('Available discounts?')}
-                  >
-                    Discounts
-                  </Button>
-                </div>
-
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Type your message..."
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                  />
-                  <Button onClick={handleSendMessage}>
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          </TabsContent>
 
           <TabsContent value="faq" className="mt-4">
             <Card>
