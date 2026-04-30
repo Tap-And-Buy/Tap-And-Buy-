@@ -35,13 +35,14 @@ Deno.serve(async (req) => {
       },
     });
 
-    // Create user with Supabase Auth (email confirmation disabled)
+    // Create user with Supabase Auth (email confirmation enabled for our custom flow)
     const { data: authData, error: authError } = await supabase.auth.admin.createUser({
       email,
       password,
-      email_confirm: false, // We'll handle verification ourselves
+      email_confirm: true, // Set to true so users can login immediately after verification
       user_metadata: {
         full_name: fullName,
+        email_verified: false, // Custom flag to track our verification
       },
     });
 
