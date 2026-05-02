@@ -1,5 +1,4 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
-import { SmtpClient } from 'https://deno.land/x/smtp@v0.7.0/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,13 +24,11 @@ Deno.serve(async (req) => {
       );
     }
 
-    const SMTP_HOST = Deno.env.get('SMTP_HOST');
-    const SMTP_PORT = Deno.env.get('SMTP_PORT');
-    const SMTP_USER = Deno.env.get('SMTP_USER');
-    const SMTP_PASSWORD = Deno.env.get('SMTP_PASSWORD');
+    const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY');
+    const SMTP_USER = Deno.env.get('SMTP_USER') || 'tapandbuy.in@gmail.com';
 
-    if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASSWORD) {
-      console.error('SMTP credentials not configured');
+    if (!BREVO_API_KEY) {
+      console.error('Brevo API key not configured');
       return new Response(
         JSON.stringify({ error: 'Email service not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -148,36 +145,42 @@ Need help? Contact us at tapandbuy.in@gmail.com
       );
     }
 
-    // Send email using Brevo SMTP (Port 465 with SSL)
+    // Send email using Brevo API
     try {
       console.log('Attempting to send email to:', email);
-      console.log('Using SMTP:', SMTP_HOST, 'Port: 465 (SSL)');
+      console.log('Using Brevo API');
       
-      const client = new SmtpClient();
-
-      console.log('Connecting to Brevo SMTP with SSL...');
-      
-      // Use port 465 with direct SSL/TLS connection
-      await client.connectTLS({
-        hostname: SMTP_HOST,
-        port: 465,
-        username: SMTP_USER,
-        password: SMTP_PASSWORD,
+      const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': BREVO_API_KEY,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          sender: {
+            name: 'Tap And Buy',
+            email: SMTP_USER,
+          },
+          to: [
+            {
+              email: email,
+            },
+          ],
+          subject: 'Verify Your Account - Tap And Buy',
+          htmlContent: emailContent,
+          textContent: textContent,
+        }),
       });
 
-      console.log('Connected successfully, sending email...');
-      await client.send({
-        from: `Tap And Buy <${SMTP_USER}>`,
-        to: email,
-        subject: 'Verify Your Account - Tap And Buy',
-        content: textContent,
-        html: emailContent,
-      });
+      if (!brevoResponse.ok) {
+        const errorData = await brevoResponse.text();
+        console.error('Brevo API error:', errorData);
+        throw new Error(`Brevo API error: ${brevoResponse.status} - ${errorData}`);
+      }
 
-      console.log('Email sent, closing connection...');
-      await client.close();
-
-      console.log('Verification email sent successfully to:', email);
+      const result = await brevoResponse.json();
+      console.log('Email sent successfully via Brevo API:', result);
 
       return new Response(
         JSON.stringify({ 
