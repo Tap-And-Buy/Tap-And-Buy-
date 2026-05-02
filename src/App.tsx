@@ -7,7 +7,7 @@ import routes from './routes';
 
 function AppContent() {
   const location = useLocation();
-  const hideBottomNav = ['/welcome', '/login', '/register', '/email-confirmation', '/admin/login', '/payment'].some(path =>
+  const hideBottomNav = ['/welcome', '/login', '/register', '/forgot-password', '/verify-otp', '/email-confirmation', '/admin/login', '/payment'].some(path =>
     location.pathname.startsWith(path) || location.pathname.includes('/admin/')
   );
 
@@ -17,7 +17,9 @@ function AppContent() {
       <RequireAuth whiteList={[
         '/welcome',
         '/login', 
-        '/register', 
+        '/register',
+        '/forgot-password',
+        '/verify-otp',
         '/email-confirmation', 
         '/admin/login', 
         '/admin/*',
