@@ -409,14 +409,15 @@ export default function Home() {
         {recentlyViewed.length > 0 && (
           <section>
             <h2 className="text-2xl font-bold mb-4">Recently Viewed</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="flex gap-4 overflow-x-auto pb-4 horizontal-scroll">
               {recentlyViewed.map(product => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  isInWishlist={wishlistProductIds.includes(product.id)}
-                  onWishlistChange={loadData}
-                />
+                <div key={product.id} className="flex-none w-[160px] md:w-[200px]">
+                  <ProductCard
+                    product={product}
+                    isInWishlist={wishlistProductIds.includes(product.id)}
+                    onWishlistChange={loadData}
+                  />
+                </div>
               ))}
             </div>
           </section>
