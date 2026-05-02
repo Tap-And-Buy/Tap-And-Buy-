@@ -148,31 +148,30 @@ Need help? Contact us at tapandbuy.in@gmail.com
       );
     }
 
-    // Send email using Brevo SMTP (Port 587 with STARTTLS)
+    // Send email using Brevo SMTP (Port 465 with SSL)
     try {
       console.log('Attempting to send email to:', email);
-      console.log('Using SMTP:', SMTP_HOST, 'Port:', SMTP_PORT);
+      console.log('Using SMTP:', SMTP_HOST, 'Port: 465 (SSL)');
       
       const client = new SmtpClient();
 
-      console.log('Connecting to Brevo SMTP with STARTTLS...');
+      console.log('Connecting to Brevo SMTP with SSL...');
       
-      // Port 587 requires connect() then startTLS, not connectTLS()
-      await client.connect({
+      // Use port 465 with direct SSL/TLS connection
+      await client.connectTLS({
         hostname: SMTP_HOST,
-        port: parseInt(SMTP_PORT),
+        port: 465,
+        username: SMTP_USER,
+        password: SMTP_PASSWORD,
       });
-      
-      console.log('Starting TLS...');
+
+      console.log('Connected successfully, sending email...');
       await client.send({
         from: `Tap And Buy <${SMTP_USER}>`,
         to: email,
         subject: 'Verify Your Account - Tap And Buy',
         content: textContent,
         html: emailContent,
-      }, {
-        username: SMTP_USER,
-        password: SMTP_PASSWORD,
       });
 
       console.log('Email sent, closing connection...');
