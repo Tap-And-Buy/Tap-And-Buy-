@@ -42,6 +42,7 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState(location.state?.email || '');
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const fromAccount = location.state?.fromAccount || false;
 
   const emailForm = useForm<EmailFormData>({
     resolver: zodResolver(emailSchema),
@@ -194,7 +195,7 @@ export default function ForgotPassword() {
                 onClick={() => {
                   if (step === 'otp') setStep('email');
                   else if (step === 'password') setStep('otp');
-                  else navigate('/login');
+                  else navigate(fromAccount ? '/account' : '/login');
                 }}
                 className="h-8 w-8"
               >
