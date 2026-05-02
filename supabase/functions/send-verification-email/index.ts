@@ -25,11 +25,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    const GMAIL_USER = Deno.env.get('GMAIL_USER');
-    const GMAIL_APP_PASSWORD = Deno.env.get('GMAIL_APP_PASSWORD');
+    const SMTP_HOST = Deno.env.get('SMTP_HOST');
+    const SMTP_PORT = Deno.env.get('SMTP_PORT');
+    const SMTP_USER = Deno.env.get('SMTP_USER');
+    const SMTP_PASSWORD = Deno.env.get('SMTP_PASSWORD');
 
-    if (!GMAIL_USER || !GMAIL_APP_PASSWORD) {
-      console.error('Gmail credentials not configured');
+    if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASSWORD) {
+      console.error('SMTP credentials not configured');
       return new Response(
         JSON.stringify({ error: 'Email service not configured' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -146,24 +148,24 @@ Need help? Contact us at tapandbuy.in@gmail.com
       );
     }
 
-    // Send email using Gmail SMTP
+    // Send email using Brevo SMTP
     try {
       console.log('Attempting to send email to:', email);
-      console.log('Using GMAIL_USER:', GMAIL_USER);
+      console.log('Using SMTP:', SMTP_HOST);
       
       const client = new SmtpClient();
 
-      console.log('Connecting to Gmail SMTP...');
-      await client.connectTLS({
-        hostname: 'smtp.gmail.com',
-        port: 465,
-        username: GMAIL_USER,
-        password: GMAIL_APP_PASSWORD,
+      console.log('Connecting to Brevo SMTP...');
+      await client.connect({
+        hostname: SMTP_HOST,
+        port: parseInt(SMTP_PORT),
+        username: SMTP_USER,
+        password: SMTP_PASSWORD,
       });
 
       console.log('Connected successfully, sending email...');
       await client.send({
-        from: `Tap And Buy <${GMAIL_USER}>`,
+        from: `Tap And Buy <${SMTP_USER}>`,
         to: email,
         subject: 'Verify Your Account - Tap And Buy',
         content: textContent,
