@@ -175,28 +175,31 @@ Need help? Contact us at tapandbuy.in@gmail.com
       );
     }
 
-    // Send email using Brevo SMTP
+    // Send email using Brevo SMTP (Port 587 with STARTTLS)
     try {
       console.log('Attempting to send password reset email to:', email);
-      console.log('Using SMTP:', SMTP_HOST);
+      console.log('Using SMTP:', SMTP_HOST, 'Port:', SMTP_PORT);
       
       const client = new SmtpClient();
 
-      console.log('Connecting to Brevo SMTP...');
+      console.log('Connecting to Brevo SMTP with STARTTLS...');
+      
+      // Port 587 requires connect() then startTLS, not connectTLS()
       await client.connect({
         hostname: SMTP_HOST,
         port: parseInt(SMTP_PORT),
-        username: SMTP_USER,
-        password: SMTP_PASSWORD,
       });
-
-      console.log('Connected successfully, sending email...');
+      
+      console.log('Starting TLS and sending email...');
       await client.send({
         from: `Tap And Buy <${SMTP_USER}>`,
         to: email,
         subject: 'Password Reset Code - Tap And Buy',
         content: textContent,
         html: emailContent,
+      }, {
+        username: SMTP_USER,
+        password: SMTP_PASSWORD,
       });
 
       console.log('Email sent, closing connection...');
