@@ -311,7 +311,7 @@ export default function Account() {
                         className="px-0 h-auto text-xs text-primary"
                         onClick={() => {
                           setPasswordDialogOpen(false);
-                          navigate('/forgot-password', { state: { email: user?.email } });
+                          navigate('/forgot-password', { state: { email: user?.email, fromAccount: true } });
                         }}
                       >
                         Forgot Password?
