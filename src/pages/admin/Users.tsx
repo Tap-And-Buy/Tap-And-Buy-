@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/db/supabase';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
@@ -13,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Users, Search, RotateCcw } from 'lucide-react';
+import { Users, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { AdminHeader } from '@/components/common/AdminHeader';
@@ -33,7 +32,6 @@ export default function AdminUsers() {
   const [filteredUsers, setFilteredUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [resettingPassword, setResettingPassword] = useState<string | null>(null);
 
   useEffect(() => {
     loadUsers();
@@ -77,34 +75,9 @@ export default function AdminUsers() {
     }
   };
 
-  const handlePasswordReset = async (user: UserData) => {
-    if (user.role === 'admin') {
-      toast.error('Cannot reset admin passwords from this panel');
-      return;
-    }
-
-    setResettingPassword(user.id);
-
-    try {
-      // Send password reset email using Supabase Auth
-      const { error } = await supabase.auth.resetPasswordForEmail(user.email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (error) throw error;
-
-      toast.success(`Password reset email sent to ${user.email}`);
-    } catch (error) {
-      console.error('Error sending password reset:', error);
-      toast.error('Failed to send password reset email');
-    } finally {
-      setResettingPassword(null);
-    }
-  };
-
   return (
     <>
-      <AdminHeader title="User Management" subtitle="Manage users and send password resets" backTo="/account" />
+      <AdminHeader title="User Management" subtitle="View and manage all users" backTo="/account" />
       <div className="p-6 max-w-screen-2xl mx-auto">
         <Card className="mb-6">
         <CardContent className="pt-6">
@@ -150,7 +123,6 @@ export default function AdminUsers() {
                   <TableHead>Phone</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Registered</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -166,21 +138,6 @@ export default function AdminUsers() {
                     </TableCell>
                     <TableCell>
                       {format(new Date(user.created_at), 'MMM dd, yyyy')}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {user.role === 'admin' ? (
-                        <span className="text-sm text-muted-foreground">-</span>
-                      ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handlePasswordReset(user)}
-                          disabled={resettingPassword === user.id}
-                        >
-                          <RotateCcw className="h-4 w-4 mr-2" />
-                          {resettingPassword === user.id ? 'Sending...' : 'Reset Password'}
-                        </Button>
-                      )}
                     </TableCell>
                   </TableRow>
                 ))}
