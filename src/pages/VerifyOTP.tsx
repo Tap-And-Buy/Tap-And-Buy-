@@ -43,9 +43,12 @@ export default function VerifyOTP() {
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Auto-focus next input
+    // Auto-focus next input immediately after value is set
     if (value && index < 3) {
-      inputRefs[index + 1].current?.focus();
+      // Use setTimeout to ensure the state update completes first
+      setTimeout(() => {
+        inputRefs[index + 1].current?.focus();
+      }, 0);
     }
   };
 
