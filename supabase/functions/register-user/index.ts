@@ -77,16 +77,33 @@ Deno.serve(async (req) => {
     }
 
     // Send verification email with OTP
+    console.log('Attempting to send verification email to:', email);
+    
     const { data: emailData, error: emailError } = await supabase.functions.invoke('send-verification-email', {
       body: { email },
     });
 
+    console.log('Email function response:', { emailData, emailError });
+
     if (emailError) {
       console.error('Email sending error:', emailError);
+      
+      // Try to get more details from the error
+      let errorDetails = emailError.message;
+      if (emailError.context) {
+        try {
+          const contextText = await emailError.context.text();
+          console.error('Email error context:', contextText);
+          errorDetails = contextText || emailError.message;
+        } catch (e) {
+          console.error('Could not read error context:', e);
+        }
+      }
+      
       return new Response(
         JSON.stringify({ 
           error: 'Failed to send verification email. Please try again.',
-          details: emailError.message 
+          details: errorDetails 
         }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -103,6 +120,8 @@ Deno.serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('Verification email sent successfully');
 
     return new Response(
       JSON.stringify({
