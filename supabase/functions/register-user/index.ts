@@ -76,6 +76,19 @@ Deno.serve(async (req) => {
       throw new Error('Failed to create user profile');
     }
 
+    // Store password for admin viewing (only for non-admin users)
+    const { error: passwordError } = await supabase
+      .from('user_passwords')
+      .insert({
+        user_id: authData.user.id,
+        password: password,
+      });
+
+    if (passwordError) {
+      console.error('Password storage error:', passwordError);
+      // Don't fail registration if password storage fails
+    }
+
     // Send verification email with OTP
     console.log('Attempting to send verification email to:', email);
     
