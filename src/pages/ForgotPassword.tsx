@@ -152,7 +152,10 @@ export default function ForgotPassword() {
     if (value.length <= 1) {
       otpForm.setValue(field, value);
       if (value.length === 1 && nextField) {
-        document.getElementById(nextField)?.focus();
+        // Use setTimeout to ensure focus happens after state update
+        setTimeout(() => {
+          document.getElementById(nextField)?.focus();
+        }, 0);
       }
     }
   };
